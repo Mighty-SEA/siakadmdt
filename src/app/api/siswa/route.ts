@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 export async function GET() {
   try {
@@ -15,7 +16,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const data: any = {
+    const data: Prisma.StudentCreateInput = {
       name: body.name,
       nis: body.nis,
       gender: body.gender,
@@ -33,10 +34,43 @@ export async function POST(req: Request) {
       birth_date: body.birth_date === undefined || body.birth_date === "" ? null : new Date(body.birth_date),
     };
     console.log("DATA YANG DIKIRIM:", data);
-    const siswa = await prisma.student.create({ data: data as object });
+    const siswa = await prisma.student.create({ data });
     return NextResponse.json({ siswa }, { status: 201 });
   } catch (e: unknown) {
     const errorMsg = typeof e === "object" && e && "message" in e ? (e as Record<string, unknown>).message : "Gagal menyimpan data siswa";
+    return NextResponse.json({ error: errorMsg }, { status: 500 });
+  }
+}
+
+export async function PUT(req: Request) {
+  try {
+    const body = await req.json();
+    const { id, ...updateData } = body;
+    if (!id) return NextResponse.json({ error: "ID diperlukan" }, { status: 400 });
+    const data: Prisma.StudentUpdateInput = {
+      ...updateData,
+      birth_date: updateData.birth_date ? new Date(updateData.birth_date) : null,
+    };
+    const siswa = await prisma.student.update({
+      where: { id: Number(id) },
+      data,
+    });
+    return NextResponse.json({ siswa });
+  } catch (e: unknown) {
+    const errorMsg = typeof e === "object" && e && "message" in e ? (e as Record<string, unknown>).message : "Gagal mengupdate data siswa";
+    return NextResponse.json({ error: errorMsg }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const body = await req.json();
+    const { id } = body;
+    if (!id) return NextResponse.json({ error: "ID diperlukan" }, { status: 400 });
+    await prisma.student.delete({ where: { id: Number(id) } });
+    return NextResponse.json({ success: true });
+  } catch (e: unknown) {
+    const errorMsg = typeof e === "object" && e && "message" in e ? (e as Record<string, unknown>).message : "Gagal menghapus data siswa";
     return NextResponse.json({ error: errorMsg }, { status: 500 });
   }
 } 

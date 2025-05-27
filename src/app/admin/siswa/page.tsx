@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { Filter, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Pencil, Trash2, MoreVertical, Plus, Upload, Download } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type Student = {
   id: number;
@@ -56,6 +57,7 @@ export default function SiswaPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [selectedColumns, setSelectedColumns] = useState<string[]>(desktopDefaultColumns);
+  const router = useRouter();
 
   useEffect(() => {
     setLoading(true);
@@ -97,6 +99,26 @@ export default function SiswaPage() {
   // Pagination
   const totalPage = Math.ceil(filtered.length / pageSize);
   const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
+
+  async function handleDelete(id: number) {
+    if (!confirm("Yakin ingin menghapus siswa ini?")) return;
+    try {
+      const res = await fetch("/api/siswa", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      if (res.ok) {
+        setSiswa(siswa => siswa.filter(s => s.id !== id));
+        alert("Siswa berhasil dihapus");
+      } else {
+        const data = await res.json();
+        alert(data.error || "Gagal menghapus siswa");
+      }
+    } catch {
+      alert("Terjadi kesalahan jaringan");
+    }
+  }
 
   return (
     <div className="card bg-base-200 shadow-xl p-4 sm:p-6 rounded-2xl border border-primary/30 text-base-content w-full max-w-full overflow-x-auto">
@@ -223,12 +245,12 @@ export default function SiswaPage() {
                       </label>
                       <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-200 rounded-box w-28">
                         <li>
-                          <button className="flex items-center gap-2 text-primary">
+                          <button className="flex items-center gap-2 text-primary" onClick={() => router.push(`/admin/siswa/edit/${s.id}`)}>
                             <Pencil className="w-4 h-4" /> Edit
                           </button>
                         </li>
                         <li>
-                          <button className="flex items-center gap-2 text-error">
+                          <button className="flex items-center gap-2 text-error" onClick={() => handleDelete(s.id)}>
                             <Trash2 className="w-4 h-4" /> Hapus
                           </button>
                         </li>
@@ -238,12 +260,14 @@ export default function SiswaPage() {
                       <button
                         className="btn btn-xs btn-ghost rounded-full text-primary hover:bg-primary/10 hover:shadow transition-all duration-150"
                         title="Edit"
+                        onClick={() => router.push(`/admin/siswa/edit/${s.id}`)}
                       >
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button
                         className="btn btn-xs btn-ghost rounded-full text-error hover:bg-error/10 hover:shadow transition-all duration-150"
                         title="Hapus"
+                        onClick={() => handleDelete(s.id)}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
