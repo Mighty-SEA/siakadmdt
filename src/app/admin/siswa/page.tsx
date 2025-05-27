@@ -119,47 +119,49 @@ export default function SiswaPage() {
       </div>
       {/* Filter Kolom, Cari Nama, dan Filter Gender/Status */}
       <div className="flex flex-col md:flex-row gap-2 mb-4 items-center md:items-end w-full">
-        {/* Input Cari Nama dengan ikon search */}
-        <div className="flex-1 w-full relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/60">
-            <Search className="w-5 h-5" />
-          </span>
-          <input
-            type="text"
-            className="input input-bordered input-sm md:input-md w-full pl-10 pr-3 rounded-lg border-base-300 focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm"
-            placeholder="Cari nama atau NIS..."
-            value={search}
-            onChange={e => { setSearch(e.target.value); setPage(1); }}
-          />
-        </div>
-        <div>
-          <div className="dropdown dropdown-end dropdown-bottom">
-            <label tabIndex={0} className="btn btn-sm md:btn-md btn-outline min-w-[56px] flex justify-between items-center gap-2 cursor-pointer hover:shadow focus:shadow border-primary/40">
-              <Filter className="w-5 h-5 text-primary" />
-              <span className="badge badge-primary badge-sm">{selectedColumns.length}/{allColumns.length}</span>
-              <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
-            </label>
-            <ul tabIndex={0} className="dropdown-content right-0 z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-80 border border-primary/20 grid grid-cols-3 gap-2">
-              {allColumns.map(col => (
-                <li key={col.key} className="hover:bg-primary/10 rounded-md transition-colors col-span-1">
-                  <label className="flex items-center gap-2 cursor-pointer px-2 py-1 w-full">
-                    <input
-                      type="checkbox"
-                      className="checkbox checkbox-xs checkbox-primary"
-                      checked={selectedColumns.includes(col.key)}
-                      onChange={() => {
-                        setSelectedColumns(selectedColumns =>
-                          selectedColumns.includes(col.key)
-                            ? selectedColumns.filter(k => k !== col.key)
-                            : [...selectedColumns, col.key]
-                        );
-                      }}
-                    />
-                    <span className="text-base-content text-sm">{col.label}</span>
-                  </label>
-                </li>
-              ))}
-            </ul>
+        {/* Input Cari Nama dengan ikon search dan tombol filter kolom di kanan (mobile & desktop) */}
+        <div className="flex w-full gap-2">
+          <div className="flex-1 relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/60">
+              <Search className="w-5 h-5" />
+            </span>
+            <input
+              type="text"
+              className="input input-bordered input-sm md:input-md w-full pl-10 pr-3 rounded-lg border-base-300 focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm"
+              placeholder="Cari nama atau NIS..."
+              value={search}
+              onChange={e => { setSearch(e.target.value); setPage(1); }}
+            />
+          </div>
+          <div>
+            <div className="dropdown dropdown-end dropdown-bottom">
+              <label tabIndex={0} className="btn btn-sm md:btn-md btn-outline min-w-[56px] flex justify-between items-center gap-2 cursor-pointer hover:shadow focus:shadow border-primary/40">
+                <Filter className="w-5 h-5 text-primary" />
+                <span className="badge badge-primary badge-sm">{selectedColumns.length}/{allColumns.length}</span>
+                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+              </label>
+              <ul tabIndex={0} className="dropdown-content right-0 z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-80 border border-primary/20 grid grid-cols-3 gap-2">
+                {allColumns.map(col => (
+                  <li key={col.key} className="hover:bg-primary/10 rounded-md transition-colors col-span-1">
+                    <label className="flex items-center gap-2 cursor-pointer px-2 py-1 w-full">
+                      <input
+                        type="checkbox"
+                        className="checkbox checkbox-xs checkbox-primary"
+                        checked={selectedColumns.includes(col.key)}
+                        onChange={() => {
+                          setSelectedColumns(selectedColumns =>
+                            selectedColumns.includes(col.key)
+                              ? selectedColumns.filter(k => k !== col.key)
+                              : [...selectedColumns, col.key]
+                          );
+                        }}
+                      />
+                      <span className="text-base-content text-sm">{col.label}</span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -301,14 +303,44 @@ export default function SiswaPage() {
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
-          {Array.from({ length: totalPage }, (_, i) => (
-            <button
-              key={i + 1}
-              className={`btn btn-sm rounded-full min-w-[2.25rem] px-0 mx-0.5 ${page === i + 1 ? 'btn-primary text-white' : 'btn-ghost hover:bg-primary/10'}`}
-              onClick={() => setPage(i + 1)}
-              aria-current={page === i + 1 ? 'page' : undefined}
-            >{i + 1}</button>
-          ))}
+          {/* Pagination dengan ... */}
+          {(() => {
+            const pages = [];
+            const maxPage = totalPage;
+            const maxShow = 5;
+            let start = Math.max(1, page - 2);
+            let end = Math.min(maxPage, page + 2);
+            if (page <= 3) {
+              start = 1;
+              end = Math.min(maxPage, maxShow);
+            } else if (page >= maxPage - 2) {
+              start = Math.max(1, maxPage - maxShow + 1);
+              end = maxPage;
+            }
+            if (start > 1) {
+              pages.push(
+                <button key={1} className={`btn btn-sm rounded-full min-w-[2.25rem] px-0 mx-0.5 ${page === 1 ? 'btn-primary text-white' : 'btn-ghost hover:bg-primary/10'}`} onClick={() => setPage(1)}>{1}</button>
+              );
+              if (start > 2) pages.push(<span key="start-ellipsis" className="px-1">...</span>);
+            }
+            for (let i = start; i <= end; i++) {
+              pages.push(
+                <button
+                  key={i}
+                  className={`btn btn-sm rounded-full min-w-[2.25rem] px-0 mx-0.5 ${page === i ? 'btn-primary text-white' : 'btn-ghost hover:bg-primary/10'}`}
+                  onClick={() => setPage(i)}
+                  aria-current={page === i ? 'page' : undefined}
+                >{i}</button>
+              );
+            }
+            if (end < maxPage) {
+              if (end < maxPage - 1) pages.push(<span key="end-ellipsis" className="px-1">...</span>);
+              pages.push(
+                <button key={maxPage} className={`btn btn-sm rounded-full min-w-[2.25rem] px-0 mx-0.5 ${page === maxPage ? 'btn-primary text-white' : 'btn-ghost hover:bg-primary/10'}`} onClick={() => setPage(maxPage)}>{maxPage}</button>
+              );
+            }
+            return pages;
+          })()}
           <button
             className="btn btn-sm btn-ghost rounded-full"
             onClick={() => setPage(p => Math.min(totalPage, p + 1))}

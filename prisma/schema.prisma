@@ -13,3 +13,24 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+model Student {
+  id           Int      @id @default(autoincrement())
+  name         String
+  nis          String   @unique
+  birth_date   DateTime
+  gender       String   // L atau P
+  is_alumni    Boolean  @default(false)
+  nik          String   @unique
+  kk           String
+  father_name  String
+  mother_name  String
+  father_job   String
+  mother_job   String
+  origin_school String
+  nisn         String   @unique
+  birth_place  String
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  qr_token     String   @unique
+}
