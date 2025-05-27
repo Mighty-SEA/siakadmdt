@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
-import { Filter, Search, ClipboardList, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Pencil, Trash2, MoreVertical } from "lucide-react";
+import { Filter, Search, ClipboardList, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Pencil, Trash2, MoreVertical, Plus, Upload, Download } from "lucide-react";
+import Link from "next/link";
 
 const allColumns = [
   { key: "no", label: "No" },
@@ -49,7 +50,23 @@ export default function SiswaPage() {
 
   return (
     <div className="card bg-base-200 shadow-xl p-4 sm:p-6 rounded-2xl border border-primary/30 text-base-content w-full max-w-full overflow-x-auto">
-      <h2 className="text-2xl font-bold mb-2">Daftar Siswa</h2>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+        <h2 className="text-2xl font-bold mb-2 sm:mb-0">Daftar Siswa</h2>
+        <div className="flex gap-2">
+          <button className="btn btn-outline btn-secondary btn-sm md:btn-md gap-2 rounded-lg border-2 border-secondary hover:bg-secondary/10 hover:border-secondary focus:shadow transition-all duration-150" type="button">
+            <Upload className="w-5 h-5" />
+            <span>Import</span>
+          </button>
+          <button className="btn btn-outline btn-primary btn-sm md:btn-md gap-2 rounded-lg border-2 border-primary hover:bg-primary/10 hover:border-primary focus:shadow transition-all duration-150" type="button">
+            <Download className="w-5 h-5" />
+            <span>Export</span>
+          </button>
+          <Link href="/admin/siswa/tambah" className="btn btn-primary btn-sm md:btn-md gap-2 rounded-lg">
+            <Plus className="w-5 h-5" />
+            <span>Tambah Siswa</span>
+          </Link>
+        </div>
+      </div>
       {/* Filter Kolom, Cari Nama, dan Filter Kelas dalam satu baris */}
       <div className="flex flex-col md:flex-row gap-2 mb-4 items-center md:items-end w-full">
         {/* Input Cari Nama dengan ikon search */}
