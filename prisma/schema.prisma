@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
+  // output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -20,7 +20,7 @@ model Student {
   nis          String   @unique
   birth_date   DateTime?
   gender       String   // L atau P
-  is_alumni    Boolean?  @default(false)
+  is_alumni    Boolean?
   nik          String?   @unique
   kk           String?
   father_name  String?
