@@ -1,0 +1,113 @@
+"use client";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Pencil, Trash2, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+
+type User = {
+  id: number;
+  name: string;
+  email: string;
+  avatar?: string | null;
+  role: string;
+  created_at: string;
+};
+
+export default function UserPage() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const router = useRouter();
+
+  useEffect(() => {
+    setLoading(true);
+    fetch("/api/user")
+      .then(res => res.json())
+      .then(data => {
+        setUsers(data.users || []);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError("Gagal mengambil data user");
+        setLoading(false);
+      });
+  }, []);
+
+  async function handleDelete(id: number) {
+    if (!confirm("Yakin ingin menghapus user ini?")) return;
+    try {
+      const res = await fetch("/api/user", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      if (res.ok) {
+        setUsers(users => users.filter(u => u.id !== id));
+        alert("User berhasil dihapus");
+      } else {
+        const data = await res.json();
+        alert(data.error || "Gagal menghapus user");
+      }
+    } catch {
+      alert("Terjadi kesalahan jaringan");
+    }
+  }
+
+  return (
+    <div className="card bg-base-200 shadow-xl p-4 sm:p-6 rounded-2xl border border-primary/30 text-base-content w-full max-w-full overflow-x-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+        <h2 className="text-2xl font-bold mb-2 sm:mb-0">Daftar User</h2>
+        <Link href="/admin/user/tambah" className="btn btn-primary btn-sm md:btn-md gap-2 rounded-lg">
+          <Plus className="w-5 h-5" />
+          <span>Tambah User</span>
+        </Link>
+      </div>
+      {error && <div className="alert alert-error mb-4">{error}</div>}
+      <div className="overflow-x-auto rounded-xl">
+        <table className="table table-zebra w-full md:min-w-[600px]">
+          <thead>
+            <tr className="bg-base-200">
+              <th>ID</th>
+              <th>Avatar</th>
+              <th>Nama</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Dibuat</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr><td colSpan={7} className="text-center">Memuat data...</td></tr>
+            ) : users.length === 0 ? (
+              <tr><td colSpan={7} className="text-center">Tidak ada data</td></tr>
+            ) : (
+              users.map(u => (
+                <tr key={u.id}>
+                  <td>{u.id}</td>
+                  <td>
+                    {u.avatar ? (
+                      <img src={u.avatar.startsWith('http') ? u.avatar : u.avatar.includes('/avatar/') ? u.avatar : `/avatar/${u.avatar}`} alt={u.name} className="w-8 h-8 rounded-full object-cover border" />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">
+                        {u.name?.[0]?.toUpperCase() || "?"}
+                      </div>
+                    )}
+                  </td>
+                  <td>{u.name}</td>
+                  <td>{u.email}</td>
+                  <td><span className="badge badge-outline">{u.role}</span></td>
+                  <td>{new Date(u.created_at).toLocaleDateString("id-ID")}</td>
+                  <td>
+                    <button className="btn btn-xs btn-ghost text-primary" onClick={() => router.push(`/admin/user/edit/${u.id}`)}><Pencil className="w-4 h-4" /></button>
+                    <button className="btn btn-xs btn-ghost text-error" onClick={() => handleDelete(u.id)}><Trash2 className="w-4 h-4" /></button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+} 
