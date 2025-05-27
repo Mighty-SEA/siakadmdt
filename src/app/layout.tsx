@@ -4,7 +4,7 @@ import "./globals.css";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { User, Users, BookOpen, ClipboardList, CalendarCheck, Wallet, Bell, Search, ChevronLeft, ChevronRight, Menu, X } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,6 +26,7 @@ export default function RootLayout({
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const themes = [
     "light","dark","cupcake","bumblebee","emerald","corporate","synthwave","retro","cyberpunk","valentine","halloween","garden","forest","aqua","lofi","pastel","fantasy","wireframe","black","luxury","dracula","cmyk","autumn","business","acid","lemonade","night","coffee","winter","dim","nord","sunset","caramellatte","abyss","silk"
   ];
@@ -69,6 +70,26 @@ export default function RootLayout({
       drawerInputRef.current.checked = drawerOpen;
     }
   }, [drawerOpen]);
+
+  // Cek login untuk /admin
+  useEffect(() => {
+    if (pathname.startsWith("/admin")) {
+      const user = typeof window !== 'undefined' ? localStorage.getItem("user") : null;
+      if (!user) {
+        router.replace("/login");
+      }
+    }
+  }, [pathname, router]);
+
+  if (pathname === "/login") {
+    return (
+      <html lang="id">
+        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+          {children}
+        </body>
+      </html>
+    );
+  }
 
   return (
     <html lang="id">
