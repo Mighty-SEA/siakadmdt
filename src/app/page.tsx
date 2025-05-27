@@ -9,7 +9,20 @@ export default function Home() {
   const [theme, setTheme] = useState("light");
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
+    const savedTheme = typeof window !== 'undefined' ? localStorage.getItem('theme') : null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+      document.documentElement.setAttribute("data-theme", savedTheme);
+    } else {
+      document.documentElement.setAttribute("data-theme", theme);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (theme) {
+      localStorage.setItem('theme', theme);
+      document.documentElement.setAttribute("data-theme", theme);
+    }
   }, [theme]);
 
   return (
