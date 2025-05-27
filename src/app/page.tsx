@@ -26,10 +26,10 @@ export default function Home() {
   }, [theme]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-base-100 px-4">
-      <div className="w-full max-w-2xl bg-base-200 rounded-xl shadow-xl p-8 flex flex-col items-center gap-6">
-        <h1 className="text-4xl md:text-5xl font-bold text-primary text-center">MDT BILAL BIN RABBAH</h1>
-        <p className="text-lg md:text-xl text-base-content text-center max-w-xl">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-base-100 px-2 sm:px-4">
+      <div className="w-full max-w-2xl bg-base-200 rounded-xl shadow-xl p-4 sm:p-8 flex flex-col items-center gap-6">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-primary text-center">MDT BILAL BIN RABBAH</h1>
+        <p className="text-base sm:text-lg md:text-xl text-base-content text-center max-w-xl">
           Madrasah Diniyah yang berkomitmen membina generasi Qur&#39;ani, berakhlak mulia, dan berwawasan luas. Bergabunglah bersama kami untuk pendidikan agama yang berkualitas dan lingkungan belajar yang inspiratif.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">

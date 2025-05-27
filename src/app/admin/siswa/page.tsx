@@ -37,7 +37,7 @@ export default function SiswaPage() {
   const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   return (
-    <div className="card bg-base-100 shadow-xl p-6 rounded-2xl border border-base-200 text-base-content">
+    <div className="card bg-base-100 shadow-xl p-4 sm:p-6 rounded-2xl border border-base-200 text-base-content w-full max-w-full overflow-x-auto">
       <h2 className="text-2xl font-bold mb-2">Daftar Siswa</h2>
       <div className="flex flex-col md:flex-row gap-2 mb-4">
         <input
@@ -57,7 +57,7 @@ export default function SiswaPage() {
         </select>
       </div>
       <div className="overflow-x-auto rounded-xl">
-        <table className="table table-zebra">
+        <table className="table table-zebra min-w-[600px] md:min-w-0">
           <thead>
             <tr className="bg-base-200">
               <th>No</th>
@@ -87,7 +87,7 @@ export default function SiswaPage() {
         </table>
       </div>
       {/* Pagination */}
-      <div className="flex justify-center items-center mt-4">
+      <div className="flex flex-wrap justify-center items-center mt-4 gap-2">
         <div className="join">
           <button
             className="join-item btn btn-sm"

@@ -41,11 +41,11 @@ const stats = [
 
 export default function DashboardPage() {
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8 w-full p-2 sm:p-0">
       {/* Business Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((s, i) => (
-          <div key={i} className="card bg-base-100 shadow-xl p-5 flex flex-col gap-3 rounded-2xl border border-base-200 hover:scale-[1.03] transition-transform">
+          <div key={i} className="card bg-base-100 shadow-xl p-5 flex flex-col gap-3 rounded-2xl border border-base-200 hover:scale-[1.03] transition-transform min-w-0">
             <div className="flex items-center gap-3">
               <div className={`rounded-full p-3 ${s.bg} shadow-lg flex items-center justify-center`}>
                 {s.icon}
@@ -62,7 +62,7 @@ export default function DashboardPage() {
       </div>
       {/* Statistik & Grafik */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="card bg-base-100 shadow-xl p-6 col-span-2 rounded-2xl border border-base-200">
+        <div className="card bg-base-100 shadow-xl p-6 col-span-2 rounded-2xl border border-base-200 min-w-0">
           <div className="font-bold mb-3 text-lg text-base-content">Statistik Siswa per Tahun</div>
           <div className="w-full h-48 flex items-end gap-3">
             {/* Grafik batang dummy */}
@@ -74,7 +74,7 @@ export default function DashboardPage() {
             ))}
           </div>
         </div>
-        <div className="card bg-base-100 shadow-xl p-6 rounded-2xl border border-base-200">
+        <div className="card bg-base-100 shadow-xl p-6 rounded-2xl border border-base-200 min-w-0">
           <div className="font-bold mb-3 text-lg text-base-content">Rekap Absensi</div>
           <div className="w-full h-48 flex items-end">
             {/* Grafik garis dummy */}
@@ -87,46 +87,44 @@ export default function DashboardPage() {
       </div>
       {/* Tabel & Chat */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="card bg-base-100 shadow-xl p-6 col-span-2 rounded-2xl border border-base-200">
+        <div className="card bg-base-100 shadow-xl p-6 col-span-2 rounded-2xl border border-base-200 min-w-0 overflow-x-auto">
           <div className="font-bold mb-3 text-lg text-base-content">Transaksi Terbaru</div>
-          <div className="overflow-x-auto">
-            <table className="table table-zebra rounded-xl overflow-hidden">
-              <thead>
-                <tr className="bg-base-200 text-base-content">
-                  <th>Nama</th>
-                  <th>Tipe</th>
-                  <th>Nominal</th>
-                  <th>Tanggal</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="hover:bg-primary/10 transition-colors text-base-content">
-                  <td>Ahmad Fauzi</td>
-                  <td>SPP</td>
-                  <td>Rp200.000</td>
-                  <td>10 Jun 2024</td>
-                  <td><span className="badge badge-success">Lunas</span></td>
-                </tr>
-                <tr className="hover:bg-primary/10 transition-colors text-base-content">
-                  <td>Siti Aminah</td>
-                  <td>Infaq</td>
-                  <td>Rp50.000</td>
-                  <td>09 Jun 2024</td>
-                  <td><span className="badge badge-warning">Pending</span></td>
-                </tr>
-                <tr className="hover:bg-primary/10 transition-colors text-base-content">
-                  <td>Rizki Maulana</td>
-                  <td>SPP</td>
-                  <td>Rp200.000</td>
-                  <td>08 Jun 2024</td>
-                  <td><span className="badge badge-success">Lunas</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <table className="table table-zebra rounded-xl overflow-hidden">
+            <thead>
+              <tr className="bg-base-200 text-base-content">
+                <th>Nama</th>
+                <th>Tipe</th>
+                <th>Nominal</th>
+                <th>Tanggal</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="hover:bg-primary/10 transition-colors text-base-content">
+                <td>Ahmad Fauzi</td>
+                <td>SPP</td>
+                <td>Rp200.000</td>
+                <td>10 Jun 2024</td>
+                <td><span className="badge badge-success">Lunas</span></td>
+              </tr>
+              <tr className="hover:bg-primary/10 transition-colors text-base-content">
+                <td>Siti Aminah</td>
+                <td>Infaq</td>
+                <td>Rp50.000</td>
+                <td>09 Jun 2024</td>
+                <td><span className="badge badge-warning">Pending</span></td>
+              </tr>
+              <tr className="hover:bg-primary/10 transition-colors text-base-content">
+                <td>Rizki Maulana</td>
+                <td>SPP</td>
+                <td>Rp200.000</td>
+                <td>08 Jun 2024</td>
+                <td><span className="badge badge-success">Lunas</span></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <div className="card bg-base-100 shadow-xl p-6 rounded-2xl border border-base-200">
+        <div className="card bg-base-100 shadow-xl p-6 rounded-2xl border border-base-200 min-w-0">
           <div className="font-bold mb-3 text-lg text-base-content">Quick Chat</div>
           <div className="flex flex-col gap-3">
             <div className="chat chat-start">
