@@ -15,6 +15,8 @@ export default function TambahUserPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const [roles, setRoles] = useState<{ id: number; name: string }[]>([]);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string>("");
 
   useEffect(() => {
     fetch("/api/role")
@@ -27,6 +29,13 @@ export default function TambahUserPage() {
     setForm(f => ({ ...f, [name]: value }));
   }
 
+  function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name || !form.email || !form.password) {
@@ -34,7 +43,24 @@ export default function TambahUserPage() {
       return;
     }
     setLoading(true);
+    let avatarUrl = form.avatar || null;
     try {
+      if (avatarFile) {
+        const formData = new FormData();
+        formData.append("avatar", avatarFile);
+        const resUpload = await fetch("/api/user/upload", {
+          method: "POST",
+          body: formData,
+        });
+        const dataUpload = await resUpload.json();
+        if (resUpload.ok) {
+          avatarUrl = dataUpload.url;
+        } else {
+          alert(dataUpload.error || "Gagal upload avatar");
+          setLoading(false);
+          return;
+        }
+      }
       const res = await fetch("/api/user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -42,7 +68,7 @@ export default function TambahUserPage() {
           name: form.name,
           email: form.email,
           password: form.password,
-          avatar: form.avatar || null,
+          avatar: avatarUrl,
           roleId: form.roleId || roles[0]?.id || 1,
         }),
       });
@@ -60,28 +86,18 @@ export default function TambahUserPage() {
     }
   }
 
-  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const formData = new FormData();
-    formData.append("avatar", file);
-    setLoading(true);
-    try {
-      const res = await fetch("/api/user/upload", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setForm(f => ({ ...f, avatar: data.url }));
-      } else {
-        alert(data.error || "Gagal upload avatar");
+  function handleCancel() {
+    if (form.avatar) {
+      const filename = form.avatar.split("/").pop();
+      if (filename) {
+        fetch("/api/user/avatar-delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ filename }),
+        });
       }
-    } catch {
-      alert("Terjadi kesalahan upload");
-    } finally {
-      setLoading(false);
     }
+    router.push("/admin/user");
   }
 
   return (
@@ -96,7 +112,9 @@ export default function TambahUserPage() {
       <form className="flex flex-col gap-10" onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6 items-start">
           <div className="md:col-span-2 flex flex-col items-center mb-2">
-            {form.avatar ? (
+            {avatarPreview ? (
+              <img src={avatarPreview} alt="Avatar preview" className="w-28 h-28 rounded-full object-cover border-4 border-primary shadow-lg mb-2" />
+            ) : form.avatar ? (
               <img src={form.avatar.startsWith('http') ? form.avatar : form.avatar.includes('/avatar/') ? form.avatar : `/avatar/${form.avatar}`} alt="Avatar preview" className="w-28 h-28 rounded-full object-cover border-4 border-primary shadow-lg mb-2" />
             ) : (
               <div className="w-28 h-28 rounded-full bg-primary text-white flex items-center justify-center font-bold text-4xl mb-2 shadow-lg border-4 border-primary">
