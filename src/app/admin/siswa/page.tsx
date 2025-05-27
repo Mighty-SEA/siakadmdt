@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Filter, Search, ClipboardList, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Pencil, Trash2 } from "lucide-react";
+import { Filter, Search, ClipboardList, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Pencil, Trash2, MoreVertical } from "lucide-react";
 
 const allColumns = [
   { key: "no", label: "No" },
@@ -59,7 +59,7 @@ export default function SiswaPage() {
           </span>
           <input
             type="text"
-            className="input input-bordered w-full pl-10 pr-3 py-2 rounded-lg border-base-300 focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm"
+            className="input input-bordered input-sm md:input-md w-full pl-10 pr-3 rounded-lg border-base-300 focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm"
             placeholder="Cari nama atau NIS..."
             value={search}
             onChange={e => { setSearch(e.target.value); setPage(1); }}
@@ -71,7 +71,7 @@ export default function SiswaPage() {
             <ClipboardList className="w-5 h-5" />
           </span>
           <select
-            className="select select-bordered w-full pl-10 pr-3 py-2 rounded-lg border-base-300 focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm appearance-none"
+            className="select select-bordered select-sm md:select-md w-full pl-10 pr-3 rounded-lg border-base-300 focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm appearance-none"
             value={filterKelas}
             onChange={e => { setFilterKelas(e.target.value); setPage(1); }}
           >
@@ -81,7 +81,7 @@ export default function SiswaPage() {
         </div>
         <div>
           <div className="dropdown dropdown-bottom">
-            <label tabIndex={0} className="btn btn-md btn-outline min-w-[56px] flex justify-between items-center gap-2 cursor-pointer hover:shadow focus:shadow border-primary/40">
+            <label tabIndex={0} className="btn btn-sm md:btn-md btn-outline min-w-[56px] flex justify-between items-center gap-2 cursor-pointer hover:shadow focus:shadow border-primary/40">
               <Filter className="w-5 h-5 text-primary" />
               <span className="badge badge-primary badge-sm">{selectedColumns.length}/{allColumns.length}</span>
               <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
@@ -111,15 +111,15 @@ export default function SiswaPage() {
         </div>
       </div>
       <div className="overflow-x-auto rounded-xl">
-        <table className="table table-zebra min-w-[600px] md:min-w-0">
+        <table className="table table-zebra w-full md:min-w-[600px]">
           <thead>
             <tr className="bg-base-200">
-              {selectedColumns.includes("no") && <th>No</th>}
-              {selectedColumns.includes("nama") && <th>Nama</th>}
-              {selectedColumns.includes("nis") && <th>NIS</th>}
-              {selectedColumns.includes("kelas") && <th>Kelas</th>}
-              {selectedColumns.includes("status") && <th>Status</th>}
-              {selectedColumns.includes("aksi") && <th>Aksi</th>}
+              {selectedColumns.includes("no") && <th className="max-w-[120px] md:max-w-none px-2 py-1 text-sm md:px-4 md:py-2 md:text-base">No</th>}
+              {selectedColumns.includes("nama") && <th className="max-w-[120px] md:max-w-none px-2 py-1 text-sm md:px-4 md:py-2 md:text-base">Nama</th>}
+              {selectedColumns.includes("nis") && <th className="px-2 py-1 text-sm md:px-4 md:py-2 md:text-base">NIS</th>}
+              {selectedColumns.includes("kelas") && <th className="px-2 py-1 text-sm md:px-4 md:py-2 md:text-base">Kelas</th>}
+              {selectedColumns.includes("status") && <th className="px-2 py-1 text-sm md:px-4 md:py-2 md:text-base">Status</th>}
+              {selectedColumns.includes("aksi") && <th className="px-2 py-1 text-sm md:px-4 md:py-2 md:text-base">Aksi</th>}
             </tr>
           </thead>
           <tbody>
@@ -129,12 +129,31 @@ export default function SiswaPage() {
               paged.map((s, i) => (
                 <tr key={s.nis}>
                   {selectedColumns.includes("no") && <td>{(page - 1) * pageSize + i + 1}</td>}
-                  {selectedColumns.includes("nama") && <td>{s.nama}</td>}
+                  {selectedColumns.includes("nama") && <td className="max-w-[120px] md:max-w-none truncate">{s.nama}</td>}
                   {selectedColumns.includes("nis") && <td>{s.nis}</td>}
                   {selectedColumns.includes("kelas") && <td>{s.kelas}</td>}
                   {selectedColumns.includes("status") && <td><span className={`badge ${s.status === 'Aktif' ? 'badge-success' : 'badge-ghost'}`}>{s.status}</span></td>}
-                  {selectedColumns.includes("aksi") && <td>
-                    <div className="flex gap-2">
+                  {selectedColumns.includes("aksi") && <td className="px-2 py-1 text-sm md:px-4 md:py-2 md:text-base">
+                    {/* Mobile: Dropdown aksi */}
+                    <div className="md:hidden dropdown dropdown-end">
+                      <label tabIndex={0} className="btn btn-xs btn-ghost rounded-full">
+                        <MoreVertical className="w-4 h-4" />
+                      </label>
+                      <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-200 rounded-box w-28">
+                        <li>
+                          <button className="flex items-center gap-2 text-primary">
+                            <Pencil className="w-4 h-4" /> Edit
+                          </button>
+                        </li>
+                        <li>
+                          <button className="flex items-center gap-2 text-error">
+                            <Trash2 className="w-4 h-4" /> Hapus
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+                    {/* Desktop: Tombol aksi biasa */}
+                    <div className="hidden md:flex gap-2">
                       <button
                         className="btn btn-xs btn-ghost rounded-full text-primary hover:bg-primary/10 hover:shadow transition-all duration-150"
                         title="Edit"
