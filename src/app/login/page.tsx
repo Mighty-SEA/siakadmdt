@@ -1,12 +1,15 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import Cookies from "js-cookie";
 
 export default function LoginPage() {
   const [form, setForm] = useState({ username: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get('returnUrl') || '/admin';
 
   const themes = [
     "light","dark","cupcake","bumblebee","emerald","corporate","synthwave","retro","cyberpunk","valentine","halloween","garden","forest","aqua","lofi","pastel","fantasy","wireframe","black","luxury","dracula","cmyk","autumn","business","acid","lemonade","night","coffee","winter","dim","nord","sunset","caramellatte","abyss","silk"
@@ -42,9 +45,10 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        // Simpan user ke localStorage
-        localStorage.setItem("user", JSON.stringify(data.user));
-        router.push("/admin");
+        // Simpan user ke cookie (bukan localStorage)
+        Cookies.set("user", JSON.stringify(data.user), { expires: 7 });
+        // Gunakan returnUrl jika ada
+        router.push(returnUrl);
       } else {
         setError(data.error || "Login gagal");
       }

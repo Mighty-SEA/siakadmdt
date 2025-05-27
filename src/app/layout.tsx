@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { User, Users, BookOpen, ClipboardList, CalendarCheck, Wallet, Bell, Search, ChevronLeft, ChevronRight, Menu, X } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -71,15 +72,13 @@ export default function RootLayout({
     }
   }, [drawerOpen]);
 
-  // Cek login untuk /admin
-  useEffect(() => {
-    if (pathname.startsWith("/admin")) {
-      const user = typeof window !== 'undefined' ? localStorage.getItem("user") : null;
-      if (!user) {
-        router.replace("/login");
-      }
-    }
-  }, [pathname, router]);
+  // Fungsi logout
+  const handleLogout = () => {
+    // Hapus cookie
+    Cookies.remove('user');
+    // Redirect ke halaman login
+    router.push('/login');
+  };
 
   if (pathname === "/login") {
     return (
@@ -115,7 +114,7 @@ export default function RootLayout({
                     </label>
                     <ul tabIndex={0} className="mt-3 p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-40">
                       <li><a>Profil</a></li>
-                      <li><a>Keluar</a></li>
+                      <li><button onClick={handleLogout}>Keluar</button></li>
                     </ul>
                   </div>
                 </div>
@@ -146,7 +145,7 @@ export default function RootLayout({
                 </nav>
                 <div className="mt-auto flex flex-col gap-2 pt-8 border-t border-base-300">
                   <button className="btn btn-ghost justify-start gap-3"><User className="w-5 h-5" />Profil</button>
-                  <button className="btn btn-ghost justify-start gap-3">Pengaturan</button>
+                  <button className="btn btn-ghost justify-start gap-3" onClick={handleLogout}>Keluar</button>
                 </div>
               </aside>
             </div>
@@ -169,8 +168,8 @@ export default function RootLayout({
               <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname === "/admin/keuangan" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/keuangan"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Keuangan"><Wallet className="w-5 h-5" /></div>{sidebarOpen && 'Keuangan'}</Link>
             </nav>
             <div className="mt-auto flex flex-col gap-2 pt-8 border-t border-base-300">
-              <button className="btn btn-ghost justify-start gap-3"><User className="w-5 h-5" />Profil</button>
-              <button className="btn btn-ghost justify-start gap-3">{sidebarOpen && 'Pengaturan'}</button>
+              <button className="btn btn-ghost justify-start gap-3"><User className="w-5 h-5" />{sidebarOpen && 'Profil'}</button>
+              <button className="btn btn-ghost justify-start gap-3" onClick={handleLogout}>{sidebarOpen && 'Keluar'}</button>
             </div>
           </aside>
           {/* Main Content desktop */}
@@ -198,7 +197,7 @@ export default function RootLayout({
                   </label>
                   <ul tabIndex={0} className="mt-3 p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
                     <li><a>Profil</a></li>
-                    <li><a>Keluar</a></li>
+                    <li><button onClick={handleLogout}>Keluar</button></li>
                   </ul>
                 </div>
                 <div className="flex items-center gap-2">
