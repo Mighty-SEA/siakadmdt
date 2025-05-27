@@ -1,47 +1,97 @@
 "use client";
-import { useState } from "react";
-import { Filter, Search, ClipboardList, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Pencil, Trash2, MoreVertical, Plus, Upload, Download } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Filter, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Pencil, Trash2, MoreVertical, Plus, Upload, Download } from "lucide-react";
 import Link from "next/link";
+
+type Student = {
+  id: number;
+  name: string;
+  nis: string;
+  birth_date: string;
+  gender: string;
+  is_alumni: boolean;
+  nik: string;
+  kk: string;
+  father_name: string;
+  mother_name: string;
+  father_job: string;
+  mother_job: string;
+  origin_school: string;
+  nisn: string;
+  birth_place: string;
+  created_at: string;
+  updated_at: string;
+  qr_token: string;
+};
 
 const allColumns = [
   { key: "no", label: "No" },
-  { key: "nama", label: "Nama" },
+  { key: "name", label: "Nama" },
   { key: "nis", label: "NIS" },
-  { key: "kelas", label: "Kelas" },
-  { key: "status", label: "Status" },
+  { key: "birth_date", label: "Tanggal Lahir" },
+  { key: "gender", label: "Jenis Kelamin" },
+  { key: "is_alumni", label: "Status" },
+  { key: "nik", label: "NIK" },
+  { key: "kk", label: "No. KK" },
+  { key: "father_name", label: "Nama Ayah" },
+  { key: "mother_name", label: "Nama Ibu" },
+  { key: "father_job", label: "Pekerjaan Ayah" },
+  { key: "mother_job", label: "Pekerjaan Ibu" },
+  { key: "origin_school", label: "Asal Sekolah" },
+  { key: "nisn", label: "NISN" },
+  { key: "birth_place", label: "Tempat Lahir" },
+  { key: "created_at", label: "Dibuat" },
+  { key: "updated_at", label: "Diupdate" },
+  { key: "qr_token", label: "QR Token" },
   { key: "aksi", label: "Aksi" },
 ];
 
-export default function SiswaPage() {
-  // Data dummy siswa
-  const siswa = [
-    { nama: "Ahmad Fauzi", nis: "2023001", kelas: "VII A", status: "Aktif" },
-    { nama: "Siti Aminah", nis: "2023002", kelas: "VII B", status: "Aktif" },
-    { nama: "Rizki Maulana", nis: "2023003", kelas: "VIII A", status: "Lulus" },
-    { nama: "Dewi Lestari", nis: "2023004", kelas: "IX A", status: "Aktif" },
-    { nama: "Budi Santoso", nis: "2023005", kelas: "VII A", status: "Aktif" },
-    { nama: "Lina Marlina", nis: "2023006", kelas: "VIII A", status: "Aktif" },
-    { nama: "Fajar Nugraha", nis: "2023007", kelas: "IX A", status: "Lulus" },
-    { nama: "Nurul Huda", nis: "2023008", kelas: "VII B", status: "Aktif" },
-    { nama: "Dian Puspita", nis: "2023009", kelas: "VIII A", status: "Aktif" },
-    { nama: "Rina Sari", nis: "2023010", kelas: "IX A", status: "Aktif" },
-  ];
+const desktopDefaultColumns = ["no", "name", "nis", "origin_school", "aksi"];
+const mobileDefaultColumns = ["no", "name", "aksi"];
 
-  // State untuk search, filter, dan pagination
+export default function SiswaPage() {
+  const [siswa, setSiswa] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [filterKelas, setFilterKelas] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
-  const [selectedColumns, setSelectedColumns] = useState(allColumns.map(c => c.key));
+  const [selectedColumns, setSelectedColumns] = useState<string[]>(desktopDefaultColumns);
 
-  // Ambil daftar kelas unik
-  const kelasList = Array.from(new Set(siswa.map(s => s.kelas)));
+  useEffect(() => {
+    setLoading(true);
+    fetch("/api/siswa")
+      .then(res => res.json())
+      .then(data => {
+        setSiswa(data.siswa || []);
+        setLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    function handleResize() {
+      if (window.innerWidth < 768) {
+        setSelectedColumns(mobileDefaultColumns);
+      } else {
+        setSelectedColumns(desktopDefaultColumns);
+      }
+    }
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Filter dan search
   const filtered = siswa.filter(s =>
-    (filterKelas === "" || s.kelas === filterKelas) &&
-    (s.nama.toLowerCase().includes(search.toLowerCase()) ||
-     s.nis.includes(search))
+    (
+      s.name.toLowerCase().includes(search.toLowerCase()) ||
+      s.nis.includes(search) ||
+      s.nik.includes(search) ||
+      s.kk.includes(search) ||
+      s.father_name.toLowerCase().includes(search.toLowerCase()) ||
+      s.mother_name.toLowerCase().includes(search.toLowerCase()) ||
+      s.nisn.includes(search) ||
+      s.birth_place.toLowerCase().includes(search.toLowerCase())
+    )
   );
 
   // Pagination
@@ -67,7 +117,7 @@ export default function SiswaPage() {
           </Link>
         </div>
       </div>
-      {/* Filter Kolom, Cari Nama, dan Filter Kelas dalam satu baris */}
+      {/* Filter Kolom, Cari Nama, dan Filter Gender/Status */}
       <div className="flex flex-col md:flex-row gap-2 mb-4 items-center md:items-end w-full">
         {/* Input Cari Nama dengan ikon search */}
         <div className="flex-1 w-full relative">
@@ -82,30 +132,16 @@ export default function SiswaPage() {
             onChange={e => { setSearch(e.target.value); setPage(1); }}
           />
         </div>
-        {/* Select Filter Kelas dengan ikon */}
-        <div className="w-full md:w-1/4 relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/60 pointer-events-none">
-            <ClipboardList className="w-5 h-5" />
-          </span>
-          <select
-            className="select select-bordered select-sm md:select-md w-full pl-10 pr-3 rounded-lg border-base-300 focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm appearance-none"
-            value={filterKelas}
-            onChange={e => { setFilterKelas(e.target.value); setPage(1); }}
-          >
-            <option value="">Semua Kelas</option>
-            {kelasList.map(k => <option key={k} value={k}>{k}</option>)}
-          </select>
-        </div>
         <div>
-          <div className="dropdown dropdown-bottom">
+          <div className="dropdown dropdown-end dropdown-bottom">
             <label tabIndex={0} className="btn btn-sm md:btn-md btn-outline min-w-[56px] flex justify-between items-center gap-2 cursor-pointer hover:shadow focus:shadow border-primary/40">
               <Filter className="w-5 h-5 text-primary" />
               <span className="badge badge-primary badge-sm">{selectedColumns.length}/{allColumns.length}</span>
               <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
             </label>
-            <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-48 border border-primary/20">
+            <ul tabIndex={0} className="dropdown-content right-0 z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-80 border border-primary/20 grid grid-cols-3 gap-2">
               {allColumns.map(col => (
-                <li key={col.key} className="hover:bg-primary/10 rounded-md transition-colors">
+                <li key={col.key} className="hover:bg-primary/10 rounded-md transition-colors col-span-1">
                   <label className="flex items-center gap-2 cursor-pointer px-2 py-1 w-full">
                     <input
                       type="checkbox"
@@ -131,27 +167,54 @@ export default function SiswaPage() {
         <table className="table table-zebra w-full md:min-w-[600px]">
           <thead>
             <tr className="bg-base-200">
-              {selectedColumns.includes("no") && <th className="max-w-[120px] md:max-w-none px-2 py-1 text-sm md:px-4 md:py-2 md:text-base">No</th>}
-              {selectedColumns.includes("nama") && <th className="max-w-[120px] md:max-w-none px-2 py-1 text-sm md:px-4 md:py-2 md:text-base">Nama</th>}
-              {selectedColumns.includes("nis") && <th className="px-2 py-1 text-sm md:px-4 md:py-2 md:text-base">NIS</th>}
-              {selectedColumns.includes("kelas") && <th className="px-2 py-1 text-sm md:px-4 md:py-2 md:text-base">Kelas</th>}
-              {selectedColumns.includes("status") && <th className="px-2 py-1 text-sm md:px-4 md:py-2 md:text-base">Status</th>}
-              {selectedColumns.includes("aksi") && <th className="px-2 py-1 text-sm md:px-4 md:py-2 md:text-base">Aksi</th>}
+              {selectedColumns.includes("no") && <th>No</th>}
+              {selectedColumns.includes("name") && <th>Nama</th>}
+              {selectedColumns.includes("nis") && <th>NIS</th>}
+              {selectedColumns.includes("birth_date") && <th>Tanggal Lahir</th>}
+              {selectedColumns.includes("gender") && <th>Gender</th>}
+              {selectedColumns.includes("is_alumni") && <th>Status</th>}
+              {selectedColumns.includes("nik") && <th>NIK</th>}
+              {selectedColumns.includes("kk") && <th>No. KK</th>}
+              {selectedColumns.includes("father_name") && <th>Nama Ayah</th>}
+              {selectedColumns.includes("mother_name") && <th>Nama Ibu</th>}
+              {selectedColumns.includes("father_job") && <th>Pekerjaan Ayah</th>}
+              {selectedColumns.includes("mother_job") && <th>Pekerjaan Ibu</th>}
+              {selectedColumns.includes("origin_school") && <th>Asal Sekolah</th>}
+              {selectedColumns.includes("nisn") && <th>NISN</th>}
+              {selectedColumns.includes("birth_place") && <th>Tempat Lahir</th>}
+              {selectedColumns.includes("created_at") && <th>Dibuat</th>}
+              {selectedColumns.includes("updated_at") && <th>Diupdate</th>}
+              {selectedColumns.includes("qr_token") && <th>QR Token</th>}
+              {selectedColumns.includes("aksi") && <th>Aksi</th>}
             </tr>
           </thead>
           <tbody>
-            {paged.length === 0 ? (
+            {loading ? (
+              <tr><td colSpan={selectedColumns.length} className="text-center">Memuat data...</td></tr>
+            ) : paged.length === 0 ? (
               <tr><td colSpan={selectedColumns.length} className="text-center">Tidak ada data</td></tr>
             ) : (
               paged.map((s, i) => (
-                <tr key={s.nis}>
+                <tr key={s.id}>
                   {selectedColumns.includes("no") && <td>{(page - 1) * pageSize + i + 1}</td>}
-                  {selectedColumns.includes("nama") && <td className="max-w-[120px] md:max-w-none truncate">{s.nama}</td>}
+                  {selectedColumns.includes("name") && <td>{s.name}</td>}
                   {selectedColumns.includes("nis") && <td>{s.nis}</td>}
-                  {selectedColumns.includes("kelas") && <td>{s.kelas}</td>}
-                  {selectedColumns.includes("status") && <td><span className={`badge ${s.status === 'Aktif' ? 'badge-success' : 'badge-ghost'}`}>{s.status}</span></td>}
-                  {selectedColumns.includes("aksi") && <td className="px-2 py-1 text-sm md:px-4 md:py-2 md:text-base">
-                    {/* Mobile: Dropdown aksi */}
+                  {selectedColumns.includes("birth_date") && <td>{new Date(s.birth_date).toLocaleDateString("id-ID")}</td>}
+                  {selectedColumns.includes("gender") && <td>{s.gender === "L" ? "Laki-laki" : s.gender === "P" ? "Perempuan" : s.gender}</td>}
+                  {selectedColumns.includes("is_alumni") && <td><span className={`badge ${s.is_alumni ? 'badge-ghost' : 'badge-success'}`}>{s.is_alumni ? 'Lulus' : 'Aktif'}</span></td>}
+                  {selectedColumns.includes("nik") && <td>{s.nik}</td>}
+                  {selectedColumns.includes("kk") && <td>{s.kk}</td>}
+                  {selectedColumns.includes("father_name") && <td>{s.father_name}</td>}
+                  {selectedColumns.includes("mother_name") && <td>{s.mother_name}</td>}
+                  {selectedColumns.includes("father_job") && <td>{s.father_job}</td>}
+                  {selectedColumns.includes("mother_job") && <td>{s.mother_job}</td>}
+                  {selectedColumns.includes("origin_school") && <td>{s.origin_school}</td>}
+                  {selectedColumns.includes("nisn") && <td>{s.nisn}</td>}
+                  {selectedColumns.includes("birth_place") && <td>{s.birth_place}</td>}
+                  {selectedColumns.includes("created_at") && <td>{new Date(s.created_at).toLocaleDateString("id-ID")}</td>}
+                  {selectedColumns.includes("updated_at") && <td>{new Date(s.updated_at).toLocaleDateString("id-ID")}</td>}
+                  {selectedColumns.includes("qr_token") && <td>{s.qr_token}</td>}
+                  {selectedColumns.includes("aksi") && <td>
                     <div className="md:hidden dropdown dropdown-end">
                       <label tabIndex={0} className="btn btn-xs btn-ghost rounded-full">
                         <MoreVertical className="w-4 h-4" />
@@ -169,7 +232,6 @@ export default function SiswaPage() {
                         </li>
                       </ul>
                     </div>
-                    {/* Desktop: Tombol aksi biasa */}
                     <div className="hidden md:flex gap-2">
                       <button
                         className="btn btn-xs btn-ghost rounded-full text-primary hover:bg-primary/10 hover:shadow transition-all duration-150"
