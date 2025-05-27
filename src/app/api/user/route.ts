@@ -6,7 +6,7 @@ import path from "path";
 
 export async function GET() {
   try {
-    const users = await prisma.user.findMany({ orderBy: { id: "asc" } });
+    const users = await prisma.user.findMany({ orderBy: { id: "asc" }, include: { role: true } });
     return NextResponse.json({ users });
   } catch {
     return NextResponse.json({ error: "Gagal mengambil data user" }, { status: 500 });
@@ -22,9 +22,9 @@ export async function POST(req: Request) {
       email: body.email,
       password: hashed,
       avatar: body.avatar || null,
-      role: body.role || "ADMIN",
+      roleId: Number(body.roleId) || 1,
     };
-    const user = await prisma.user.create({ data });
+    const user = await prisma.user.create({ data, include: { role: true } });
     return NextResponse.json({ user }, { status: 201 });
   } catch (e: unknown) {
     const errorMsg = typeof e === "object" && e && "message" in e ? (e as Record<string, unknown>).message : "Gagal menyimpan data user";
@@ -45,12 +45,13 @@ export async function PUT(req: Request) {
     if (body.avatar !== undefined) {
       data.avatar = body.avatar;
     }
-    if (body.role !== undefined) {
-      data.role = body.role;
+    if (body.roleId !== undefined) {
+      data.roleId = Number(body.roleId);
     }
     const user = await prisma.user.update({
       where: { id: Number(id) },
       data,
+      include: { role: true },
     });
     if (oldUser && body.avatar && oldUser.avatar && oldUser.avatar !== body.avatar) {
       const avatarPath = path.join(process.cwd(), "public", "avatar", oldUser.avatar.replace(/^.*[\\/]/, ""));

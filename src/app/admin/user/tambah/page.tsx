@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Save } from "lucide-react";
@@ -10,12 +10,19 @@ export default function TambahUserPage() {
     email: "",
     password: "",
     avatar: "",
-    role: "ADMIN",
+    roleId: 1,
   });
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [roles, setRoles] = useState<{ id: number; name: string }[]>([]);
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  useEffect(() => {
+    fetch("/api/role")
+      .then(res => res.json())
+      .then(data => setRoles(data.roles || []));
+  }, []);
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const { name, value } = e.target;
     setForm(f => ({ ...f, [name]: value }));
   }
@@ -32,8 +39,11 @@ export default function TambahUserPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...form,
+          name: form.name,
+          email: form.email,
+          password: form.password,
           avatar: form.avatar || null,
+          roleId: form.roleId || roles[0]?.id || 1,
         }),
       });
       const data = await res.json();
@@ -106,10 +116,10 @@ export default function TambahUserPage() {
           </div>
           <div>
             <label className="block text-base font-semibold mb-1 text-base-content">Role</label>
-            <select name="role" value={form.role} onChange={handleChange} className="select select-bordered w-full bg-base-100 border-base-300 text-base-content rounded-lg focus:ring-2 focus:ring-primary/30 focus:shadow-primary/20 shadow-sm">
-              <option value="ADMIN">Admin</option>
-              <option value="GURU">Guru</option>
-              <option value="STAF">Staf</option>
+            <select name="roleId" value={form.roleId || roles[0]?.id || ""} onChange={handleChange} className="select select-bordered w-full bg-base-100 border-base-300 text-base-content rounded-lg focus:ring-2 focus:ring-primary/30 focus:shadow-primary/20 shadow-sm">
+              {roles.map(r => (
+                <option key={r.id} value={r.id}>{r.name}</option>
+              ))}
             </select>
           </div>
           <div className="md:col-span-2">

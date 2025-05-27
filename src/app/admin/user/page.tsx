@@ -9,7 +9,7 @@ type User = {
   name: string;
   email: string;
   avatar?: string | null;
-  role: string;
+  role: { id: number; name: string };
   created_at: string;
 };
 
@@ -96,7 +96,7 @@ export default function UserPage() {
                   </td>
                   <td>{u.name}</td>
                   <td>{u.email}</td>
-                  <td><span className="badge badge-outline">{u.role}</span></td>
+                  <td><span className="badge badge-outline">{u.role?.name}</span></td>
                   <td>{new Date(u.created_at).toLocaleDateString("id-ID")}</td>
                   <td>
                     <button className="btn btn-xs btn-ghost text-primary" onClick={() => router.push(`/admin/user/edit/${u.id}`)}><Pencil className="w-4 h-4" /></button>
