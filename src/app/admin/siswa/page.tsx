@@ -37,7 +37,7 @@ export default function SiswaPage() {
   const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   return (
-    <div className="card bg-base-100 shadow-xl p-4 sm:p-6 rounded-2xl border border-base-200 text-base-content w-full max-w-full overflow-x-auto">
+    <div className="card bg-base-200 shadow-xl p-4 sm:p-6 rounded-2xl border border-primary/30 text-base-content w-full max-w-full overflow-x-auto">
       <h2 className="text-2xl font-bold mb-2">Daftar Siswa</h2>
       <div className="flex flex-col md:flex-row gap-2 mb-4">
         <input

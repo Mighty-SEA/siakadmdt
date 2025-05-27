@@ -45,7 +45,7 @@ export default function DashboardPage() {
       {/* Business Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((s, i) => (
-          <div key={i} className="card bg-base-100 shadow-xl p-5 flex flex-col gap-3 rounded-2xl border border-base-200 hover:scale-[1.03] transition-transform min-w-0">
+          <div key={i} className="card bg-base-200 shadow-xl p-5 flex flex-col gap-3 rounded-2xl border border-primary/30 hover:scale-[1.03] transition-transform min-w-0">
             <div className="flex items-center gap-3">
               <div className={`rounded-full p-3 ${s.bg} shadow-lg flex items-center justify-center`}>
                 {s.icon}
@@ -62,7 +62,7 @@ export default function DashboardPage() {
       </div>
       {/* Statistik & Grafik */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="card bg-base-100 shadow-xl p-6 col-span-2 rounded-2xl border border-base-200 min-w-0">
+        <div className="card bg-base-200 shadow-xl p-6 col-span-2 rounded-2xl border border-primary/30 min-w-0">
           <div className="font-bold mb-3 text-lg text-base-content">Statistik Siswa per Tahun</div>
           <div className="w-full h-48 flex items-end gap-3">
             {/* Grafik batang dummy */}
@@ -74,7 +74,7 @@ export default function DashboardPage() {
             ))}
           </div>
         </div>
-        <div className="card bg-base-100 shadow-xl p-6 rounded-2xl border border-base-200 min-w-0">
+        <div className="card bg-base-200 shadow-xl p-6 rounded-2xl border border-primary/30 min-w-0">
           <div className="font-bold mb-3 text-lg text-base-content">Rekap Absensi</div>
           <div className="w-full h-48 flex items-end">
             {/* Grafik garis dummy */}
@@ -87,7 +87,7 @@ export default function DashboardPage() {
       </div>
       {/* Tabel & Chat */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="card bg-base-100 shadow-xl p-6 col-span-2 rounded-2xl border border-base-200 min-w-0 overflow-x-auto">
+        <div className="card bg-base-200 shadow-xl p-6 col-span-2 rounded-2xl border border-primary/30 min-w-0 overflow-x-auto">
           <div className="font-bold mb-3 text-lg text-base-content">Transaksi Terbaru</div>
           <table className="table table-zebra rounded-xl overflow-hidden">
             <thead>
@@ -124,7 +124,7 @@ export default function DashboardPage() {
             </tbody>
           </table>
         </div>
-        <div className="card bg-base-100 shadow-xl p-6 rounded-2xl border border-base-200 min-w-0">
+        <div className="card bg-base-200 shadow-xl p-6 rounded-2xl border border-primary/30 min-w-0">
           <div className="font-bold mb-3 text-lg text-base-content">Quick Chat</div>
           <div className="flex flex-col gap-3">
             <div className="chat chat-start">
