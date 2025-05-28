@@ -274,7 +274,7 @@ export default function RootLayout({
               <input id="drawer-sidebar" type="checkbox" className="drawer-toggle" ref={drawerInputRef} checked={drawerOpen} onChange={() => setDrawerOpen(!drawerOpen)} />
               <div className="drawer-content flex flex-col w-full">
                 {/* Topbar mobile */}
-                <header className="w-full bg-base-100 shadow flex items-center justify-between px-4 py-3 gap-2 md:hidden">
+                <header className="w-full bg-base-100 shadow flex items-center justify-between px-4 py-3 gap-2 md:hidden fixed top-0 left-0 right-0 z-20">
                   <button className="btn btn-ghost btn-circle" onClick={() => setDrawerOpen(true)} aria-label="Buka Menu">
                     <Menu className="w-6 h-6 text-base-content" />
                   </button>
@@ -384,7 +384,7 @@ export default function RootLayout({
                   </div>
                 </header>
                 {/* Konten utama di mobile */}
-                <main className="flex-1 p-4 bg-base-100 transition-all duration-200">{children}</main>
+                <main className="flex-1 p-4 bg-base-100 transition-all duration-200 md:hidden mt-14">{children}</main>
               </div>
               <div className="drawer-side z-40">
                 <label htmlFor="drawer-sidebar" className="drawer-overlay"></label>
@@ -396,7 +396,7 @@ export default function RootLayout({
                       <X className="w-6 h-6 text-base-content" />
                     </button>
                   </div>
-                  <nav className="flex flex-col gap-1">
+                  <nav className="flex flex-col gap-1 overflow-y-auto">
                     <Link className={`btn btn-ghost justify-start gap-3${pathname && pathname === "/admin" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin" onClick={() => setDrawerOpen(false)}><BookOpen className="w-5 h-5" />Dashboard</Link>
                     <Link className={`btn btn-ghost justify-start gap-3${pathname && pathname.startsWith("/admin/siswa") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/siswa" onClick={() => setDrawerOpen(false)}><Users className="w-5 h-5" />Siswa</Link>
                     <Link className={`btn btn-ghost justify-start gap-3${pathname && pathname === "/admin/kelas" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/kelas" onClick={() => setDrawerOpen(false)}><ClipboardList className="w-5 h-5" />Kelas</Link>
@@ -415,12 +415,12 @@ export default function RootLayout({
               </div>
             </div>
             {/* Sidebar desktop */}
-            <aside className={`bg-base-200 text-base-content p-4 flex-col shadow-xl min-h-screen transition-[width] duration-300 ease-in-out hidden md:flex ${sidebarOpen ? 'w-64' : 'w-20'}`} style={{transitionProperty: 'width'}}>
+            <aside className={`bg-base-200 text-base-content p-4 flex-col shadow-xl fixed left-0 top-0 bottom-0 z-10 transition-[width] duration-300 ease-in-out hidden md:flex ${sidebarOpen ? 'w-64' : 'w-20'}`} style={{transitionProperty: 'width'}}>
               <div className={`font-bold text-2xl mb-8 text-primary flex items-center gap-2 transition-all duration-200 ${sidebarOpen ? '' : 'justify-center'}`}>
                 <BookOpen className="w-7 h-7 text-primary" />
                 {sidebarOpen && <span>SIAKAD</span>}
               </div>
-              <nav className={`flex flex-col ${sidebarOpen ? 'gap-1' : 'gap-0'} transition-all duration-300 ease-in-out`}>
+              <nav className={`flex flex-col ${sidebarOpen ? 'gap-1' : 'gap-0'} transition-all duration-300 ease-in-out overflow-y-auto`}>
                 <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname && pathname === "/admin" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Dashboard"><BookOpen className="w-5 h-5" /></div>{sidebarOpen && 'Dashboard'}</Link>
                 <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname && pathname.startsWith("/admin/siswa") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/siswa"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Siswa"><Users className="w-5 h-5" /></div>{sidebarOpen && 'Siswa'}</Link>
                 <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname && pathname === "/admin/kelas" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/kelas"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Kelas"><ClipboardList className="w-5 h-5" /></div>{sidebarOpen && 'Kelas'}</Link>
@@ -437,9 +437,9 @@ export default function RootLayout({
               </div>
             </aside>
             {/* Main Content desktop */}
-            <div className="flex-1 flex flex-col hidden md:flex">
+            <div className={`flex-1 flex flex-col hidden md:flex ${sidebarOpen ? 'ml-64' : 'ml-20'} transition-all duration-300`}>
               {/* Topbar desktop */}
-              <header className="w-full bg-base-100 shadow flex items-center justify-between px-6 py-4 gap-4">
+              <header className="w-full bg-base-100 shadow flex items-center justify-between px-6 py-4 gap-4 fixed top-0 right-0 z-10" style={{left: sidebarOpen ? '16rem' : '5rem'}}>
                 <div className="flex items-center gap-3">
                   <button className="btn btn-ghost btn-circle text-base-content" onClick={() => setSidebarOpen((v) => !v)} aria-label="Toggle Sidebar">
                     {sidebarOpen ? <ChevronLeft className="w-6 h-6 text-base-content" /> : <ChevronRight className="w-6 h-6 text-base-content" />}
@@ -568,7 +568,7 @@ export default function RootLayout({
                 </div>
               </header>
               {/* Content */}
-              <main className="flex-1 p-6 bg-base-100 transition-all duration-200">{children}</main>
+              <main className="flex-1 p-6 bg-base-100 transition-all duration-200 mt-16">{children}</main>
             </div>
           </div>
         </UIProvider>
