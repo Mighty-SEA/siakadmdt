@@ -130,7 +130,7 @@ export default function DashboardPage() {
             <div className="chat chat-start">
               <div className="chat-image avatar">
                 <div className="w-10 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                  <img src="/window.svg" />
+                  <img src="/window.svg" alt="Admin Avatar" />
                 </div>
               </div>
               <div className="chat-header font-semibold text-base-content">Admin <time className="text-xs opacity-50 ml-1">11:35</time></div>
@@ -139,7 +139,7 @@ export default function DashboardPage() {
             <div className="chat chat-end">
               <div className="chat-image avatar">
                 <div className="w-10 rounded-full ring ring-secondary ring-offset-base-100 ring-offset-2">
-                  <img src="/window.svg" />
+                  <img src="/window.svg" alt="User Avatar" />
                 </div>
               </div>
               <div className="chat-header font-semibold text-base-content">Anda <time className="text-xs opacity-50 ml-1">11:36</time></div>

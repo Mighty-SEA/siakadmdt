@@ -86,20 +86,6 @@ export default function TambahUserPage() {
     }
   }
 
-  function handleCancel() {
-    if (form.avatar) {
-      const filename = form.avatar.split("/").pop();
-      if (filename) {
-        fetch("/api/user/avatar-delete", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ filename }),
-        });
-      }
-    }
-    router.push("/admin/user");
-  }
-
   return (
     <div className="card bg-base-200 shadow-2xl p-8 md:p-12 rounded-2xl border border-primary/30 text-base-content w-full max-w-2xl mx-auto mt-8">
       <div className="flex items-center justify-between mb-8">

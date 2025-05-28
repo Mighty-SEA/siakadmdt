@@ -31,8 +31,8 @@ export default function NotifikasiPage() {
       const data = await res.json();
       setNotifications(data.notifications);
       setUnreadCount(data.unreadCount);
-    } catch (err: any) {
-      setError(err.message || "Terjadi kesalahan saat mengambil notifikasi");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan saat mengambil notifikasi");
     } finally {
       setLoading(false);
     }
@@ -65,7 +65,7 @@ export default function NotifikasiPage() {
         )
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error marking notification as read:", err);
     }
   };
@@ -91,7 +91,7 @@ export default function NotifikasiPage() {
       if (isUnread) {
         setUnreadCount((prev) => Math.max(0, prev - 1));
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error deleting notification:", err);
     }
   };
@@ -116,7 +116,7 @@ export default function NotifikasiPage() {
         notifications.map((notif) => ({ ...notif, isRead: true }))
       );
       setUnreadCount(0);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error marking all notifications as read:", err);
     }
   };
@@ -139,7 +139,7 @@ export default function NotifikasiPage() {
 
       // Refresh notifikasi setelah berhasil dibuat
       fetchNotifications();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error generating dummy notifications:", err);
     } finally {
       setGenerating(false);

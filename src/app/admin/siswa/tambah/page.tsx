@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Save, CheckCircle2, AlertCircle } from "lucide-react";
+import { Save } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUI } from "@/lib/ui-context";

@@ -16,7 +16,7 @@ export default function EditUserPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const params = useParams();
-  const id = params.id;
+  const id = params?.id;
   const [oldAvatar, setOldAvatar] = useState("");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string>("");
@@ -26,7 +26,7 @@ export default function EditUserPage() {
       setLoading(true);
       const res = await fetch(`/api/user`);
       const data = await res.json();
-      const user = (data.users || []).find((u: any) => String(u.id) === String(id));
+      const user = (data.users || []).find((u: {id: string | number}) => String(u.id) === String(id));
       if (user) {
         setForm({
           name: user.name || "",
@@ -109,20 +109,6 @@ export default function EditUserPage() {
     } finally {
       setLoading(false);
     }
-  }
-
-  function handleCancel() {
-    if (form.avatar && form.avatar !== oldAvatar) {
-      const filename = form.avatar.split("/").pop();
-      if (filename) {
-        fetch("/api/user/avatar-delete", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ filename }),
-        });
-      }
-    }
-    router.push("/admin/user");
   }
 
   return (

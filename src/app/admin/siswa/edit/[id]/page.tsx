@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Save } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useUI } from "@/lib/ui-context";
 import Cookies from "js-cookie";
@@ -29,45 +29,46 @@ export default function EditSiswaPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const params = useParams();
-  const id = params.id;
+  const id = params?.id;
   const { showToast } = useUI();
 
-  useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/siswa`);
-        const data = await res.json();
-        const siswa = (data.siswa || []).find((s: any) => String(s.id) === String(id));
-        if (siswa) {
-          setForm({
-            name: siswa.name || "",
-            nis: siswa.nis || "",
-            birth_date: siswa.birth_date ? siswa.birth_date.slice(0, 10) : "",
-            birth_place: siswa.birth_place || "",
-            gender: siswa.gender || "",
-            is_alumni: siswa.is_alumni === true ? "true" : siswa.is_alumni === false ? "false" : "",
-            nik: siswa.nik || "",
-            kk: siswa.kk || "",
-            origin_school: siswa.origin_school || "",
-            nisn: siswa.nisn || "",
-            qr_token: siswa.qr_token || "",
-            father_name: siswa.father_name || "",
-            father_job: siswa.father_job || "",
-            mother_name: siswa.mother_name || "",
-            mother_job: siswa.mother_job || "",
-          });
-        } else {
-          showToast("Data siswa tidak ditemukan", "error");
-        }
-      } catch (error) {
-        showToast("Gagal memuat data siswa", "error");
-      } finally {
-        setLoading(false);
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/siswa`);
+      const data = await res.json();
+      const siswa = (data.siswa || []).find((s: {id: string | number}) => String(s.id) === String(id));
+      if (siswa) {
+        setForm({
+          name: siswa.name || "",
+          nis: siswa.nis || "",
+          birth_date: siswa.birth_date ? siswa.birth_date.slice(0, 10) : "",
+          birth_place: siswa.birth_place || "",
+          gender: siswa.gender || "",
+          is_alumni: siswa.is_alumni === true ? "true" : siswa.is_alumni === false ? "false" : "",
+          nik: siswa.nik || "",
+          kk: siswa.kk || "",
+          origin_school: siswa.origin_school || "",
+          nisn: siswa.nisn || "",
+          qr_token: siswa.qr_token || "",
+          father_name: siswa.father_name || "",
+          father_job: siswa.father_job || "",
+          mother_name: siswa.mother_name || "",
+          mother_job: siswa.mother_job || "",
+        });
+      } else {
+        showToast("Data siswa tidak ditemukan", "error");
       }
+    } catch (err) {
+      showToast("Gagal memuat data siswa", "error");
+    } finally {
+      setLoading(false);
     }
+  }, [id]);
+
+  useEffect(() => {
     if (id) fetchData();
-  }, [id, showToast]);
+  }, [id, fetchData]);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const { name, value } = e.target;
@@ -118,7 +119,7 @@ export default function EditSiswaPage() {
       } else {
         showToast(data.error || "Gagal mengupdate siswa", "error");
       }
-    } catch (_err) {
+    } catch (err) {
       showToast("Terjadi kesalahan jaringan", "error");
     } finally {
       setLoading(false);

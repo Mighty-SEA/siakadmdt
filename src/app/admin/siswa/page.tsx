@@ -1,6 +1,6 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
-import { Filter, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Pencil, Trash2, MoreVertical, Plus, Upload, Download, AlertCircle, CheckCircle2, CheckSquare, Square, UserX, GraduationCap, MoreHorizontal } from "lucide-react";
+import { useEffect, useState, useRef, useCallback } from "react";
+import { Filter, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Pencil, Trash2, MoreVertical, Plus, Upload, Download, CheckCircle2, GraduationCap, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUI } from "@/lib/ui-context";
@@ -59,8 +59,6 @@ export default function SiswaPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [selectedColumns, setSelectedColumns] = useState<string[]>(desktopDefaultColumns);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [siswaToDelete, setSiswaToDelete] = useState<Student | null>(null);
   const [selectedStudents, setSelectedStudents] = useState<number[]>([]);
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
   const router = useRouter();
@@ -70,8 +68,8 @@ export default function SiswaPage() {
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
   const longPressActiveRef = useRef(false);
 
-  useEffect(() => {
-    // Tampilkan toast berdasarkan query parameter
+  // Mememoize fungsi untuk menampilkan toast dari query params
+  const handleQueryParamsToast = useCallback(() => {
     const status = searchParams?.get('status');
     const message = searchParams?.get('message');
     
@@ -85,6 +83,11 @@ export default function SiswaPage() {
       window.history.replaceState({}, '', url);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    // Tampilkan toast berdasarkan query parameter
+    handleQueryParamsToast();
+  }, [handleQueryParamsToast]);
 
   useEffect(() => {
     setLoading(true);
@@ -167,7 +170,7 @@ export default function SiswaPage() {
         const data = await res.json();
         showToast(data.error || "Gagal menghapus siswa", "error");
       }
-    } catch {
+    } catch (_) {
       showToast("Terjadi kesalahan jaringan", "error");
     }
   }
@@ -239,11 +242,6 @@ export default function SiswaPage() {
     return paged.length > 0 && paged.every(s => selectedStudents.includes(s.id));
   };
 
-  // Fungsi untuk mengecek apakah ada siswa yang dipilih di halaman saat ini
-  const isAnyInPageSelected = () => {
-    return paged.some(s => selectedStudents.includes(s.id));
-  };
-
   // Fungsi untuk toggle pilihan siswa
   const toggleStudentSelection = (id: number) => {
     setSelectedStudents(prev => 
@@ -313,7 +311,7 @@ export default function SiswaPage() {
             const data = await res.json();
             showToast(data.error || "Gagal menghapus siswa", "error");
           }
-        } catch (error) {
+        } catch (_) {
           showToast("Terjadi kesalahan jaringan", "error");
         } finally {
           setBulkActionLoading(false);
@@ -392,7 +390,7 @@ export default function SiswaPage() {
             const data = await res.json();
             showToast(data.error || "Gagal mengubah status siswa", "error");
           }
-        } catch (error) {
+        } catch (_) {
           showToast("Terjadi kesalahan jaringan", "error");
         } finally {
           setBulkActionLoading(false);

@@ -1,7 +1,7 @@
 "use client";
 
 import { CheckCircle2, AlertCircle, Trash2 } from "lucide-react";
-import React, { createContext, useContext, useState, useRef, ReactNode } from "react";
+import React, { createContext, useContext, useState, useRef, ReactNode, useCallback } from "react";
 
 // Tipe data untuk toast
 type ToastType = {
@@ -79,24 +79,24 @@ export function UIProvider({ children }: { children: ReactNode }) {
   const confirmModalRef = useRef<HTMLDialogElement>(null);
 
   // Fungsi untuk menampilkan toast
-  const showToast = (message: string, type: "success" | "error", duration: number = 3000) => {
+  const showToast = useCallback((message: string, type: "success" | "error", duration: number = 3000) => {
     setToast({ show: true, message, type });
     setTimeout(() => {
       setToast((prev) => ({ ...prev, show: false }));
     }, duration);
-  };
+  }, []);
 
   // Fungsi untuk menampilkan modal konfirmasi
-  const showConfirmModal = (options: Omit<ConfirmModalType, "show">) => {
+  const showConfirmModal = useCallback((options: Omit<ConfirmModalType, "show">) => {
     setConfirmModal({ ...options, show: true });
     confirmModalRef.current?.showModal();
-  };
+  }, []);
 
   // Fungsi untuk menyembunyikan modal konfirmasi
-  const hideConfirmModal = () => {
+  const hideConfirmModal = useCallback(() => {
     confirmModalRef.current?.close();
     setConfirmModal((prev) => ({ ...prev, show: false }));
-  };
+  }, []);
 
   return (
     <UIContext.Provider
