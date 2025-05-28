@@ -14,7 +14,7 @@ type User = {
 
 export async function getUserFromCookie(): Promise<User | null> {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const userCookie = cookieStore.get("user");
     
     if (!userCookie?.value) {

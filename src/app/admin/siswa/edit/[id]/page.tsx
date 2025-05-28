@@ -59,12 +59,12 @@ export default function EditSiswaPage() {
       } else {
         showToast("Data siswa tidak ditemukan", "error");
       }
-    } catch (err) {
-      showToast("Gagal memuat data siswa", "error");
+    } catch {
+      showToast("Terjadi kesalahan jaringan", "error");
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, showToast]);
 
   useEffect(() => {
     if (id) fetchData();
@@ -119,7 +119,7 @@ export default function EditSiswaPage() {
       } else {
         showToast(data.error || "Gagal mengupdate siswa", "error");
       }
-    } catch (err) {
+    } catch {
       showToast("Terjadi kesalahan jaringan", "error");
     } finally {
       setLoading(false);

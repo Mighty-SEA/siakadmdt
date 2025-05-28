@@ -15,8 +15,9 @@ export async function POST(req: Request) {
     const body = await req.json();
     const role = await prisma.role.create({ data: { name: body.name } });
     return NextResponse.json({ role }, { status: 201 });
-  } catch (e: any) {
-    return NextResponse.json({ error: e?.meta?.target?.includes('name') ? 'Nama role sudah ada' : 'Gagal menambah role' }, { status: 500 });
+  } catch (e: unknown) {
+    const error = e as { meta?: { target?: string[] } };
+    return NextResponse.json({ error: error?.meta?.target?.includes('name') ? 'Nama role sudah ada' : 'Gagal menambah role' }, { status: 500 });
   }
 }
 
@@ -26,8 +27,9 @@ export async function PUT(req: Request) {
     if (!body.id) return NextResponse.json({ error: "ID diperlukan" }, { status: 400 });
     const role = await prisma.role.update({ where: { id: Number(body.id) }, data: { name: body.name } });
     return NextResponse.json({ role });
-  } catch (e: any) {
-    return NextResponse.json({ error: e?.meta?.target?.includes('name') ? 'Nama role sudah ada' : 'Gagal mengupdate role' }, { status: 500 });
+  } catch (e: unknown) {
+    const error = e as { meta?: { target?: string[] } };
+    return NextResponse.json({ error: error?.meta?.target?.includes('name') ? 'Nama role sudah ada' : 'Gagal mengupdate role' }, { status: 500 });
   }
 }
 

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { Save } from "lucide-react";
+import Image from "next/image";
 
 export default function EditUserPage() {
   const [roles, setRoles] = useState<{ id: number; name: string }[]>([]);
@@ -17,7 +18,6 @@ export default function EditUserPage() {
   const router = useRouter();
   const params = useParams();
   const id = params?.id;
-  const [oldAvatar, setOldAvatar] = useState("");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string>("");
 
@@ -35,7 +35,6 @@ export default function EditUserPage() {
           avatar: user.avatar || "",
           roleId: user.roleId || 1,
         });
-        setOldAvatar(user.avatar || "");
       }
       setLoading(false);
     }
@@ -124,9 +123,9 @@ export default function EditUserPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6 items-start">
           <div className="md:col-span-2 flex flex-col items-center mb-2">
             {avatarPreview ? (
-              <img src={avatarPreview} alt="Avatar preview" className="w-28 h-28 rounded-full object-cover border-4 border-primary shadow-lg mb-2" />
+              <Image src={avatarPreview} alt="Avatar preview" width={112} height={112} className="w-28 h-28 rounded-full object-cover border-4 border-primary shadow-lg mb-2" />
             ) : form.avatar ? (
-              <img src={form.avatar.startsWith('http') ? form.avatar : form.avatar.includes('/avatar/') ? form.avatar : `/avatar/${form.avatar}`} alt="Avatar preview" className="w-28 h-28 rounded-full object-cover border-4 border-primary shadow-lg mb-2" />
+              <Image src={form.avatar.startsWith('http') ? form.avatar : form.avatar.includes('/avatar/') ? form.avatar : `/avatar/${form.avatar}`} alt="Avatar preview" width={112} height={112} className="w-28 h-28 rounded-full object-cover border-4 border-primary shadow-lg mb-2" />
             ) : (
               <div className="w-28 h-28 rounded-full bg-primary text-white flex items-center justify-center font-bold text-4xl mb-2 shadow-lg border-4 border-primary">
                 {form.name?.[0]?.toUpperCase() || "?"}

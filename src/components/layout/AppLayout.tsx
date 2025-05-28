@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import Sidebar from "./Sidebar";
@@ -39,6 +39,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifLoading, setNotifLoading] = useState(false);
+  // State untuk melacak apakah komponen sudah di-mount
+  const [isMounted, setIsMounted] = useState(false);
   
   const pathname = usePathname() || '';
   const router = useRouter();
@@ -47,16 +49,36 @@ export default function AppLayout({ children }: AppLayoutProps) {
   ];
   const drawerInputRef = useRef<HTMLInputElement>(null);
 
-  // Ambil tema dari localStorage saat mount
+  // Fungsi untuk mengambil notifikasi
+  const fetchNotifications = useCallback(async () => {
+    if (!userData?.id) return;
+    
+    setNotifLoading(true);
+    try {
+      const res = await fetch(`/api/notification?limit=5`);
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data.notifications || []);
+        setUnreadCount(data.unreadCount || 0);
+      }
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    } finally {
+      setNotifLoading(false);
+    }
+  }, [userData?.id]);
+
+  // Inisialisasi tema saat komponen di-mount (hanya sekali)
   useEffect(() => {
-    const savedTheme = typeof window !== 'undefined' ? localStorage.getItem('theme') : null;
+    const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
       setTheme(savedTheme);
       document.documentElement.setAttribute("data-theme", savedTheme);
     } else {
-      document.documentElement.setAttribute("data-theme", theme);
+      document.documentElement.setAttribute("data-theme", "light");
     }
-  }, []);
+    setIsMounted(true);
+  }, []); // Dependency array kosong, hanya dijalankan sekali saat mount
 
   // Ambil data user dari cookie saat mount
   useEffect(() => {
@@ -80,26 +102,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
       const interval = setInterval(fetchNotifications, 30000);
       return () => clearInterval(interval);
     }
-  }, [userData?.id, pathname]);
-
-  // Fungsi untuk mengambil notifikasi
-  const fetchNotifications = async () => {
-    if (!userData?.id) return;
-    
-    setNotifLoading(true);
-    try {
-      const res = await fetch(`/api/notification?limit=5`);
-      if (res.ok) {
-        const data = await res.json();
-        setNotifications(data.notifications || []);
-        setUnreadCount(data.unreadCount || 0);
-      }
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
-    } finally {
-      setNotifLoading(false);
-    }
-  };
+  }, [userData?.id, pathname, fetchNotifications]);
 
   // Fungsi untuk menandai notifikasi sebagai sudah dibaca
   const markAsRead = async (id: number) => {
@@ -147,13 +150,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
     }
   };
 
-  // Simpan tema ke localStorage dan update data-theme setiap kali berubah
+  // Simpan tema ke localStorage dan update data-theme hanya setelah komponen di-mount
   useEffect(() => {
-    if (theme) {
+    if (isMounted && theme) {
       localStorage.setItem('theme', theme);
       document.documentElement.setAttribute("data-theme", theme);
     }
-  }, [theme]);
+  }, [theme, isMounted]);
 
   // Ambil state sidebar dari localStorage saat mount
   useEffect(() => {
@@ -241,6 +244,11 @@ export default function AppLayout({ children }: AppLayoutProps) {
     // Redirect ke halaman login
     router.push('/login');
   };
+
+  // Hanya render konten setelah komponen di-mount, untuk menghindari ketidakcocokan hydration
+  if (!isMounted) {
+    return null; // Atau tampilkan loading spinner jika diperlukan
+  }
 
   if (pathname === "/login") {
     return <>{children}</>;

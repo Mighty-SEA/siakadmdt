@@ -18,7 +18,7 @@ type ConfirmModalType = {
   confirmText: string;
   cancelText: string;
   onConfirm: () => void;
-  data?: any;
+  data?: unknown;
 };
 
 // Tipe data untuk context UI

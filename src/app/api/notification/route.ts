@@ -31,7 +31,7 @@ export async function GET(req: Request) {
         );
       }
       
-      const whereClause: any = { userId: user.id };
+      const whereClause: { userId: number; isRead?: boolean } = { userId: user.id };
       
       if (onlyUnread) {
         whereClause.isRead = false;
@@ -49,7 +49,7 @@ export async function GET(req: Request) {
       
       return NextResponse.json({ notifications, unreadCount });
     } else {
-      const whereClause: any = { userId: parseInt(userId) };
+      const whereClause: { userId: number; isRead?: boolean } = { userId: parseInt(userId) };
       
       if (onlyUnread) {
         whereClause.isRead = false;
@@ -67,7 +67,7 @@ export async function GET(req: Request) {
       
       return NextResponse.json({ notifications, unreadCount });
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching notifications:", error);
     return NextResponse.json(
       { error: "Failed to fetch notifications" },

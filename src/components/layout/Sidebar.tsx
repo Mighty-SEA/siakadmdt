@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import { useState, useEffect } from "react";
 import { User, Users, BookOpen, ClipboardList, CalendarCheck, Wallet, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 
@@ -34,6 +33,15 @@ export default function Sidebar({
         {isMobile && (
           <button className="btn btn-ghost btn-circle ml-auto md:hidden" onClick={closeMobileDrawer} aria-label="Tutup Menu">
             <X className="w-6 h-6 text-base-content" />
+          </button>
+        )}
+        {!isMobile && (
+          <button 
+            className="btn btn-ghost btn-circle ml-auto hidden md:flex" 
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label={sidebarOpen ? "Tutup Menu" : "Buka Menu"}
+          >
+            {sidebarOpen ? <X className="w-5 h-5" /> : <BookOpen className="w-5 h-5" />}
           </button>
         )}
       </div>

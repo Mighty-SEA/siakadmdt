@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import { Bell, Search, ChevronLeft, ChevronRight, Check } from "lucide-react";
-import { useRef } from "react";
 
 // Tipe data untuk notifikasi
 type Notification = {

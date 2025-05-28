@@ -70,19 +70,21 @@ export default function SiswaPage() {
 
   // Mememoize fungsi untuk menampilkan toast dari query params
   const handleQueryParamsToast = useCallback(() => {
-    const status = searchParams?.get('status');
-    const message = searchParams?.get('message');
+    if (!searchParams) return;
+    
+    const status = searchParams.get('status');
+    const message = searchParams.get('message');
     
     if (status && message) {
       showToast(decodeURIComponent(message), status as 'success' | 'error');
       
-      // Hapus parameter dari URL tanpa refresh
+      // Hapus query params
       const url = new URL(window.location.href);
       url.searchParams.delete('status');
       url.searchParams.delete('message');
       window.history.replaceState({}, '', url);
     }
-  }, [searchParams]);
+  }, [searchParams, showToast]);
 
   useEffect(() => {
     // Tampilkan toast berdasarkan query parameter
@@ -170,7 +172,8 @@ export default function SiswaPage() {
         const data = await res.json();
         showToast(data.error || "Gagal menghapus siswa", "error");
       }
-    } catch (_) {
+    } catch (error) {
+      console.error("Error deleting student:", error);
       showToast("Terjadi kesalahan jaringan", "error");
     }
   }
@@ -311,7 +314,8 @@ export default function SiswaPage() {
             const data = await res.json();
             showToast(data.error || "Gagal menghapus siswa", "error");
           }
-        } catch (_) {
+        } catch (error) {
+          console.error("Error bulk deleting students:", error);
           showToast("Terjadi kesalahan jaringan", "error");
         } finally {
           setBulkActionLoading(false);
@@ -390,7 +394,8 @@ export default function SiswaPage() {
             const data = await res.json();
             showToast(data.error || "Gagal mengubah status siswa", "error");
           }
-        } catch (_) {
+        } catch (error) {
+          console.error("Error bulk updating student status:", error);
           showToast("Terjadi kesalahan jaringan", "error");
         } finally {
           setBulkActionLoading(false);

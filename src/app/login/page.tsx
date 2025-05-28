@@ -13,39 +13,52 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams?.get('returnUrl') || '/admin';
+  const [isMounted, setIsMounted] = useState(false);
 
   const themes = [
     "light","dark","cupcake","bumblebee","emerald","corporate","synthwave","retro","cyberpunk","valentine","halloween","garden","forest","aqua","lofi","pastel","fantasy","wireframe","black","luxury","dracula","cmyk","autumn","business","acid","lemonade","night","coffee","winter","dim","nord","sunset","caramellatte","abyss","silk"
   ];
   const [theme, setTheme] = useState("light");
 
+  // Inisialisasi tema dan status lock saat komponen di-mount
   useEffect(() => {
-    const savedTheme = typeof window !== 'undefined' ? localStorage.getItem('theme') : null;
+    const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
       setTheme(savedTheme);
       document.documentElement.setAttribute("data-theme", savedTheme);
     } else {
-      document.documentElement.setAttribute("data-theme", theme);
+      document.documentElement.setAttribute("data-theme", "light");
     }
     
     // Cek apakah ada lock status di localStorage
     const lockStatus = localStorage.getItem('loginLock');
     if (lockStatus) {
-      const { attempts, lockUntil } = JSON.parse(lockStatus);
-      const lockDate = new Date(lockUntil);
-      
-      if (lockDate > new Date()) {
-        // Masih dalam periode lock
-        setLoginAttempts(attempts);
-        setIsLocked(true);
-        setLockTime(lockDate);
-      } else {
-        // Lock sudah berakhir, hapus dari localStorage
+      try {
+        const { attempts, lockUntil } = JSON.parse(lockStatus);
+        const lockDate = new Date(lockUntil);
+        
+        if (lockDate > new Date()) {
+          // Masih dalam periode lock
+          setLoginAttempts(attempts);
+          setIsLocked(true);
+          setLockTime(lockDate);
+        } else {
+          // Lock sudah berakhir, hapus dari localStorage
+          localStorage.removeItem('loginLock');
+        }
+      } catch {
+        // Jika terjadi error saat parsing, hapus item yang rusak
         localStorage.removeItem('loginLock');
       }
     }
     
-    // Set interval untuk update status lock
+    setIsMounted(true);
+  }, []); // Empty dependency array, hanya dijalankan sekali saat mount
+
+  // Set interval untuk update status lock
+  useEffect(() => {
+    if (!isMounted) return;
+    
     const interval = setInterval(() => {
       if (isLocked && lockTime && lockTime < new Date()) {
         setIsLocked(false);
@@ -55,14 +68,15 @@ export default function LoginPage() {
     }, 1000);
     
     return () => clearInterval(interval);
-  }, []);
+  }, [isLocked, lockTime, isMounted]);
 
+  // Perbarui tema saat berubah
   useEffect(() => {
-    if (theme) {
+    if (isMounted && theme) {
       localStorage.setItem('theme', theme);
       document.documentElement.setAttribute("data-theme", theme);
     }
-  }, [theme]);
+  }, [theme, isMounted]);
 
   // Validasi input
   const validateForm = () => {
@@ -152,6 +166,11 @@ export default function LoginPage() {
     setForm(f => ({ ...f, [name]: value }));
     // Reset error saat user mengetik
     setError("");
+  }
+
+  // Tampilkan loading atau null hingga komponen dimount untuk menghindari flickering
+  if (!isMounted) {
+    return null;
   }
 
   return (

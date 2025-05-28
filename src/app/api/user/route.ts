@@ -38,7 +38,16 @@ export async function PUT(req: Request) {
     const { id, password, ...updateData } = body;
     if (!id) return NextResponse.json({ error: "ID diperlukan" }, { status: 400 });
     const oldUser = await prisma.user.findUnique({ where: { id: Number(id) } });
-    const data: any = { ...updateData };
+    
+    interface UserUpdateData {
+      name?: string;
+      email?: string;
+      password?: string;
+      avatar?: string | null;
+      roleId?: number;
+    }
+    
+    const data: UserUpdateData = { ...updateData };
     if (password) {
       data.password = await bcrypt.hash(password, 10);
     }

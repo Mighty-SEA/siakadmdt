@@ -78,7 +78,8 @@ export default function TambahSiswaPage() {
       } else {
         showToast(data.error || "Gagal menambah siswa", "error");
       }
-    } catch (_err) {
+    } catch (error) {
+      console.error("Error adding student:", error);
       showToast("Terjadi kesalahan jaringan", "error");
     } finally {
       setLoading(false);
