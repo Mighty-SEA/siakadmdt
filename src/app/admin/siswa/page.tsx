@@ -1,6 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
-import { Filter, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Pencil, Trash2, MoreVertical, Plus, Upload, Download } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { Filter, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Pencil, Trash2, MoreVertical, Plus, Upload, Download, AlertCircle, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -57,6 +57,14 @@ export default function SiswaPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [selectedColumns, setSelectedColumns] = useState<string[]>(desktopDefaultColumns);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [siswaToDelete, setSiswaToDelete] = useState<Student | null>(null);
+  const [toast, setToast] = useState<{show: boolean, message: string, type: 'success' | 'error'}>({
+    show: false,
+    message: '',
+    type: 'success'
+  });
+  const deleteModalRef = useRef<HTMLDialogElement>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -100,8 +108,15 @@ export default function SiswaPage() {
   const totalPage = Math.ceil(filtered.length / pageSize);
   const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
 
+  // Menampilkan toast
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast(prev => ({ ...prev, show: false }));
+    }, 3000);
+  };
+
   async function handleDelete(id: number) {
-    if (!confirm("Yakin ingin menghapus siswa ini?")) return;
     try {
       const res = await fetch("/api/siswa", {
         method: "DELETE",
@@ -110,13 +125,29 @@ export default function SiswaPage() {
       });
       if (res.ok) {
         setSiswa(siswa => siswa.filter(s => s.id !== id));
-        alert("Siswa berhasil dihapus");
+        showToast(`Siswa berhasil dihapus`, 'success');
       } else {
         const data = await res.json();
-        alert(data.error || "Gagal menghapus siswa");
+        showToast(data.error || "Gagal menghapus siswa", 'error');
       }
     } catch {
-      alert("Terjadi kesalahan jaringan");
+      showToast("Terjadi kesalahan jaringan", 'error');
+    }
+  }
+
+  function openDeleteModal(id: number) {
+    const siswaData = siswa.find(s => s.id === id) || null;
+    setDeleteId(id);
+    setSiswaToDelete(siswaData);
+    deleteModalRef.current?.showModal();
+  }
+
+  function confirmDelete() {
+    if (deleteId !== null) {
+      handleDelete(deleteId);
+      deleteModalRef.current?.close();
+      setDeleteId(null);
+      setSiswaToDelete(null);
     }
   }
 
@@ -250,7 +281,7 @@ export default function SiswaPage() {
                           </button>
                         </li>
                         <li>
-                          <button className="flex items-center gap-2 text-error" onClick={() => handleDelete(s.id)}>
+                          <button className="flex items-center gap-2 text-error" onClick={() => openDeleteModal(s.id)}>
                             <Trash2 className="w-4 h-4" /> Hapus
                           </button>
                         </li>
@@ -267,7 +298,7 @@ export default function SiswaPage() {
                       <button
                         className="btn btn-xs btn-ghost rounded-full text-error hover:bg-error/10 hover:shadow transition-all duration-150"
                         title="Hapus"
-                        onClick={() => handleDelete(s.id)}
+                        onClick={() => openDeleteModal(s.id)}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -383,6 +414,47 @@ export default function SiswaPage() {
           </button>
         </div>
       </div>
+      
+      {/* Modal konfirmasi hapus */}
+      <dialog id="delete_modal" className="modal modal-bottom sm:modal-middle" ref={deleteModalRef}>
+        <div className="modal-box">
+          <h3 className="font-bold text-lg flex items-center gap-2">
+            <Trash2 className="w-5 h-5" />
+            Konfirmasi Hapus
+          </h3>
+          {siswaToDelete && (
+            <p className="py-4">
+              Apakah Anda yakin ingin menghapus siswa <span className="font-semibold text-primary">{siswaToDelete.name}</span> ({siswaToDelete.nis})?
+            </p>
+          )}
+          <div className="modal-action">
+            <form method="dialog">
+              <button className="btn">Batal</button>
+            </form>
+            <button onClick={confirmDelete} className="btn btn-primary">
+              Hapus
+            </button>
+          </div>
+        </div>
+        <form method="dialog" className="modal-backdrop">
+          <button>Batal</button>
+        </form>
+      </dialog>
+
+      {/* Toast notification */}
+      {toast.show && (
+        <div className="toast toast-top toast-end z-50 mt-10">
+          <div className={`alert ${toast.type === 'success' ? 'alert-success' : 'alert-error'} shadow-lg`}>
+            <div className="flex items-center gap-2">
+              {toast.type === 'success' ? 
+                <CheckCircle2 className="w-5 h-5" /> : 
+                <AlertCircle className="w-5 h-5" />
+              }
+              <span>{toast.message}</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 
