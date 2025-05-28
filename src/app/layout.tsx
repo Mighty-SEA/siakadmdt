@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
-import { User, Users, BookOpen, ClipboardList, CalendarCheck, Wallet, Bell, Search, ChevronLeft, ChevronRight, Menu, X } from "lucide-react";
+import { User, Users, BookOpen, ClipboardList, CalendarCheck, Wallet, Bell, Search, ChevronLeft, ChevronRight, Menu, X, Check } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 
@@ -14,6 +14,16 @@ type UserData = {
   email: string;
   avatar?: string | null;
   role: { id: number; name: string };
+};
+
+// Tipe data untuk notifikasi
+type Notification = {
+  id: number;
+  title: string;
+  message: string;
+  isRead: boolean;
+  type: string;
+  created_at: string;
 };
 
 const geistSans = Geist({
@@ -37,6 +47,11 @@ export default function RootLayout({
   const [drawerOpen, setDrawerOpen] = useState(false);
   // State untuk menyimpan data user
   const [userData, setUserData] = useState<UserData | null>(null);
+  // State untuk notifikasi
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notifLoading, setNotifLoading] = useState(false);
+  
   const pathname = usePathname();
   const router = useRouter();
   const themes = [
@@ -67,6 +82,82 @@ export default function RootLayout({
       }
     }
   }, []);
+  
+  // Ambil notifikasi saat user tersedia
+  useEffect(() => {
+    if (userData?.id && pathname !== "/login") {
+      fetchNotifications();
+      
+      // Polling untuk mendapatkan notifikasi baru setiap 30 detik
+      const interval = setInterval(fetchNotifications, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [userData?.id, pathname]);
+
+  // Fungsi untuk mengambil notifikasi
+  const fetchNotifications = async () => {
+    if (!userData?.id) return;
+    
+    setNotifLoading(true);
+    try {
+      const res = await fetch(`/api/notification?limit=5`);
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data.notifications || []);
+        setUnreadCount(data.unreadCount || 0);
+      }
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    } finally {
+      setNotifLoading(false);
+    }
+  };
+
+  // Fungsi untuk menandai notifikasi sebagai sudah dibaca
+  const markAsRead = async (id: number) => {
+    try {
+      const res = await fetch("/api/notification", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id, isRead: true }),
+      });
+
+      if (res.ok) {
+        setNotifications(
+          notifications.map((notif) =>
+            notif.id === id ? { ...notif, isRead: true } : notif
+          )
+        );
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+      }
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+    }
+  };
+
+  // Fungsi untuk menandai semua notifikasi sebagai sudah dibaca
+  const markAllAsRead = async () => {
+    try {
+      const res = await fetch("/api/notification/mark-all-read", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}),
+      });
+
+      if (res.ok) {
+        setNotifications(
+          notifications.map((notif) => ({ ...notif, isRead: true }))
+        );
+        setUnreadCount(0);
+      }
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error);
+    }
+  };
 
   // Simpan tema ke localStorage dan update data-theme setiap kali berubah
   useEffect(() => {
@@ -120,6 +211,37 @@ export default function RootLayout({
       </div>
     );
   };
+  
+  // Fungsi untuk mendapatkan warna badge berdasarkan tipe notifikasi
+  const getNotifBadgeClass = (type: string) => {
+    switch (type) {
+      case "success":
+        return "badge-success text-success-content";
+      case "error":
+        return "badge-error text-error-content";
+      case "warning":
+        return "badge-warning text-warning-content";
+      default:
+        return "badge-info text-info-content";
+    }
+  };
+  
+  // Fungsi untuk memformat tanggal notifikasi
+  const formatNotifTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffMins < 1) return "Baru saja";
+    if (diffMins < 60) return `${diffMins} menit yang lalu`;
+    if (diffHours < 24) return `${diffHours} jam yang lalu`;
+    if (diffDays < 30) return `${diffDays} hari yang lalu`;
+    
+    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+  };
 
   // Fungsi logout
   const handleLogout = () => {
@@ -154,7 +276,64 @@ export default function RootLayout({
                 </button>
                 <span className="font-bold text-xl text-primary">SIAKAD</span>
                 <div className="flex items-center gap-2">
-                  <button className="btn btn-ghost btn-circle"><Bell className="w-6 h-6 text-base-content" /></button>
+                  <div className="dropdown dropdown-end">
+                    <label tabIndex={0} className="btn btn-ghost btn-circle indicator">
+                      <Bell className="w-6 h-6 text-base-content" />
+                      {unreadCount > 0 && (
+                        <span className="indicator-item badge badge-primary badge-xs">{unreadCount > 9 ? '9+' : unreadCount}</span>
+                      )}
+                    </label>
+                    <div tabIndex={0} className="dropdown-content z-50 shadow-lg bg-base-100 rounded-box w-72 border border-base-300 overflow-hidden">
+                      <div className="flex items-center justify-between px-4 py-2 border-b border-base-300 bg-base-200">
+                        <h3 className="font-semibold">Notifikasi</h3>
+                        {unreadCount > 0 && (
+                          <button 
+                            className="btn btn-ghost btn-xs flex items-center gap-1 text-xs"
+                            onClick={markAllAsRead}
+                          >
+                            <Check className="w-3 h-3" /> Tandai Semua Dibaca
+                          </button>
+                        )}
+                      </div>
+                      <div className="max-h-80 overflow-y-auto">
+                        {notifLoading ? (
+                          <div className="flex justify-center items-center p-4">
+                            <span className="loading loading-spinner loading-sm text-primary"></span>
+                          </div>
+                        ) : notifications.length === 0 ? (
+                          <div className="p-4 text-center text-base-content/70">
+                            <p>Tidak ada notifikasi</p>
+                          </div>
+                        ) : (
+                          <div>
+                            {notifications.map((notif) => (
+                              <div 
+                                key={notif.id} 
+                                className={`p-3 border-b border-base-300 hover:bg-base-200 cursor-pointer ${!notif.isRead ? 'bg-primary/5' : ''}`}
+                                onClick={() => !notif.isRead && markAsRead(notif.id)}
+                              >
+                                <div className="flex justify-between items-start gap-2 mb-1">
+                                  <h4 className={`text-sm font-medium ${!notif.isRead ? 'text-primary' : ''}`}>{notif.title}</h4>
+                                  <span className={`badge badge-sm ${getNotifBadgeClass(notif.type)}`}>{notif.type}</span>
+                                </div>
+                                <p className="text-xs text-base-content/80 line-clamp-2">{notif.message}</p>
+                                <p className="text-xs text-base-content/60 mt-1">{formatNotifTime(notif.created_at)}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-2 border-t border-base-300 bg-base-200">
+                        <Link 
+                          href="/admin/notifikasi" 
+                          className="btn btn-sm btn-block btn-ghost"
+                          onClick={() => document.activeElement instanceof HTMLElement && document.activeElement.blur()}
+                        >
+                          Lihat Semua Notifikasi
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
                   <div className="dropdown dropdown-end">
                     <label tabIndex={0} className="btn btn-ghost btn-circle avatar ring-2 ring-primary hover:ring-4 hover:ring-primary/60 transition-all duration-200">
                       {renderAvatar("w-8 h-8")}
@@ -264,7 +443,65 @@ export default function RootLayout({
                 </label>
               </div>
               <div className="flex items-center gap-4">
-                <button className="btn btn-ghost btn-circle text-base-content"><Bell className="w-6 h-6 text-base-content" /></button>
+                <div className="dropdown dropdown-end">
+                  <label tabIndex={0} className="btn btn-ghost btn-circle indicator">
+                    <Bell className="w-6 h-6 text-base-content" />
+                    {unreadCount > 0 && (
+                      <span className="indicator-item badge badge-primary badge-sm">{unreadCount > 99 ? '99+' : unreadCount}</span>
+                    )}
+                  </label>
+                  <div tabIndex={0} className="dropdown-content z-50 shadow-lg bg-base-100 rounded-box w-80 border border-base-300 overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-base-300 bg-base-200">
+                      <h3 className="font-semibold">Notifikasi</h3>
+                      {unreadCount > 0 && (
+                        <button 
+                          className="btn btn-ghost btn-xs flex items-center gap-1"
+                          onClick={markAllAsRead}
+                        >
+                          <Check className="w-4 h-4" /> Tandai Semua Dibaca
+                        </button>
+                      )}
+                    </div>
+                    <div className="max-h-96 overflow-y-auto">
+                      {notifLoading ? (
+                        <div className="flex justify-center items-center p-6">
+                          <span className="loading loading-spinner loading-md text-primary"></span>
+                        </div>
+                      ) : notifications.length === 0 ? (
+                        <div className="p-6 text-center text-base-content/70">
+                          <Bell className="w-12 h-12 mx-auto mb-2 opacity-30" />
+                          <p>Tidak ada notifikasi</p>
+                        </div>
+                      ) : (
+                        <div>
+                          {notifications.map((notif) => (
+                            <div 
+                              key={notif.id} 
+                              className={`p-4 border-b border-base-300 hover:bg-base-200 cursor-pointer ${!notif.isRead ? 'bg-primary/5' : ''}`}
+                              onClick={() => !notif.isRead && markAsRead(notif.id)}
+                            >
+                              <div className="flex justify-between items-start gap-2 mb-1">
+                                <h4 className={`text-sm font-medium ${!notif.isRead ? 'text-primary' : ''}`}>{notif.title}</h4>
+                                <span className={`badge badge-sm ${getNotifBadgeClass(notif.type)}`}>{notif.type}</span>
+                              </div>
+                              <p className="text-sm text-base-content/80 line-clamp-2">{notif.message}</p>
+                              <p className="text-xs text-base-content/60 mt-1">{formatNotifTime(notif.created_at)}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-3 border-t border-base-300 bg-base-200">
+                      <Link 
+                        href="/admin/notifikasi" 
+                        className="btn btn-sm btn-block btn-ghost"
+                        onClick={() => document.activeElement instanceof HTMLElement && document.activeElement.blur()}
+                      >
+                        Lihat Semua Notifikasi
+                      </Link>
+                    </div>
+                  </div>
+                </div>
                 <div className="dropdown dropdown-end">
                   <label tabIndex={0} className="btn btn-ghost btn-circle avatar ring-2 ring-primary hover:ring-4 hover:ring-primary/60 transition-all duration-200">
                     {renderAvatar("w-10 h-10")}

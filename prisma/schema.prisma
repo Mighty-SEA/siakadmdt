@@ -42,13 +42,26 @@ model Role {
 }
 
 model User {
-  id         Int      @id @default(autoincrement())
-  name       String
-  email      String   @unique
-  password   String
-  avatar     String?
-  roleId     Int      @default(1)
-  role       Role     @relation(fields: [roleId], references: [id])
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id           Int           @id @default(autoincrement())
+  name         String
+  email        String        @unique
+  password     String
+  avatar       String?
+  roleId       Int           @default(1)
+  role         Role          @relation(fields: [roleId], references: [id])
+  created_at   DateTime      @default(now())
+  updated_at   DateTime      @updatedAt
+  notifications Notification[] @relation("UserNotifications")
+}
+
+model Notification {
+  id          Int       @id @default(autoincrement())
+  title       String
+  message     String    @db.Text
+  isRead      Boolean   @default(false)
+  type        String    @default("info") // info, warning, success, error
+  userId      Int
+  user        User      @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
 }
