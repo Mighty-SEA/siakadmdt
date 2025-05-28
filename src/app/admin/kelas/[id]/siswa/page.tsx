@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { ArrowLeft, Search, UserPlus, X, Filter, Check, ChevronDown, Trash2 } from "lucide-react";
 import Link from "next/link";
@@ -42,6 +42,313 @@ interface StudentInClass extends Student {
 
 type GenderFilter = "all" | "L" | "P";
 
+// Komponen Modal Tambah Siswa
+function TambahSiswaModal({
+  isOpen,
+  onClose,
+  kelasId,
+  onSuccess,
+  submitting,
+  setSubmitting
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  kelasId: string;
+  onSuccess: () => void;
+  submitting: boolean;
+  setSubmitting: (value: boolean) => void;
+}) {
+  const { showActionToast } = useAppActionFeedback();
+  const [availableStudents, setAvailableStudents] = useState<Student[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+  const [genderFilter, setGenderFilter] = useState<GenderFilter>("all");
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Mengambil data siswa yang tersedia untuk ditambahkan
+  useEffect(() => {
+    const fetchAvailableStudents = async () => {
+      if (!isOpen) return;
+      
+      setIsSearching(true);
+      try {
+        const res = await fetch(`/api/siswa/available?classId=${kelasId}`);
+        if (!res.ok) {
+          throw new Error("Gagal mengambil data siswa");
+        }
+        const data = await res.json();
+        setAvailableStudents(data.data);
+      } catch (error) {
+        console.error("Error fetching available students:", error);
+        showActionToast("Gagal mengambil data siswa yang tersedia", "error");
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    fetchAvailableStudents();
+  }, [isOpen, kelasId, showActionToast]);
+
+  // Filter siswa yang tersedia berdasarkan pencarian dan jenis kelamin
+  const filteredAvailableStudents = useMemo(() => {
+    return availableStudents.filter(student => {
+      // Filter berdasarkan jenis kelamin
+      if (genderFilter !== "all" && student.gender !== genderFilter) {
+        return false;
+      }
+
+      // Filter berdasarkan pencarian
+      if (searchTerm.trim() !== "") {
+        const lowercasedSearch = searchTerm.toLowerCase();
+        return (
+          student.name.toLowerCase().includes(lowercasedSearch) ||
+          student.nis.toLowerCase().includes(lowercasedSearch)
+        );
+      }
+
+      return true;
+    });
+  }, [availableStudents, searchTerm, genderFilter]);
+
+  // Handle checkbox change untuk siswa yang tersedia
+  const handleCheckboxChange = (studentId: string) => {
+    setSelectedStudents(prev =>
+      prev.includes(studentId)
+        ? prev.filter(id => id !== studentId)
+        : [...prev, studentId]
+    );
+  };
+
+  // Handle select all untuk siswa yang tersedia
+  const handleSelectAll = () => {
+    if (selectedStudents.length === filteredAvailableStudents.length) {
+      setSelectedStudents([]);
+    } else {
+      setSelectedStudents(filteredAvailableStudents.map(student => student.id));
+    }
+  };
+
+  // Handle tambah siswa
+  const handleAddStudents = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (selectedStudents.length === 0) {
+      showActionToast("Pilih minimal 1 siswa", "error");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/kelas/${kelasId}/tambah-siswa`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ studentIds: selectedStudents }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Gagal menambahkan siswa");
+      }
+
+      const data = await res.json();
+      showActionToast(data.message || "Siswa berhasil ditambahkan ke kelas", "success");
+      onSuccess();
+      onClose();
+    } catch (error) {
+      console.error("Error adding students:", error);
+      showActionToast(
+        error instanceof Error ? error.message : "Gagal menambahkan siswa",
+        "error"
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Hitung status checkbox
+  const allSelected = filteredAvailableStudents.length > 0 && selectedStudents.length === filteredAvailableStudents.length;
+  const someSelected = selectedStudents.length > 0 && selectedStudents.length < filteredAvailableStudents.length;
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="bg-base-100 rounded-lg w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+        <div className="p-4 border-b border-base-300 flex justify-between items-center">
+          <h3 className="text-lg font-semibold">Tambah Siswa ke Kelas</h3>
+          <button 
+            className="btn btn-sm btn-circle btn-ghost" 
+            onClick={onClose}
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        
+        <div className="p-4 flex flex-wrap items-center gap-2 border-b border-base-300">
+          {/* Pencarian */}
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/60" />
+            <input
+              type="text"
+              className="input input-bordered input-sm w-full pl-9"
+              placeholder="Cari nama atau NIS..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              onClick={e => e.stopPropagation()}
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2"
+                onClick={e => {
+                  e.stopPropagation();
+                  setSearchTerm("");
+                }}
+              >
+                <X className="w-4 h-4 text-base-content/60" />
+              </button>
+            )}
+          </div>
+
+          {/* Filter Jenis Kelamin */}
+          <div className="dropdown dropdown-end">
+            <div tabIndex={0} role="button" className="btn btn-sm btn-outline" onClick={e => e.stopPropagation()}>
+              <Filter className="w-4 h-4 mr-1" />
+              Filter
+              <ChevronDown className="w-4 h-4 ml-1" />
+            </div>
+            <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+              <li>
+                <button 
+                  className={`${genderFilter === "all" ? "active" : ""}`}
+                  onClick={e => {
+                    e.stopPropagation();
+                    setGenderFilter("all");
+                  }}
+                >
+                  Semua Jenis Kelamin
+                  {genderFilter === "all" && <Check className="w-4 h-4" />}
+                </button>
+              </li>
+              <li>
+                <button 
+                  className={`${genderFilter === "L" ? "active" : ""}`}
+                  onClick={e => {
+                    e.stopPropagation();
+                    setGenderFilter("L");
+                  }}
+                >
+                  Laki-laki
+                  {genderFilter === "L" && <Check className="w-4 h-4" />}
+                </button>
+              </li>
+              <li>
+                <button 
+                  className={`${genderFilter === "P" ? "active" : ""}`}
+                  onClick={e => {
+                    e.stopPropagation();
+                    setGenderFilter("P");
+                  }}
+                >
+                  Perempuan
+                  {genderFilter === "P" && <Check className="w-4 h-4" />}
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+        
+        <div className="overflow-y-auto flex-1 p-4">
+          {isSearching ? (
+            <div className="flex justify-center items-center py-8">
+              <span className="loading loading-spinner loading-md"></span>
+            </div>
+          ) : filteredAvailableStudents.length === 0 ? (
+            <div className="text-center py-8 text-base-content/70">
+              {searchTerm ? "Tidak ada siswa yang sesuai dengan pencarian" : "Tidak ada siswa yang tersedia"}
+            </div>
+          ) : (
+            <div>
+              <div className="flex items-center mb-2">
+                <input 
+                  type="checkbox" 
+                  className="checkbox checkbox-sm mr-2" 
+                  checked={allSelected}
+                  ref={input => {
+                    if (input) {
+                      input.indeterminate = someSelected;
+                    }
+                  }}
+                  onChange={handleSelectAll}
+                  onClick={e => e.stopPropagation()}
+                />
+                <span className="text-sm font-medium">
+                  {selectedStudents.length > 0 ? `${selectedStudents.length} siswa dipilih` : "Pilih semua"}
+                </span>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {filteredAvailableStudents.map(student => (
+                  <div 
+                    key={student.id}
+                    className="flex items-center p-2 rounded-lg hover:bg-base-200 cursor-pointer"
+                    onClick={e => {
+                      e.stopPropagation();
+                      handleCheckboxChange(student.id);
+                    }}
+                  >
+                    <input 
+                      type="checkbox" 
+                      className="checkbox checkbox-sm mr-3" 
+                      checked={selectedStudents.includes(student.id)}
+                      onChange={e => {
+                        e.stopPropagation();
+                        handleCheckboxChange(student.id);
+                      }}
+                      onClick={e => e.stopPropagation()}
+                    />
+                    <div>
+                      <div className="font-medium">{student.name}</div>
+                      <div className="text-sm text-base-content/70 flex items-center gap-2">
+                        <span>{student.nis}</span>
+                        <span className="w-1 h-1 bg-base-content/30 rounded-full"></span>
+                        <span>{student.gender === 'L' ? 'Laki-laki' : student.gender === 'P' ? 'Perempuan' : '-'}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        
+        <div className="p-4 border-t border-base-300 flex justify-end gap-2">
+          <button 
+            className="btn btn-sm btn-ghost" 
+            onClick={onClose}
+          >
+            Batal
+          </button>
+          <button 
+            className="btn btn-sm btn-primary" 
+            onClick={handleAddStudents}
+            disabled={selectedStudents.length === 0 || submitting}
+          >
+            {submitting ? (
+              <span className="loading loading-spinner loading-xs"></span>
+            ) : (
+              <>
+                <UserPlus className="w-4 h-4 mr-1" />
+                Tambahkan ({selectedStudents.length})
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ManajemenSiswaKelasPage() {
   const params = useParams();
   const { showActionToast } = useAppActionFeedback();
@@ -50,14 +357,9 @@ export default function ManajemenSiswaKelasPage() {
   const [submitting, setSubmitting] = useState(false);
   const [classroom, setClassroom] = useState<Classroom | null>(null);
   const [studentsInClass, setStudentsInClass] = useState<StudentInClass[]>([]);
-  const [availableStudents, setAvailableStudents] = useState<Student[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [modalSearchTerm, setModalSearchTerm] = useState("");
-  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [selectedToRemove, setSelectedToRemove] = useState<string[]>([]);
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("all");
-  const [modalGenderFilter, setModalGenderFilter] = useState<GenderFilter>("all");
-  const [isSearching, setIsSearching] = useState(false);
   const [isAddingStudents, setIsAddingStudents] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -86,77 +388,30 @@ export default function ManajemenSiswaKelasPage() {
   }, [kelasId, showActionToast]);
 
   // Mengambil data siswa yang ada di kelas ini
-  useEffect(() => {
-    const fetchStudentsInClass = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/kelas/${kelasId}/siswa?page=${currentPage}&limit=${pageSize}&search=${searchTerm}&gender=${genderFilter}`);
-        if (!res.ok) {
-          throw new Error("Gagal mengambil data siswa");
-        }
-        const data = await res.json();
-        setStudentsInClass(data.data);
-        setTotalPages(data.meta.totalPages || 1);
-      } catch (error) {
-        console.error("Error fetching students in class:", error);
-        showActionToast("Gagal mengambil data siswa di kelas", "error");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (kelasId) {
-      fetchStudentsInClass();
-    }
-  }, [kelasId, showActionToast, currentPage, pageSize, searchTerm, genderFilter]);
-
-  // Mengambil data siswa yang tersedia untuk ditambahkan
-  const fetchAvailableStudents = async () => {
-    setIsSearching(true);
+  const fetchStudentsInClass = useCallback(async () => {
+    setLoading(true);
     try {
-      const res = await fetch(`/api/siswa/available?classId=${kelasId}`);
+      const res = await fetch(`/api/kelas/${kelasId}/siswa?page=${currentPage}&limit=${pageSize}&search=${searchTerm}&gender=${genderFilter}`);
       if (!res.ok) {
         throw new Error("Gagal mengambil data siswa");
       }
       const data = await res.json();
-      setAvailableStudents(data.data);
+      setStudentsInClass(data.data);
+      setTotalPages(data.meta.totalPages || 1);
     } catch (error) {
-      console.error("Error fetching available students:", error);
-      showActionToast("Gagal mengambil data siswa yang tersedia", "error");
+      console.error("Error fetching students in class:", error);
+      showActionToast("Gagal mengambil data siswa di kelas", "error");
     } finally {
-      setIsSearching(false);
+      setLoading(false);
     }
-  };
+  }, [kelasId, currentPage, pageSize, searchTerm, genderFilter, showActionToast]);
 
-  // Filter siswa yang tersedia berdasarkan pencarian dan jenis kelamin
-  const filteredAvailableStudents = useMemo(() => {
-    return availableStudents.filter(student => {
-      // Filter berdasarkan jenis kelamin
-      if (modalGenderFilter !== "all" && student.gender !== modalGenderFilter) {
-        return false;
-      }
-
-      // Filter berdasarkan pencarian
-      if (modalSearchTerm.trim() !== "") {
-        const lowercasedSearch = modalSearchTerm.toLowerCase();
-        return (
-          student.name.toLowerCase().includes(lowercasedSearch) ||
-          student.nis.toLowerCase().includes(lowercasedSearch)
-        );
-      }
-
-      return true;
-    });
-  }, [availableStudents, modalSearchTerm, modalGenderFilter]);
-
-  // Handle checkbox change untuk siswa yang tersedia
-  const handleCheckboxChange = (studentId: string) => {
-    setSelectedStudents(prev =>
-      prev.includes(studentId)
-        ? prev.filter(id => id !== studentId)
-        : [...prev, studentId]
-    );
-  };
+  // Effect untuk mengambil data siswa saat parameter berubah
+  useEffect(() => {
+    if (kelasId) {
+      fetchStudentsInClass();
+    }
+  }, [kelasId, fetchStudentsInClass]);
 
   // Handle checkbox change untuk siswa yang akan dihapus
   const handleRemoveCheckboxChange = (historyId: string) => {
@@ -167,63 +422,12 @@ export default function ManajemenSiswaKelasPage() {
     );
   };
 
-  // Handle select all untuk siswa yang tersedia
-  const handleSelectAll = () => {
-    if (selectedStudents.length === filteredAvailableStudents.length) {
-      setSelectedStudents([]);
-    } else {
-      setSelectedStudents(filteredAvailableStudents.map(student => student.id));
-    }
-  };
-
   // Handle select all untuk siswa yang akan dihapus
   const handleSelectAllToRemove = () => {
     if (selectedToRemove.length === studentsInClass.length) {
       setSelectedToRemove([]);
     } else {
       setSelectedToRemove(studentsInClass.map(student => student.studentClassHistoryId));
-    }
-  };
-
-  // Handle tambah siswa
-  const handleAddStudents = async () => {
-    if (selectedStudents.length === 0) {
-      showActionToast("Pilih minimal 1 siswa", "error");
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      const res = await fetch(`/api/kelas/${kelasId}/tambah-siswa`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ studentIds: selectedStudents }),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Gagal menambahkan siswa");
-      }
-
-      const data = await res.json();
-      showActionToast(data.message || "Siswa berhasil ditambahkan ke kelas", "success");
-      setSelectedStudents([]);
-      setIsAddingStudents(false);
-      // Refresh data siswa di kelas
-      const refreshRes = await fetch(`/api/kelas/${kelasId}/siswa?page=${currentPage}&limit=${pageSize}&search=${searchTerm}&gender=${genderFilter}`);
-      if (refreshRes.ok) {
-        const refreshData = await refreshRes.json();
-        setStudentsInClass(refreshData.data);
-        setTotalPages(refreshData.meta.totalPages || 1);
-      }
-    } catch (error) {
-      console.error("Error adding students:", error);
-      showActionToast(
-        error instanceof Error ? error.message : "Gagal menambahkan siswa",
-        "error"
-      );
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -258,12 +462,7 @@ export default function ManajemenSiswaKelasPage() {
           setSelectedToRemove([]);
           
           // Refresh data siswa di kelas
-          const refreshRes = await fetch(`/api/kelas/${kelasId}/siswa?page=${currentPage}&limit=${pageSize}&search=${searchTerm}&gender=${genderFilter}`);
-          if (refreshRes.ok) {
-            const refreshData = await refreshRes.json();
-            setStudentsInClass(refreshData.data);
-            setTotalPages(refreshData.meta.totalPages || 1);
-          }
+          fetchStudentsInClass();
         } catch (error) {
           console.error("Error removing students:", error);
           showActionToast(
@@ -279,13 +478,12 @@ export default function ManajemenSiswaKelasPage() {
 
   // Toggle modal tambah siswa
   const toggleAddStudentsModal = () => {
-    if (!isAddingStudents) {
-      fetchAvailableStudents();
-      setModalSearchTerm("");
-      setModalGenderFilter("all");
-    }
     setIsAddingStudents(!isAddingStudents);
-    setSelectedStudents([]);
+  };
+
+  // Handle success dari modal tambah siswa
+  const handleAddStudentsSuccess = () => {
+    fetchStudentsInClass();
   };
 
   if (loading && !classroom) {
@@ -312,9 +510,6 @@ export default function ManajemenSiswaKelasPage() {
 
   const allSelectedToRemove = studentsInClass.length > 0 && selectedToRemove.length === studentsInClass.length;
   const someSelectedToRemove = selectedToRemove.length > 0 && selectedToRemove.length < studentsInClass.length;
-  
-  const allSelectedToAdd = filteredAvailableStudents.length > 0 && selectedStudents.length === filteredAvailableStudents.length;
-  const someSelectedToAdd = selectedStudents.length > 0 && selectedStudents.length < filteredAvailableStudents.length;
 
   return (
     <div className="card bg-base-200 shadow-xl p-6 rounded-2xl border border-primary/30 text-base-content">
@@ -537,163 +732,15 @@ export default function ManajemenSiswaKelasPage() {
         )}
       </div>
 
-      {/* Modal Tambah Siswa */}
-      {isAddingStudents && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-base-100 rounded-lg w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-base-300 flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Tambah Siswa ke Kelas</h3>
-              <button 
-                className="btn btn-sm btn-circle btn-ghost" 
-                onClick={toggleAddStudentsModal}
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <div className="p-4 flex flex-wrap items-center gap-2 border-b border-base-300">
-              {/* Pencarian */}
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/60" />
-                <input
-                  type="text"
-                  className="input input-bordered input-sm w-full pl-9"
-                  placeholder="Cari nama atau NIS..."
-                  value={modalSearchTerm}
-                  onChange={e => setModalSearchTerm(e.target.value)}
-                />
-                {modalSearchTerm && (
-                  <button
-                    type="button"
-                    className="absolute right-3 top-1/2 -translate-y-1/2"
-                    onClick={() => setModalSearchTerm("")}
-                  >
-                    <X className="w-4 h-4 text-base-content/60" />
-                  </button>
-                )}
-              </div>
-
-              {/* Filter Jenis Kelamin */}
-              <div className="dropdown dropdown-end">
-                <div tabIndex={0} role="button" className="btn btn-sm btn-outline">
-                  <Filter className="w-4 h-4 mr-1" />
-                  Filter
-                  <ChevronDown className="w-4 h-4 ml-1" />
-                </div>
-                <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-                  <li>
-                    <button 
-                      className={`${modalGenderFilter === "all" ? "active" : ""}`}
-                      onClick={() => setModalGenderFilter("all")}
-                    >
-                      Semua Jenis Kelamin
-                      {modalGenderFilter === "all" && <Check className="w-4 h-4" />}
-                    </button>
-                  </li>
-                  <li>
-                    <button 
-                      className={`${modalGenderFilter === "L" ? "active" : ""}`}
-                      onClick={() => setModalGenderFilter("L")}
-                    >
-                      Laki-laki
-                      {modalGenderFilter === "L" && <Check className="w-4 h-4" />}
-                    </button>
-                  </li>
-                  <li>
-                    <button 
-                      className={`${modalGenderFilter === "P" ? "active" : ""}`}
-                      onClick={() => setModalGenderFilter("P")}
-                    >
-                      Perempuan
-                      {modalGenderFilter === "P" && <Check className="w-4 h-4" />}
-                    </button>
-                  </li>
-                </ul>
-              </div>
-            </div>
-            
-            <div className="overflow-y-auto flex-1 p-4">
-              {isSearching ? (
-                <div className="flex justify-center items-center py-8">
-                  <span className="loading loading-spinner loading-md"></span>
-                </div>
-              ) : filteredAvailableStudents.length === 0 ? (
-                <div className="text-center py-8 text-base-content/70">
-                  {modalSearchTerm ? "Tidak ada siswa yang sesuai dengan pencarian" : "Tidak ada siswa yang tersedia"}
-                </div>
-              ) : (
-                <div>
-                  <div className="flex items-center mb-2">
-                    <input 
-                      type="checkbox" 
-                      className="checkbox checkbox-sm mr-2" 
-                      checked={allSelectedToAdd}
-                      ref={input => {
-                        if (input) {
-                          input.indeterminate = someSelectedToAdd;
-                        }
-                      }}
-                      onChange={handleSelectAll}
-                    />
-                    <span className="text-sm font-medium">
-                      {selectedStudents.length > 0 ? `${selectedStudents.length} siswa dipilih` : "Pilih semua"}
-                    </span>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {filteredAvailableStudents.map(student => (
-                      <div 
-                        key={student.id}
-                        className="flex items-center p-2 rounded-lg hover:bg-base-200 cursor-pointer"
-                        onClick={() => handleCheckboxChange(student.id)}
-                      >
-                        <input 
-                          type="checkbox" 
-                          className="checkbox checkbox-sm mr-3" 
-                          checked={selectedStudents.includes(student.id)}
-                          onChange={() => handleCheckboxChange(student.id)}
-                          onClick={e => e.stopPropagation()}
-                        />
-                        <div>
-                          <div className="font-medium">{student.name}</div>
-                          <div className="text-sm text-base-content/70 flex items-center gap-2">
-                            <span>{student.nis}</span>
-                            <span className="w-1 h-1 bg-base-content/30 rounded-full"></span>
-                            <span>{student.gender === 'L' ? 'Laki-laki' : student.gender === 'P' ? 'Perempuan' : '-'}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            <div className="p-4 border-t border-base-300 flex justify-end gap-2">
-              <button 
-                className="btn btn-sm btn-ghost" 
-                onClick={toggleAddStudentsModal}
-              >
-                Batal
-              </button>
-              <button 
-                className="btn btn-sm btn-primary" 
-                onClick={handleAddStudents}
-                disabled={selectedStudents.length === 0 || submitting}
-              >
-                {submitting ? (
-                  <span className="loading loading-spinner loading-xs"></span>
-                ) : (
-                  <>
-                    <UserPlus className="w-4 h-4 mr-1" />
-                    Tambahkan ({selectedStudents.length})
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Modal Tambah Siswa sebagai komponen terpisah */}
+      <TambahSiswaModal
+        isOpen={isAddingStudents}
+        onClose={toggleAddStudentsModal}
+        kelasId={kelasId}
+        onSuccess={handleAddStudentsSuccess}
+        submitting={submitting}
+        setSubmitting={setSubmitting}
+      />
     </div>
   );
 }
