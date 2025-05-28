@@ -3,17 +3,18 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
+    const { id } = await params;
+    const numId = parseInt(id);
     
-    if (isNaN(id)) {
+    if (isNaN(numId)) {
       return NextResponse.json({ error: "ID tidak valid" }, { status: 400 });
     }
     
     const user = await prisma.user.findUnique({
-      where: { id },
+      where: { id: numId },
       include: { role: true },
     });
     

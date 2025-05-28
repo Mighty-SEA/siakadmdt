@@ -73,6 +73,12 @@ export function getClientIp(request: Request): string {
     return forwarded.split(',')[0].trim();
   }
   
+  // Di lingkungan development, gunakan hostname sebagai identifier
+  const url = new URL(request.url);
+  if (url.hostname) {
+    return url.hostname;
+  }
+  
   // Fallback ke string default jika tidak bisa mendapatkan IP
-  return 'unknown-ip';
+  return 'localhost-development';
 } 

@@ -117,7 +117,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
     }
     setIsMounted(true);
     
-    // Check user session every time cookies change (external change detection)
+    // Cek user session hanya sekali saat mount
     const checkUserSession = () => {
       const user = getUserFromCookie();
       if (user && JSON.stringify(user) !== JSON.stringify(userData)) {
@@ -126,10 +126,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
       }
     };
     
-    // Setup interval to check for cookie changes every 2 seconds
-    const cookieCheckInterval = setInterval(checkUserSession, 2000);
+    // Panggil sekali, tidak perlu interval
+    checkUserSession();
     
-    return () => clearInterval(cookieCheckInterval);
+    // Tidak ada interval yang perlu dibersihkan
   }, [getUserFromCookie, userData]); 
 
   // Ambil data user dari cookie saat mount dan setiap navigasi
@@ -144,88 +144,18 @@ export default function AppLayout({ children }: AppLayoutProps) {
     }
   }, [pathname, getUserFromCookie, router]);
   
-  // Refresh data user secara agresif setiap 5 detik saat berada di halaman admin
+  // Ambil notifikasi hanya saat navigasi atau perubahan rute
   useEffect(() => {
-    if (!userData?.id || pathname === '/login') return;
+    if (!userData?.id || pathname === "/login") return;
     
-    // Fetch data user setiap 5 detik
-    const userRefreshInterval = setInterval(async () => {
-      try {
-        // Buat timestamp unik untuk menghindari caching
-        const timestamp = Date.now();
-        
-        // Gunakan endpoint khusus untuk mendapatkan data user saat ini
-        const res = await fetch(`/api/auth/user?t=${timestamp}`, {
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache'
-          }
-        });
-        
-        if (res.ok) {
-          const data = await res.json();
-          if (data.user) {
-            const updatedUser = {
-              ...data.user,
-              loginTimestamp: data.timestamp || Date.now()
-            };
-            
-            // Perbarui cookie hanya jika data berbeda
-            if (JSON.stringify(updatedUser) !== JSON.stringify(userData)) {
-              console.log("Updating user data from active polling");
-              
-              // Update cookie dengan data baru
-              Cookies.set("user", JSON.stringify(updatedUser), { 
-                expires: 7, 
-                secure: true,
-                sameSite: 'strict',
-                path: '/'
-              });
-              
-              // Update state
-              setUserData(updatedUser);
-            }
-          }
-        }
-      } catch (error) {
-        console.error("Error in active user data refresh:", error);
-      }
-    }, 2000); // Poll every 2 seconds for faster updates
-    
-    return () => clearInterval(userRefreshInterval);
-  }, [userData, pathname]);
-  
-  // Ambil notifikasi saat user tersedia
-  useEffect(() => {
-    if (userData?.id && pathname !== "/login") {
-      // Ambil notifikasi saat component mount
+    // Ambil notifikasi hanya saat pertama kali halaman dimuat
+    // Ini diperlukan untuk menampilkan notifikasi awal
+    if (notifications.length === 0) {
       fetchNotifications();
-      
-      // Polling lebih lambat (setiap 60 detik) agar tidak terlalu sering me-refresh UI
-      const interval = setInterval(() => {
-        // Gunakan timestamp untuk mencegah cache
-        const timestamp = Date.now();
-        fetch(`/api/notification?limit=5&t=${timestamp}`)
-          .then(res => res.json())
-          .then(data => {
-            // Periksa jika jumlah notifikasi belum dibaca berubah
-            if (data.unreadCount !== unreadCount) {
-              console.log("Perubahan jumlah notifikasi:", { 
-                sebelumnya: unreadCount, 
-                sekarang: data.unreadCount 
-              });
-              setNotifications(data.notifications || []);
-              setUnreadCount(data.unreadCount || 0);
-            }
-          })
-          .catch(error => {
-            console.error("Error polling notifications:", error);
-          });
-      }, 60000); // Poll setiap 60 detik (1 menit)
-      
-      return () => clearInterval(interval);
     }
-  }, [userData?.id, pathname, fetchNotifications, unreadCount]);
+    
+    // Tidak perlu polling atau pembaruan otomatis lagi
+  }, [userData?.id, pathname, fetchNotifications, notifications.length]);
 
   // Fungsi untuk reload notifikasi secara manual, digunakan setelah operasi seperti tambah/edit/hapus
   const reloadNotifications = useCallback(async () => {
@@ -275,8 +205,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           setUnreadCount((prev) => Math.max(0, prev - 1));
         }
         
-        // Refresh notifikasi setelah menandai sebagai dibaca
-        fetchNotifications();
+        // Tidak perlu memanggil fetchNotifications lagi karena sudah memperbarui state lokal
       }
     } catch (error) {
       console.error("Error marking notification as read:", error);
