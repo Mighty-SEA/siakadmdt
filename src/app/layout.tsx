@@ -274,12 +274,39 @@ export default function RootLayout({
               <input id="drawer-sidebar" type="checkbox" className="drawer-toggle" ref={drawerInputRef} checked={drawerOpen} onChange={() => setDrawerOpen(!drawerOpen)} />
               <div className="drawer-content flex flex-col w-full">
                 {/* Topbar mobile */}
-                <header className="w-full bg-base-100 shadow flex items-center justify-between px-4 py-3 gap-2 md:hidden fixed top-0 left-0 right-0 z-20">
+                <header className="w-full bg-base-100 shadow flex items-center justify-between px-4 py-3 gap-2 md:hidden sticky top-0 z-30">
                   <button className="btn btn-ghost btn-circle" onClick={() => setDrawerOpen(true)} aria-label="Buka Menu">
                     <Menu className="w-6 h-6 text-base-content" />
                   </button>
                   <span className="font-bold text-xl text-primary">SIAKAD</span>
                   <div className="flex items-center gap-2">
+                    <div className="dropdown dropdown-end">
+                      <label tabIndex={0} className="btn btn-ghost btn-circle btn-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-base-content">
+                          <circle cx="12" cy="12" r="4"></circle>
+                          <path d="M12 2v2"></path>
+                          <path d="M12 20v2"></path>
+                          <path d="M20 12h2"></path>
+                          <path d="M2 12h2"></path>
+                        </svg>
+                      </label>
+                      <div tabIndex={0} className="dropdown-content z-50 menu shadow-lg bg-base-100 rounded-box w-44 border border-base-300 mt-1">
+                        <div className="px-4 py-2 border-b border-base-300 bg-base-200">
+                          <h3 className="font-semibold text-sm text-base-content">Pilih Tema</h3>
+                        </div>
+                        <div className="p-2 max-h-60 overflow-y-auto">
+                          {themes.map(t => (
+                            <button 
+                              key={t} 
+                              className={`btn btn-sm btn-ghost w-full justify-start capitalize mb-1 ${theme === t ? 'text-primary font-semibold' : 'text-base-content'}`}
+                              onClick={() => setTheme(t)}
+                            >
+                              {t.charAt(0).toUpperCase() + t.slice(1)}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                     <div className="dropdown dropdown-end">
                       <label tabIndex={0} className="btn btn-ghost btn-circle indicator">
                         <Bell className="w-6 h-6 text-base-content" />
@@ -384,11 +411,11 @@ export default function RootLayout({
                   </div>
                 </header>
                 {/* Konten utama di mobile */}
-                <main className="flex-1 p-4 bg-base-100 transition-all duration-200 md:hidden mt-14">{children}</main>
+                <main className="flex-1 p-4 bg-base-100 transition-all duration-200">{children}</main>
               </div>
               <div className="drawer-side z-40">
                 <label htmlFor="drawer-sidebar" className="drawer-overlay"></label>
-                <aside className="menu p-4 w-64 min-h-full bg-base-200 text-base-content flex flex-col relative">
+                <aside className="menu p-4 w-64 min-h-full bg-base-200 text-base-content flex flex-col relative overflow-y-auto">
                   <div className="font-bold text-2xl mb-8 text-primary flex items-center gap-2 mt-4">
                     <BookOpen className="w-7 h-7 text-primary" />
                     <span>SIAKAD</span>
@@ -396,7 +423,7 @@ export default function RootLayout({
                       <X className="w-6 h-6 text-base-content" />
                     </button>
                   </div>
-                  <nav className="flex flex-col gap-1 overflow-y-auto">
+                  <nav className="flex flex-col gap-1">
                     <Link className={`btn btn-ghost justify-start gap-3${pathname && pathname === "/admin" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin" onClick={() => setDrawerOpen(false)}><BookOpen className="w-5 h-5" />Dashboard</Link>
                     <Link className={`btn btn-ghost justify-start gap-3${pathname && pathname.startsWith("/admin/siswa") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/siswa" onClick={() => setDrawerOpen(false)}><Users className="w-5 h-5" />Siswa</Link>
                     <Link className={`btn btn-ghost justify-start gap-3${pathname && pathname === "/admin/kelas" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/kelas" onClick={() => setDrawerOpen(false)}><ClipboardList className="w-5 h-5" />Kelas</Link>
@@ -415,12 +442,12 @@ export default function RootLayout({
               </div>
             </div>
             {/* Sidebar desktop */}
-            <aside className={`bg-base-200 text-base-content p-4 flex-col shadow-xl fixed left-0 top-0 bottom-0 z-10 transition-[width] duration-300 ease-in-out hidden md:flex ${sidebarOpen ? 'w-64' : 'w-20'}`} style={{transitionProperty: 'width'}}>
+            <aside className={`bg-base-200 text-base-content p-4 flex-col shadow-xl min-h-screen transition-[width] duration-300 ease-in-out hidden md:flex sticky top-0 h-screen ${sidebarOpen ? 'w-64' : 'w-20'}`} style={{transitionProperty: 'width'}}>
               <div className={`font-bold text-2xl mb-8 text-primary flex items-center gap-2 transition-all duration-200 ${sidebarOpen ? '' : 'justify-center'}`}>
                 <BookOpen className="w-7 h-7 text-primary" />
                 {sidebarOpen && <span>SIAKAD</span>}
               </div>
-              <nav className={`flex flex-col ${sidebarOpen ? 'gap-1' : 'gap-0'} transition-all duration-300 ease-in-out overflow-y-auto`}>
+              <nav className={`flex flex-col ${sidebarOpen ? 'gap-1' : 'gap-0'} transition-all duration-300 ease-in-out`}>
                 <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname && pathname === "/admin" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Dashboard"><BookOpen className="w-5 h-5" /></div>{sidebarOpen && 'Dashboard'}</Link>
                 <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname && pathname.startsWith("/admin/siswa") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/siswa"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Siswa"><Users className="w-5 h-5" /></div>{sidebarOpen && 'Siswa'}</Link>
                 <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname && pathname === "/admin/kelas" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/kelas"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Kelas"><ClipboardList className="w-5 h-5" /></div>{sidebarOpen && 'Kelas'}</Link>
@@ -437,9 +464,9 @@ export default function RootLayout({
               </div>
             </aside>
             {/* Main Content desktop */}
-            <div className={`flex-1 flex flex-col hidden md:flex ${sidebarOpen ? 'ml-64' : 'ml-20'} transition-all duration-300`}>
+            <div className="flex-1 flex flex-col hidden md:flex h-screen overflow-hidden">
               {/* Topbar desktop */}
-              <header className="w-full bg-base-100 shadow flex items-center justify-between px-6 py-4 gap-4 fixed top-0 right-0 z-10" style={{left: sidebarOpen ? '16rem' : '5rem'}}>
+              <header className="w-full bg-base-100 shadow flex items-center justify-between px-6 py-4 gap-4 sticky top-0 z-30">
                 <div className="flex items-center gap-3">
                   <button className="btn btn-ghost btn-circle text-base-content" onClick={() => setSidebarOpen((v) => !v)} aria-label="Toggle Sidebar">
                     {sidebarOpen ? <ChevronLeft className="w-6 h-6 text-base-content" /> : <ChevronRight className="w-6 h-6 text-base-content" />}
@@ -568,7 +595,7 @@ export default function RootLayout({
                 </div>
               </header>
               {/* Content */}
-              <main className="flex-1 p-6 bg-base-100 transition-all duration-200 mt-16">{children}</main>
+              <main className="flex-1 p-6 bg-base-100 transition-all duration-200 overflow-y-auto">{children}</main>
             </div>
           </div>
         </UIProvider>
