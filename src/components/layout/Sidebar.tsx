@@ -80,6 +80,14 @@ export default function Sidebar({
           onClick={isMobile ? closeMobileDrawer : undefined}
         />
         <SidebarLink 
+          href="/admin/classlevel" 
+          icon={<ClipboardList className="w-5 h-5" />} 
+          label="Tingkat Kelas" 
+          active={pathname.startsWith("/admin/classlevel")}
+          sidebarOpen={isMobile ? true : sidebarOpen}
+          onClick={isMobile ? closeMobileDrawer : undefined}
+        />
+        <SidebarLink 
           href="/admin/guru" 
           icon={<User className="w-5 h-5" />} 
           label="Guru" 
@@ -127,6 +135,27 @@ export default function Sidebar({
           sidebarOpen={isMobile ? true : sidebarOpen}
           onClick={isMobile ? closeMobileDrawer : undefined}
         />
+        {/* Submenu Keuangan */}
+        {(pathname.startsWith("/admin/keuangan") && (isMobile || sidebarOpen)) && (
+          <div className="ml-8 flex flex-col gap-1">
+            <SidebarLink 
+              href="/admin/keuangan/income" 
+              icon={<Wallet className="w-4 h-4" />} 
+              label="Pemasukan" 
+              active={pathname.startsWith("/admin/keuangan/income")}
+              sidebarOpen={true}
+              onClick={isMobile ? closeMobileDrawer : undefined}
+            />
+            <SidebarLink 
+              href="/admin/keuangan/expense" 
+              icon={<Wallet className="w-4 h-4" />} 
+              label="Pengeluaran" 
+              active={pathname.startsWith("/admin/keuangan/expense")}
+              sidebarOpen={true}
+              onClick={isMobile ? closeMobileDrawer : undefined}
+            />
+          </div>
+        )}
       </nav>
       
       <div className="mt-auto flex flex-col gap-2 pt-8 border-t border-base-300">
