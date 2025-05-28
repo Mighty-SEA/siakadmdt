@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import { Filter, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Pencil, Trash2, MoreVertical, Plus, Upload, Download, AlertCircle, CheckCircle2, CheckSquare, Square, UserX, GraduationCap } from "lucide-react";
+import { Filter, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Pencil, Trash2, MoreVertical, Plus, Upload, Download, AlertCircle, CheckCircle2, CheckSquare, Square, UserX, GraduationCap, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUI } from "@/lib/ui-context";
@@ -360,6 +360,16 @@ export default function SiswaPage() {
     setSelectedStudents([]);
   }, [search]);
 
+  // Fungsi untuk select all siswa
+  const handleSelectAll = () => {
+    setSelectedStudents(filtered.map(s => s.id));
+  };
+  
+  // Fungsi untuk deselect all siswa
+  const handleDeselectAll = () => {
+    setSelectedStudents([]);
+  };
+
   return (
     <div className="card bg-base-200 shadow-xl p-4 sm:p-6 rounded-2xl border border-primary/30 text-base-content w-full max-w-full overflow-x-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
@@ -384,61 +394,48 @@ export default function SiswaPage() {
       <div className="flex flex-col md:flex-row gap-2 mb-4 items-center md:items-end w-full">
         {/* Input Cari Nama dengan ikon search dan tombol filter kolom di kanan (mobile & desktop) */}
         <div className="flex flex-col md:flex-row w-full gap-2">
-          {/* Bulk Action Menu */}
-          {selectedStudents.length > 0 && (
-            <div className="flex items-center justify-between md:justify-start gap-2 bg-base-100 rounded-lg border border-primary/30 shadow-sm px-2 h-[38px] md:h-[46px] mb-2 md:mb-0 md:mr-2">
-              <div className="flex items-center gap-2">
-                <span className="badge badge-primary">{selectedStudents.length} dipilih</span>
-                <button 
-                  className="btn btn-xs btn-ghost text-base-content/70 hover:text-base-content"
-                  onClick={() => setSelectedStudents([])}
-                >
-                  Batal
-                </button>
-              </div>
-              <div className="dropdown dropdown-bottom dropdown-end md:dropdown-right">
-                <button tabIndex={0} className="btn btn-xs btn-primary" disabled={bulkActionLoading}>
-                  {bulkActionLoading ? (
-                    <span className="loading loading-spinner loading-xs"></span>
-                  ) : (
-                    <>Aksi</>
-                  )}
-                </button>
-                <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-52 border border-primary/20">
-                  <li>
-                    <button 
-                      className="flex items-center gap-2 text-error" 
-                      onClick={handleBulkDelete}
-                      disabled={bulkActionLoading}
-                    >
-                      <Trash2 className="w-4 h-4" /> 
-                      <span>Hapus Siswa</span>
-                    </button>
-                  </li>
-                  <li>
-                    <button 
-                      className="flex items-center gap-2 text-success" 
-                      onClick={() => handleBulkUpdateStatus(false)}
-                      disabled={bulkActionLoading}
-                    >
-                      <CheckCircle2 className="w-4 h-4" /> 
-                      <span>Set Status Aktif</span>
-                    </button>
-                  </li>
-                  <li>
-                    <button 
-                      className="flex items-center gap-2 text-warning" 
-                      onClick={() => handleBulkUpdateStatus(true)}
-                      disabled={bulkActionLoading}
-                    >
-                      <GraduationCap className="w-4 h-4" /> 
-                      <span>Set Status Alumni</span>
-                    </button>
-                  </li>
-                </ul>
-              </div>
+          {/* Bulk Action UI - updated - hanya tampil di desktop jika tidak ada yang dipilih */}
+          <div className="hidden md:flex flex-wrap items-center justify-between md:justify-start gap-2 mb-2 md:mb-0 w-full md:w-auto">
+            {/* Bulk actions button */}
+            <div className="dropdown dropdown-bottom">
+              <button tabIndex={0} className="btn btn-sm md:btn-md btn-outline btn-primary rounded-lg flex items-center justify-center" disabled={selectedStudents.length === 0} title="Aksi">
+                <MoreHorizontal className="w-5 h-5" />
+              </button>
+              <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-52 border border-primary/20">
+                <li>
+                  <button 
+                    className="flex items-center gap-2 text-error" 
+                    onClick={handleBulkDelete}
+                    disabled={bulkActionLoading || selectedStudents.length === 0}
+                  >
+                    <Trash2 className="w-4 h-4" /> 
+                    <span>Hapus Siswa</span>
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    className="flex items-center gap-2 text-success" 
+                    onClick={() => handleBulkUpdateStatus(false)}
+                    disabled={bulkActionLoading || selectedStudents.length === 0}
+                  >
+                    <CheckCircle2 className="w-4 h-4" /> 
+                    <span>Set Status Aktif</span>
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    className="flex items-center gap-2 text-warning" 
+                    onClick={() => handleBulkUpdateStatus(true)}
+                    disabled={bulkActionLoading || selectedStudents.length === 0}
+                  >
+                    <GraduationCap className="w-4 h-4" /> 
+                    <span>Set Status Alumni</span>
+                  </button>
+                </li>
+              </ul>
             </div>
-          )}
+          </div>
+          
           <div className="flex w-full gap-2">
             <div className="flex-1 relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/60">
@@ -485,6 +482,70 @@ export default function SiswaPage() {
           </div>
         </div>
       </div>
+      
+      {/* Selection controls - desktop and mobile */}
+      {selectedStudents.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-4 bg-base-100/50 p-2 rounded-lg border border-primary/10">
+          <div className="flex flex-wrap items-center gap-1">
+            {/* Bulk actions button - mobile only */}
+            <div className="md:hidden dropdown dropdown-bottom">
+              <button tabIndex={0} className="btn btn-xs btn-outline btn-primary rounded-lg flex items-center justify-center" title="Aksi">
+                <MoreHorizontal className="w-4 h-4" />
+              </button>
+              <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-52 border border-primary/20">
+                <li>
+                  <button 
+                    className="flex items-center gap-2 text-error" 
+                    onClick={handleBulkDelete}
+                    disabled={bulkActionLoading}
+                  >
+                    <Trash2 className="w-4 h-4" /> 
+                    <span>Hapus Siswa</span>
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    className="flex items-center gap-2 text-success" 
+                    onClick={() => handleBulkUpdateStatus(false)}
+                    disabled={bulkActionLoading}
+                  >
+                    <CheckCircle2 className="w-4 h-4" /> 
+                    <span>Set Status Aktif</span>
+                  </button>
+                </li>
+                <li>
+                  <button 
+                    className="flex items-center gap-2 text-warning" 
+                    onClick={() => handleBulkUpdateStatus(true)}
+                    disabled={bulkActionLoading}
+                  >
+                    <GraduationCap className="w-4 h-4" /> 
+                    <span>Set Status Alumni</span>
+                  </button>
+                </li>
+              </ul>
+            </div>
+            
+            <button 
+              className="btn btn-xs md:btn-sm btn-ghost text-primary hover:bg-primary/10"
+              onClick={handleSelectAll}
+            >
+              <span className="hidden sm:inline">Pilih semua</span>
+              <span className="sm:hidden">Pilih</span> {filtered.length}
+            </button>
+            <button 
+              className="btn btn-xs md:btn-sm btn-ghost text-error hover:bg-error/10"
+              onClick={handleDeselectAll}
+            >
+              <span className="hidden sm:inline">Batalkan semua</span>
+              <span className="sm:hidden">Batalkan</span>
+            </button>
+          </div>
+          
+          <div className="text-sm font-medium text-right">{selectedStudents.length} data dipilih</div>
+        </div>
+      )}
+      
       <div className="overflow-x-auto rounded-xl">
         <table className="table table-zebra w-full md:min-w-[600px]">
           <thead>
