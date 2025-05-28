@@ -64,6 +64,9 @@ export default function SiswaPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { showToast, showConfirmModal } = useUI();
+  // Refs untuk long press
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const longPressActiveRef = useRef(false);
 
   useEffect(() => {
     // Tampilkan toast berdasarkan query parameter
@@ -180,6 +183,43 @@ export default function SiswaPage() {
       data: siswaData
     });
   }
+
+  // Fungsi untuk menangani long press pada tombol pagination
+  const handleLongPressStart = (direction: 'next' | 'prev') => {
+    if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+    longPressActiveRef.current = true;
+    
+    const changePage = () => {
+      if (!longPressActiveRef.current) return;
+      
+      if (direction === 'next' && page < totalPage) {
+        setPage(p => Math.min(totalPage, p + 1));
+      } else if (direction === 'prev' && page > 1) {
+        setPage(p => Math.max(1, p - 1));
+      }
+      
+      longPressTimerRef.current = setTimeout(changePage, 150); // Semakin cepat setelah tahan
+    };
+    
+    longPressTimerRef.current = setTimeout(changePage, 500); // Delay awal
+  };
+  
+  const handleLongPressEnd = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    longPressActiveRef.current = false;
+  };
+  
+  // Cleanup pada unmount
+  useEffect(() => {
+    return () => {
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="card bg-base-200 shadow-xl p-4 sm:p-6 rounded-2xl border border-primary/30 text-base-content w-full max-w-full overflow-x-auto">
@@ -358,9 +398,9 @@ export default function SiswaPage() {
         </div>
         {/* Dropdown jumlah data per halaman di tengah */}
         <div className="flex items-center gap-2 w-full md:w-1/3 justify-center">
-          <span className="text-base-content">Tampilkan</span>
+          <span className="text-base-content text-sm">Tampilkan</span>
           <select
-            className="select select-bordered select-sm w-auto"
+            className="select select-bordered select-sm w-16"
             value={pageSize}
             onChange={e => { setPageSize(Number(e.target.value)); setPage(1); }}
           >
@@ -368,80 +408,103 @@ export default function SiswaPage() {
               <option key={n} value={n}>{n}</option>
             ))}
           </select>
-          <span className="text-base-content">data per halaman</span>
+          <span className="text-base-content text-sm">data</span>
         </div>
         {/* Pagination di kanan */}
         <div className="flex w-full md:w-1/3 justify-center md:justify-end gap-1">
-          <button
-            className="btn btn-sm btn-ghost rounded-full"
-            onClick={() => setPage(1)}
-            disabled={page === 1}
-            aria-label="Halaman pertama"
-          >
-            <ChevronsLeft className="w-4 h-4" />
-          </button>
-          <button
-            className="btn btn-sm btn-ghost rounded-full"
-            onClick={() => setPage(p => Math.max(1, p - 1))}
-            disabled={page === 1}
-            aria-label="Sebelumnya"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          {/* Pagination dengan ... */}
-          {(() => {
-            const pages = [];
-            const maxPage = totalPage;
-            const maxShow = 5;
-            let start = Math.max(1, page - 2);
-            let end = Math.min(maxPage, page + 2);
-            if (page <= 3) {
-              start = 1;
-              end = Math.min(maxPage, maxShow);
-            } else if (page >= maxPage - 2) {
-              start = Math.max(1, maxPage - maxShow + 1);
-              end = maxPage;
-            }
-            if (start > 1) {
-              pages.push(
-                <button key={1} className={`btn btn-sm rounded-full min-w-[2.25rem] px-0 mx-0.5 ${page === 1 ? 'btn-primary text-white' : 'btn-ghost hover:bg-primary/10'}`} onClick={() => setPage(1)}>{1}</button>
-              );
-              if (start > 2) pages.push(<span key="start-ellipsis" className="px-1">...</span>);
-            }
-            for (let i = start; i <= end; i++) {
-              pages.push(
-                <button
-                  key={i}
-                  className={`btn btn-sm rounded-full min-w-[2.25rem] px-0 mx-0.5 ${page === i ? 'btn-primary text-white' : 'btn-ghost hover:bg-primary/10'}`}
-                  onClick={() => setPage(i)}
-                  aria-current={page === i ? 'page' : undefined}
-                >{i}</button>
-              );
-            }
-            if (end < maxPage) {
-              if (end < maxPage - 1) pages.push(<span key="end-ellipsis" className="px-1">...</span>);
-              pages.push(
-                <button key={maxPage} className={`btn btn-sm rounded-full min-w-[2.25rem] px-0 mx-0.5 ${page === maxPage ? 'btn-primary text-white' : 'btn-ghost hover:bg-primary/10'}`} onClick={() => setPage(maxPage)}>{maxPage}</button>
-              );
-            }
-            return pages;
-          })()}
-          <button
-            className="btn btn-sm btn-ghost rounded-full"
-            onClick={() => setPage(p => Math.min(totalPage, p + 1))}
-            disabled={page === totalPage}
-            aria-label="Berikutnya"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-          <button
-            className="btn btn-sm btn-ghost rounded-full"
-            onClick={() => setPage(totalPage)}
-            disabled={page === totalPage}
-            aria-label="Halaman terakhir"
-          >
-            <ChevronsRight className="w-4 h-4" />
-          </button>
+          <div className="join">
+            <button
+              className="join-item btn btn-sm btn-ghost"
+              onClick={() => setPage(1)}
+              disabled={page === 1}
+              aria-label="Halaman pertama"
+            >
+              <ChevronsLeft className="w-4 h-4" />
+            </button>
+            <button
+              className="join-item btn btn-sm btn-ghost"
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              onTouchStart={() => handleLongPressStart('prev')}
+              onTouchEnd={handleLongPressEnd}
+              onMouseDown={() => handleLongPressStart('prev')}
+              onMouseUp={handleLongPressEnd}
+              onMouseLeave={handleLongPressEnd}
+              disabled={page === 1}
+              aria-label="Sebelumnya"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            
+            {/* Desktop pagination dengan ... */}
+            <div className="hidden md:flex">
+              {(() => {
+                const pages = [];
+                const maxPage = totalPage;
+                const maxShow = 5;
+                let start = Math.max(1, page - 2);
+                let end = Math.min(maxPage, page + 2);
+                if (page <= 3) {
+                  start = 1;
+                  end = Math.min(maxPage, maxShow);
+                } else if (page >= maxPage - 2) {
+                  start = Math.max(1, maxPage - maxShow + 1);
+                  end = maxPage;
+                }
+                if (start > 1) {
+                  pages.push(
+                    <button key={1} className={`join-item btn btn-sm ${page === 1 ? 'btn-primary text-white' : 'btn-ghost hover:bg-primary/10'}`} onClick={() => setPage(1)}>{1}</button>
+                  );
+                  if (start > 2) pages.push(<span key="start-ellipsis" className="px-1">...</span>);
+                }
+                for (let i = start; i <= end; i++) {
+                  pages.push(
+                    <button
+                      key={i}
+                      className={`join-item btn btn-sm ${page === i ? 'btn-primary text-white' : 'btn-ghost hover:bg-primary/10'}`}
+                      onClick={() => setPage(i)}
+                      aria-current={page === i ? 'page' : undefined}
+                    >{i}</button>
+                  );
+                }
+                if (end < maxPage) {
+                  if (end < maxPage - 1) pages.push(<span key="end-ellipsis" className="px-1">...</span>);
+                  pages.push(
+                    <button key={maxPage} className={`join-item btn btn-sm ${page === maxPage ? 'btn-primary text-white' : 'btn-ghost hover:bg-primary/10'}`} onClick={() => setPage(maxPage)}>{maxPage}</button>
+                  );
+                }
+                return pages;
+              })()}
+            </div>
+            
+            {/* Mobile pagination (simpel) */}
+            <div className="flex md:hidden items-center">
+              <span className="px-3 text-sm font-medium">
+                {page}/{totalPage}
+              </span>
+            </div>
+            
+            <button
+              className="join-item btn btn-sm btn-ghost"
+              onClick={() => setPage(p => Math.min(totalPage, p + 1))}
+              onTouchStart={() => handleLongPressStart('next')}
+              onTouchEnd={handleLongPressEnd}
+              onMouseDown={() => handleLongPressStart('next')}
+              onMouseUp={handleLongPressEnd}
+              onMouseLeave={handleLongPressEnd}
+              disabled={page === totalPage}
+              aria-label="Berikutnya"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            <button
+              className="join-item btn btn-sm btn-ghost"
+              onClick={() => setPage(totalPage)}
+              disabled={page === totalPage}
+              aria-label="Halaman terakhir"
+            >
+              <ChevronsRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
     </div>
