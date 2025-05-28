@@ -159,9 +159,38 @@ export default function RootLayout({
                     <label tabIndex={0} className="btn btn-ghost btn-circle avatar ring-2 ring-primary hover:ring-4 hover:ring-primary/60 transition-all duration-200">
                       {renderAvatar("w-8 h-8")}
                     </label>
-                    <ul tabIndex={0} className="mt-3 p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-40">
-                      <li><a>Profil</a></li>
-                      <li><button onClick={handleLogout}>Keluar</button></li>
+                    <ul tabIndex={0} className="mt-3 shadow dropdown-content bg-base-100 rounded-xl overflow-hidden border border-base-300 w-56 transition-all duration-200 z-50">
+                      <div className="px-4 py-3 bg-primary/10 border-b border-base-300">
+                        <div className="flex items-center gap-3">
+                          {renderAvatar("w-10 h-10")}
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium text-base-content">{userData?.name || 'User'}</span>
+                            <span className="text-xs text-base-content/70">{userData?.email || ''}</span>
+                            <span className="text-xs mt-1 badge badge-xs badge-primary">{userData?.role?.name || 'User'}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-1">
+                        <li>
+                          <a className="flex items-center gap-2 p-2 text-sm hover:bg-primary/10 rounded-lg transition-all duration-200">
+                            <User className="w-4 h-4 text-primary" />
+                            <span>Profil Saya</span>
+                          </a>
+                        </li>
+                        <li>
+                          <button 
+                            onClick={handleLogout} 
+                            className="flex items-center gap-2 p-2 w-full text-sm text-left hover:bg-error/10 hover:text-error rounded-lg transition-all duration-200"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                              <polyline points="16 17 21 12 16 7"></polyline>
+                              <line x1="21" y1="12" x2="9" y2="12"></line>
+                            </svg>
+                            <span>Keluar</span>
+                          </button>
+                        </li>
+                      </div>
                     </ul>
                   </div>
                 </div>
@@ -240,9 +269,38 @@ export default function RootLayout({
                   <label tabIndex={0} className="btn btn-ghost btn-circle avatar ring-2 ring-primary hover:ring-4 hover:ring-primary/60 transition-all duration-200">
                     {renderAvatar("w-10 h-10")}
                   </label>
-                  <ul tabIndex={0} className="mt-3 p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
-                    <li><a>Profil</a></li>
-                    <li><button onClick={handleLogout}>Keluar</button></li>
+                  <ul tabIndex={0} className="mt-3 shadow dropdown-content bg-base-100 rounded-xl overflow-hidden border border-base-300 w-64 transition-all duration-200 z-50">
+                    <div className="px-4 py-3 bg-primary/10 border-b border-base-300">
+                      <div className="flex items-center gap-3">
+                        {renderAvatar("w-12 h-12")}
+                        <div className="flex flex-col">
+                          <span className="text-base font-medium text-base-content">{userData?.name || 'User'}</span>
+                          <span className="text-xs text-base-content/70">{userData?.email || ''}</span>
+                          <span className="text-xs mt-1 badge badge-sm badge-primary">{userData?.role?.name || 'User'}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-1">
+                      <li>
+                        <a className="flex items-center gap-2 p-3 hover:bg-primary/10 rounded-lg transition-all duration-200">
+                          <User className="w-5 h-5 text-primary" />
+                          <span>Profil Saya</span>
+                        </a>
+                      </li>
+                      <li>
+                        <button 
+                          onClick={handleLogout} 
+                          className="flex items-center gap-2 p-3 w-full text-left hover:bg-error/10 hover:text-error rounded-lg transition-all duration-200"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                          </svg>
+                          <span>Keluar</span>
+                        </button>
+                      </li>
+                    </div>
                   </ul>
                 </div>
                 <div className="flex items-center gap-2">
