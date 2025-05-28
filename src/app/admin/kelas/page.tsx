@@ -1,5 +1,5 @@
 "use client";
-import { Pencil, Trash2, History } from "lucide-react";
+import { Pencil, Trash2, History, Users } from "lucide-react";
 import Link from "next/link";
 import AdminTableTemplate from "@/components/AdminTableTemplate";
 import { useState, useEffect } from "react";
@@ -159,13 +159,22 @@ export default function KelasPage() {
                 <Link 
                   href={`/admin/kelas/edit/${row.id}`} 
                   className="btn btn-xs btn-warning"
+                  title="Edit Kelas"
                 >
                   <Pencil className="w-4 h-4" />
+                </Link>
+                <Link
+                  href={`/admin/kelas/${row.id}/siswa`}
+                  className="btn btn-xs btn-success"
+                  title="Manajemen Siswa"
+                >
+                  <Users className="w-4 h-4" />
                 </Link>
                 <button 
                   className="btn btn-xs btn-error" 
                   onClick={() => openDeleteModal(row)}
                   disabled={deletingId === row.id}
+                  title="Hapus Kelas"
                 >
                   {deletingId === row.id ? (
                     <span className="loading loading-spinner loading-xs"></span>
