@@ -50,7 +50,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Password salah" }, { status: 401 });
     }
     // Jangan return password
-    const { password: _, ...userSafe } = user;
+    const { password: _, ...userSafe } = user; // eslint-disable-line @typescript-eslint/no-unused-vars
     return NextResponse.json({ user: userSafe });
   } catch (error) {
     console.error("Error login:", error);

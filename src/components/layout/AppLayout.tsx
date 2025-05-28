@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
+import Image from "next/image";
 
 // Tipe data untuk user
 type UserData = {
@@ -190,7 +191,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
       
       return (
         <div className={`rounded-full ${className} overflow-hidden`}>
-          <img src={avatarSrc} alt={userData.name} className="w-full h-full object-cover" />
+          <Image 
+            src={avatarSrc} 
+            alt={userData.name} 
+            width={40}
+            height={40}
+            className="w-full h-full object-cover" 
+          />
         </div>
       );
     }

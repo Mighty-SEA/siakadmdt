@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Pencil, Trash2, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 type User = {
   id: number;
@@ -87,7 +88,13 @@ export default function UserPage() {
                   <td>{u.id}</td>
                   <td>
                     {u.avatar ? (
-                      <img src={u.avatar.startsWith('http') ? u.avatar : u.avatar.includes('/avatar/') ? u.avatar : `/avatar/${u.avatar}`} alt={u.name} className="w-8 h-8 rounded-full object-cover border" />
+                      <Image 
+                        src={u.avatar.startsWith('http') ? u.avatar : u.avatar.includes('/avatar/') ? u.avatar : `/avatar/${u.avatar}`} 
+                        alt={u.name} 
+                        width={32} 
+                        height={32} 
+                        className="w-8 h-8 rounded-full object-cover border" 
+                      />
                     ) : (
                       <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">
                         {u.name?.[0]?.toUpperCase() || "?"}
