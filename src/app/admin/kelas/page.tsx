@@ -1,5 +1,5 @@
 "use client";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, History } from "lucide-react";
 import Link from "next/link";
 import AdminTableTemplate from "@/components/AdminTableTemplate";
 import { useState, useEffect } from "react";
@@ -92,85 +92,94 @@ export default function KelasPage() {
   };
 
   return (
-    <AdminTableTemplate
-      title="Daftar Kelas"
-      fetchUrl="/api/kelas"
-      addUrl="/admin/kelas/tambah"
-      editUrl={id => `/admin/kelas/edit/${id}`}
-      deleteUrl="/api/kelas"
-      defaultColumns={["no", "classLevel", "academicYear", "teacher", "students", "aksi"]}
-      columns={[
-        { key: "no", label: "No", render: (_row: KelasData, i: number) => i + 1 },
-        { 
-          key: "classLevel", 
-          label: "Kelas", 
-          render: row => (
-            <span className="font-medium">{row.classLevel?.name || "-"}</span>
-          )
-        },
-        { 
-          key: "academicYear", 
-          label: "Tahun Ajaran", 
-          render: row => (
-            <span className="badge badge-outline badge-sm">{row.academicYear?.year || "-"}</span>
-          )
-        },
-        { 
-          key: "teacher", 
-          label: "Wali Kelas", 
-          render: row => (
-            <span className={row.teacher?.name ? "" : "text-base-content/50"}>
-              {row.teacher?.name || "Belum ditentukan"}
-            </span>
-          )
-        },
-        {
-          key: "students",
-          label: "Jumlah Siswa",
-          render: row => (
-            <span className="badge badge-primary badge-sm">
-              {row.studentClassHistories?.length || 0} siswa
-            </span>
-          )
-        },
-        { 
-          key: "created_at", 
-          label: "Dibuat", 
-          render: row => row.created_at ? new Date(row.created_at).toLocaleDateString() : "-" 
-        },
-        { 
-          key: "updated_at", 
-          label: "Diupdate", 
-          render: row => row.updated_at ? new Date(row.updated_at).toLocaleDateString() : "-" 
-        },
-        {
-          key: "aksi", 
-          label: "Aksi", 
-          render: row => (
-            <div className="flex gap-2">
-              <Link 
-                href={`/admin/kelas/edit/${row.id}`} 
-                className="btn btn-xs btn-warning"
-              >
-                <Pencil className="w-4 h-4" />
-              </Link>
-              <button 
-                className="btn btn-xs btn-error" 
-                onClick={() => openDeleteModal(row)}
-                disabled={deletingId === row.id}
-              >
-                {deletingId === row.id ? (
-                  <span className="loading loading-spinner loading-xs"></span>
-                ) : (
-                  <Trash2 className="w-4 h-4" />
-                )}
-              </button>
-            </div>
-          )
-        },
-      ]}
-      searchPlaceholder="Cari nama kelas, tahun, atau wali..."
-      refreshKey={refreshKey}
-    />
+    <div>
+      <div className="flex justify-end mb-4">
+        <Link href="/admin/kelas/riwayat" className="btn btn-outline btn-primary gap-2">
+          <History className="w-4 h-4" />
+          <span>Riwayat Kelas</span>
+        </Link>
+      </div>
+      
+      <AdminTableTemplate
+        title="Daftar Kelas"
+        fetchUrl="/api/kelas"
+        addUrl="/admin/kelas/tambah"
+        editUrl={id => `/admin/kelas/edit/${id}`}
+        deleteUrl="/api/kelas"
+        defaultColumns={["no", "classLevel", "academicYear", "teacher", "students", "aksi"]}
+        columns={[
+          { key: "no", label: "No", render: (_row: KelasData, i: number) => i + 1 },
+          { 
+            key: "classLevel", 
+            label: "Kelas", 
+            render: row => (
+              <span className="font-medium">{row.classLevel?.name || "-"}</span>
+            )
+          },
+          { 
+            key: "academicYear", 
+            label: "Tahun Ajaran", 
+            render: row => (
+              <span className="badge badge-outline badge-sm">{row.academicYear?.year || "-"}</span>
+            )
+          },
+          { 
+            key: "teacher", 
+            label: "Wali Kelas", 
+            render: row => (
+              <span className={row.teacher?.name ? "" : "text-base-content/50"}>
+                {row.teacher?.name || "Belum ditentukan"}
+              </span>
+            )
+          },
+          {
+            key: "students",
+            label: "Jumlah Siswa",
+            render: row => (
+              <span className="badge badge-primary badge-sm">
+                {row.studentClassHistories?.length || 0} siswa
+              </span>
+            )
+          },
+          { 
+            key: "created_at", 
+            label: "Dibuat", 
+            render: row => row.created_at ? new Date(row.created_at).toLocaleDateString() : "-" 
+          },
+          { 
+            key: "updated_at", 
+            label: "Diupdate", 
+            render: row => row.updated_at ? new Date(row.updated_at).toLocaleDateString() : "-" 
+          },
+          {
+            key: "aksi", 
+            label: "Aksi", 
+            render: row => (
+              <div className="flex gap-2">
+                <Link 
+                  href={`/admin/kelas/edit/${row.id}`} 
+                  className="btn btn-xs btn-warning"
+                >
+                  <Pencil className="w-4 h-4" />
+                </Link>
+                <button 
+                  className="btn btn-xs btn-error" 
+                  onClick={() => openDeleteModal(row)}
+                  disabled={deletingId === row.id}
+                >
+                  {deletingId === row.id ? (
+                    <span className="loading loading-spinner loading-xs"></span>
+                  ) : (
+                    <Trash2 className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+            )
+          },
+        ]}
+        searchPlaceholder="Cari nama kelas, tahun, atau wali..."
+        refreshKey={refreshKey}
+      />
+    </div>
   );
 } 

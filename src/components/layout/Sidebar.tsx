@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { User, Users, BookOpen, ClipboardList, CalendarCheck, Wallet, X } from "lucide-react";
+import { User, Users, BookOpen, ClipboardList, CalendarCheck, Wallet, X, History } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 interface SidebarProps {
@@ -68,6 +68,14 @@ export default function Sidebar({
           icon={<ClipboardList className="w-5 h-5" />} 
           label="Kelas" 
           active={pathname === "/admin/kelas"}
+          sidebarOpen={isMobile ? true : sidebarOpen}
+          onClick={isMobile ? closeMobileDrawer : undefined}
+        />
+        <SidebarLink 
+          href="/admin/kelas/riwayat" 
+          icon={<History className="w-5 h-5" />} 
+          label="Riwayat Kelas" 
+          active={pathname.startsWith("/admin/kelas/riwayat")}
           sidebarOpen={isMobile ? true : sidebarOpen}
           onClick={isMobile ? closeMobileDrawer : undefined}
         />
