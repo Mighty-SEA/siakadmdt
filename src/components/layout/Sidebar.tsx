@@ -72,6 +72,14 @@ export default function Sidebar({
           onClick={isMobile ? closeMobileDrawer : undefined}
         />
         <SidebarLink 
+          href="/admin/academicyear" 
+          icon={<CalendarCheck className="w-5 h-5" />} 
+          label="Tahun Akademik" 
+          active={pathname.startsWith("/admin/academicyear")}
+          sidebarOpen={isMobile ? true : sidebarOpen}
+          onClick={isMobile ? closeMobileDrawer : undefined}
+        />
+        <SidebarLink 
           href="/admin/guru" 
           icon={<User className="w-5 h-5" />} 
           label="Guru" 
