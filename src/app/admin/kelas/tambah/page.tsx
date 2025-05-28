@@ -2,10 +2,25 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+interface ClassLevel {
+  id: string;
+  name: string;
+}
+
+interface AcademicYear {
+  id: string;
+  year: string;
+}
+
+interface Teacher {
+  id: string;
+  name: string;
+}
+
 export default function TambahKelasPage() {
-  const [classLevels, setClassLevels] = useState([]);
-  const [academicYears, setAcademicYears] = useState([]);
-  const [teachers, setTeachers] = useState([]);
+  const [classLevels, setClassLevels] = useState<ClassLevel[]>([]);
+  const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [classLevelId, setClassLevelId] = useState("");
   const [academicYearId, setAcademicYearId] = useState("");
   const [teacherId, setTeacherId] = useState("");
@@ -44,15 +59,15 @@ export default function TambahKelasPage() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <select className="input input-bordered" value={classLevelId} onChange={e => setClassLevelId(e.target.value)} required>
           <option value="">Pilih Tingkat Kelas</option>
-          {classLevels.map((cl: any) => <option key={cl.id} value={cl.id}>{cl.name}</option>)}
+          {classLevels.map((cl: ClassLevel) => <option key={cl.id} value={cl.id}>{cl.name}</option>)}
         </select>
         <select className="input input-bordered" value={academicYearId} onChange={e => setAcademicYearId(e.target.value)} required>
           <option value="">Pilih Tahun Ajaran</option>
-          {academicYears.map((ay: any) => <option key={ay.id} value={ay.id}>{ay.year}</option>)}
+          {academicYears.map((ay: AcademicYear) => <option key={ay.id} value={ay.id}>{ay.year}</option>)}
         </select>
         <select className="input input-bordered" value={teacherId} onChange={e => setTeacherId(e.target.value)}>
           <option value="">Pilih Wali Kelas (opsional)</option>
-          {teachers.map((t: any) => <option key={t.id} value={t.id}>{t.name}</option>)}
+          {teachers.map((t: Teacher) => <option key={t.id} value={t.id}>{t.name}</option>)}
         </select>
         <button className="btn btn-primary" type="submit" disabled={loading}>{loading ? "Menyimpan..." : "Simpan"}</button>
       </form>
