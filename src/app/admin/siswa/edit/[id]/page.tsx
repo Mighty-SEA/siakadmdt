@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Save } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { useUI } from "@/lib/ui-context";
 
 export default function EditSiswaPage() {
   const [tab, setTab] = useState<'pribadi' | 'ortu'>('pribadi');
@@ -28,36 +29,44 @@ export default function EditSiswaPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id;
+  const { showToast } = useUI();
 
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
-      const res = await fetch(`/api/siswa`);
-      const data = await res.json();
-      const siswa = (data.siswa || []).find((s: any) => String(s.id) === String(id));
-      if (siswa) {
-        setForm({
-          name: siswa.name || "",
-          nis: siswa.nis || "",
-          birth_date: siswa.birth_date ? siswa.birth_date.slice(0, 10) : "",
-          birth_place: siswa.birth_place || "",
-          gender: siswa.gender || "",
-          is_alumni: siswa.is_alumni === true ? "true" : siswa.is_alumni === false ? "false" : "",
-          nik: siswa.nik || "",
-          kk: siswa.kk || "",
-          origin_school: siswa.origin_school || "",
-          nisn: siswa.nisn || "",
-          qr_token: siswa.qr_token || "",
-          father_name: siswa.father_name || "",
-          father_job: siswa.father_job || "",
-          mother_name: siswa.mother_name || "",
-          mother_job: siswa.mother_job || "",
-        });
+      try {
+        const res = await fetch(`/api/siswa`);
+        const data = await res.json();
+        const siswa = (data.siswa || []).find((s: any) => String(s.id) === String(id));
+        if (siswa) {
+          setForm({
+            name: siswa.name || "",
+            nis: siswa.nis || "",
+            birth_date: siswa.birth_date ? siswa.birth_date.slice(0, 10) : "",
+            birth_place: siswa.birth_place || "",
+            gender: siswa.gender || "",
+            is_alumni: siswa.is_alumni === true ? "true" : siswa.is_alumni === false ? "false" : "",
+            nik: siswa.nik || "",
+            kk: siswa.kk || "",
+            origin_school: siswa.origin_school || "",
+            nisn: siswa.nisn || "",
+            qr_token: siswa.qr_token || "",
+            father_name: siswa.father_name || "",
+            father_job: siswa.father_job || "",
+            mother_name: siswa.mother_name || "",
+            mother_job: siswa.mother_job || "",
+          });
+        } else {
+          showToast("Data siswa tidak ditemukan", "error");
+        }
+      } catch (error) {
+        showToast("Gagal memuat data siswa", "error");
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
     if (id) fetchData();
-  }, [id]);
+  }, [id, showToast]);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const { name, value } = e.target;
@@ -79,13 +88,12 @@ export default function EditSiswaPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        alert("Siswa berhasil diupdate!");
-        router.push("/admin/siswa");
+        router.push(`/admin/siswa?status=success&message=${encodeURIComponent("Siswa berhasil diupdate!")}`);
       } else {
-        alert(data.error || "Gagal mengupdate siswa");
+        showToast(data.error || "Gagal mengupdate siswa", "error");
       }
     } catch (_err) {
-      alert("Terjadi kesalahan jaringan");
+      showToast("Terjadi kesalahan jaringan", "error");
     } finally {
       setLoading(false);
     }

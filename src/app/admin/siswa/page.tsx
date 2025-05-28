@@ -2,7 +2,8 @@
 import { useEffect, useState, useRef } from "react";
 import { Filter, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Pencil, Trash2, MoreVertical, Plus, Upload, Download, AlertCircle, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useUI } from "@/lib/ui-context";
 
 type Student = {
   id: number;
@@ -59,13 +60,25 @@ export default function SiswaPage() {
   const [selectedColumns, setSelectedColumns] = useState<string[]>(desktopDefaultColumns);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [siswaToDelete, setSiswaToDelete] = useState<Student | null>(null);
-  const [toast, setToast] = useState<{show: boolean, message: string, type: 'success' | 'error'}>({
-    show: false,
-    message: '',
-    type: 'success'
-  });
-  const deleteModalRef = useRef<HTMLDialogElement>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { showToast, showConfirmModal } = useUI();
+
+  useEffect(() => {
+    // Tampilkan toast berdasarkan query parameter
+    const status = searchParams.get('status');
+    const message = searchParams.get('message');
+    
+    if (status && message) {
+      showToast(decodeURIComponent(message), status as 'success' | 'error');
+      
+      // Hapus parameter dari URL tanpa refresh
+      const url = new URL(window.location.href);
+      url.searchParams.delete('status');
+      url.searchParams.delete('message');
+      window.history.replaceState({}, '', url);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     setLoading(true);
@@ -108,14 +121,6 @@ export default function SiswaPage() {
   const totalPage = Math.ceil(filtered.length / pageSize);
   const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
 
-  // Menampilkan toast
-  const showToast = (message: string, type: 'success' | 'error') => {
-    setToast({ show: true, message, type });
-    setTimeout(() => {
-      setToast(prev => ({ ...prev, show: false }));
-    }, 3000);
-  };
-
   async function handleDelete(id: number) {
     try {
       const res = await fetch("/api/siswa", {
@@ -125,30 +130,28 @@ export default function SiswaPage() {
       });
       if (res.ok) {
         setSiswa(siswa => siswa.filter(s => s.id !== id));
-        showToast(`Siswa berhasil dihapus`, 'success');
+        showToast("Siswa berhasil dihapus", "success");
       } else {
         const data = await res.json();
-        showToast(data.error || "Gagal menghapus siswa", 'error');
+        showToast(data.error || "Gagal menghapus siswa", "error");
       }
     } catch {
-      showToast("Terjadi kesalahan jaringan", 'error');
+      showToast("Terjadi kesalahan jaringan", "error");
     }
   }
 
   function openDeleteModal(id: number) {
-    const siswaData = siswa.find(s => s.id === id) || null;
-    setDeleteId(id);
-    setSiswaToDelete(siswaData);
-    deleteModalRef.current?.showModal();
-  }
-
-  function confirmDelete() {
-    if (deleteId !== null) {
-      handleDelete(deleteId);
-      deleteModalRef.current?.close();
-      setDeleteId(null);
-      setSiswaToDelete(null);
-    }
+    const siswaData = siswa.find(s => s.id === id);
+    if (!siswaData) return;
+    
+    showConfirmModal({
+      title: "Konfirmasi Hapus",
+      message: `Apakah Anda yakin ingin menghapus siswa <span class="font-semibold text-primary">${siswaData.name}</span> (${siswaData.nis})?`,
+      confirmText: "Hapus",
+      cancelText: "Batal",
+      onConfirm: () => handleDelete(id),
+      data: siswaData
+    });
   }
 
   return (
@@ -414,47 +417,6 @@ export default function SiswaPage() {
           </button>
         </div>
       </div>
-      
-      {/* Modal konfirmasi hapus */}
-      <dialog id="delete_modal" className="modal modal-bottom sm:modal-middle" ref={deleteModalRef}>
-        <div className="modal-box">
-          <h3 className="font-bold text-lg flex items-center gap-2">
-            <Trash2 className="w-5 h-5" />
-            Konfirmasi Hapus
-          </h3>
-          {siswaToDelete && (
-            <p className="py-4">
-              Apakah Anda yakin ingin menghapus siswa <span className="font-semibold text-primary">{siswaToDelete.name}</span> ({siswaToDelete.nis})?
-            </p>
-          )}
-          <div className="modal-action">
-            <form method="dialog">
-              <button className="btn">Batal</button>
-            </form>
-            <button onClick={confirmDelete} className="btn btn-primary">
-              Hapus
-            </button>
-          </div>
-        </div>
-        <form method="dialog" className="modal-backdrop">
-          <button>Batal</button>
-        </form>
-      </dialog>
-
-      {/* Toast notification */}
-      {toast.show && (
-        <div className="toast toast-top toast-end z-50 mt-10">
-          <div className={`alert ${toast.type === 'success' ? 'alert-success' : 'alert-error'} shadow-lg`}>
-            <div className="flex items-center gap-2">
-              {toast.type === 'success' ? 
-                <CheckCircle2 className="w-5 h-5" /> : 
-                <AlertCircle className="w-5 h-5" />
-              }
-              <span>{toast.message}</span>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 } 

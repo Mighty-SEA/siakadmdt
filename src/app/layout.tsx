@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import { User, Users, BookOpen, ClipboardList, CalendarCheck, Wallet, Bell, Search, ChevronLeft, ChevronRight, Menu, X, Check } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Cookies from "js-cookie";
+import { UIProvider } from "@/lib/ui-context";
 
 // Tipe data untuk user
 type UserData = {
@@ -255,7 +256,9 @@ export default function RootLayout({
     return (
       <html lang="id">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-          {children}
+          <UIProvider>
+            {children}
+          </UIProvider>
         </body>
       </html>
     );
@@ -264,44 +267,213 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <div className="flex min-h-screen">
-          {/* Drawer untuk mobile */}
-          <div className="drawer md:hidden">
-            <input id="drawer-sidebar" type="checkbox" className="drawer-toggle" ref={drawerInputRef} checked={drawerOpen} onChange={() => setDrawerOpen(!drawerOpen)} />
-            <div className="drawer-content flex flex-col w-full">
-              {/* Topbar mobile */}
-              <header className="w-full bg-base-100 shadow flex items-center justify-between px-4 py-3 gap-2 md:hidden">
-                <button className="btn btn-ghost btn-circle" onClick={() => setDrawerOpen(true)} aria-label="Buka Menu">
-                  <Menu className="w-6 h-6 text-base-content" />
-                </button>
-                <span className="font-bold text-xl text-primary">SIAKAD</span>
-                <div className="flex items-center gap-2">
+        <UIProvider>
+          <div className="flex min-h-screen">
+            {/* Drawer untuk mobile */}
+            <div className="drawer md:hidden">
+              <input id="drawer-sidebar" type="checkbox" className="drawer-toggle" ref={drawerInputRef} checked={drawerOpen} onChange={() => setDrawerOpen(!drawerOpen)} />
+              <div className="drawer-content flex flex-col w-full">
+                {/* Topbar mobile */}
+                <header className="w-full bg-base-100 shadow flex items-center justify-between px-4 py-3 gap-2 md:hidden">
+                  <button className="btn btn-ghost btn-circle" onClick={() => setDrawerOpen(true)} aria-label="Buka Menu">
+                    <Menu className="w-6 h-6 text-base-content" />
+                  </button>
+                  <span className="font-bold text-xl text-primary">SIAKAD</span>
+                  <div className="flex items-center gap-2">
+                    <div className="dropdown dropdown-end">
+                      <label tabIndex={0} className="btn btn-ghost btn-circle indicator">
+                        <Bell className="w-6 h-6 text-base-content" />
+                        {unreadCount > 0 && (
+                          <span className="indicator-item badge badge-primary badge-xs">{unreadCount > 9 ? '9+' : unreadCount}</span>
+                        )}
+                      </label>
+                      <div tabIndex={0} className="dropdown-content z-50 shadow-lg bg-base-100 rounded-box w-72 border border-base-300 overflow-hidden">
+                        <div className="flex items-center justify-between px-4 py-2 border-b border-base-300 bg-base-200">
+                          <h3 className="font-semibold">Notifikasi</h3>
+                          {unreadCount > 0 && (
+                            <button 
+                              className="btn btn-ghost btn-xs flex items-center gap-1 text-xs"
+                              onClick={markAllAsRead}
+                            >
+                              <Check className="w-3 h-3" /> Tandai Semua Dibaca
+                            </button>
+                          )}
+                        </div>
+                        <div className="max-h-80 overflow-y-auto">
+                          {notifLoading ? (
+                            <div className="flex justify-center items-center p-4">
+                              <span className="loading loading-spinner loading-sm text-primary"></span>
+                            </div>
+                          ) : notifications.length === 0 ? (
+                            <div className="p-4 text-center text-base-content/70">
+                              <p>Tidak ada notifikasi</p>
+                            </div>
+                          ) : (
+                            <div>
+                              {notifications.map((notif) => (
+                                <div 
+                                  key={notif.id} 
+                                  className={`p-3 border-b border-base-300 hover:bg-base-200 cursor-pointer ${!notif.isRead ? 'bg-primary/5' : ''}`}
+                                  onClick={() => !notif.isRead && markAsRead(notif.id)}
+                                >
+                                  <div className="flex justify-between items-start gap-2 mb-1">
+                                    <h4 className={`text-sm font-medium ${!notif.isRead ? 'text-primary' : ''}`}>{notif.title}</h4>
+                                    <span className={`badge badge-sm ${getNotifBadgeClass(notif.type)}`}>{notif.type}</span>
+                                  </div>
+                                  <p className="text-xs text-base-content/80 line-clamp-2">{notif.message}</p>
+                                  <p className="text-xs text-base-content/60 mt-1">{formatNotifTime(notif.created_at)}</p>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-2 border-t border-base-300 bg-base-200">
+                          <Link 
+                            href="/admin/notifikasi" 
+                            className="btn btn-sm btn-block btn-ghost"
+                            onClick={() => document.activeElement instanceof HTMLElement && document.activeElement.blur()}
+                          >
+                            Lihat Semua Notifikasi
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="dropdown dropdown-end">
+                      <label tabIndex={0} className="btn btn-ghost btn-circle avatar ring-2 ring-primary hover:ring-4 hover:ring-primary/60 transition-all duration-200">
+                        {renderAvatar("w-8 h-8")}
+                      </label>
+                      <ul tabIndex={0} className="mt-3 shadow dropdown-content bg-base-100 rounded-xl overflow-hidden border border-base-300 w-56 transition-all duration-200 z-50">
+                        <div className="px-4 py-3 bg-primary/10 border-b border-base-300">
+                          <div className="flex items-center gap-3">
+                            {renderAvatar("w-10 h-10")}
+                            <div className="flex flex-col">
+                              <span className="text-sm font-medium text-base-content">{userData?.name || 'User'}</span>
+                              <span className="text-xs text-base-content/70">{userData?.email || ''}</span>
+                              <span className="text-xs mt-1 badge badge-xs badge-primary">{userData?.role?.name || 'User'}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-1">
+                          <li>
+                            <a className="flex items-center gap-2 p-2 text-sm hover:bg-primary/10 rounded-lg transition-all duration-200">
+                              <User className="w-4 h-4 text-primary" />
+                              <span>Profil Saya</span>
+                            </a>
+                          </li>
+                          <li>
+                            <button 
+                              onClick={handleLogout} 
+                              className="flex items-center gap-2 p-2 w-full text-sm text-left hover:bg-error/10 hover:text-error rounded-lg transition-all duration-200"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                              </svg>
+                              <span>Keluar</span>
+                            </button>
+                          </li>
+                        </div>
+                      </ul>
+                    </div>
+                  </div>
+                </header>
+                {/* Konten utama di mobile */}
+                <main className="flex-1 p-4 bg-base-100 transition-all duration-200">{children}</main>
+              </div>
+              <div className="drawer-side z-40">
+                <label htmlFor="drawer-sidebar" className="drawer-overlay"></label>
+                <aside className="menu p-4 w-64 min-h-full bg-base-200 text-base-content flex flex-col relative">
+                  <div className="font-bold text-2xl mb-8 text-primary flex items-center gap-2 mt-4">
+                    <BookOpen className="w-7 h-7 text-primary" />
+                    <span>SIAKAD</span>
+                    <button className="btn btn-ghost btn-circle ml-auto md:hidden" onClick={() => setDrawerOpen(false)} aria-label="Tutup Menu">
+                      <X className="w-6 h-6 text-base-content" />
+                    </button>
+                  </div>
+                  <nav className="flex flex-col gap-1">
+                    <Link className={`btn btn-ghost justify-start gap-3${pathname === "/admin" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin" onClick={() => setDrawerOpen(false)}><BookOpen className="w-5 h-5" />Dashboard</Link>
+                    <Link className={`btn btn-ghost justify-start gap-3${pathname.startsWith("/admin/siswa") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/siswa" onClick={() => setDrawerOpen(false)}><Users className="w-5 h-5" />Siswa</Link>
+                    <Link className={`btn btn-ghost justify-start gap-3${pathname === "/admin/kelas" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/kelas" onClick={() => setDrawerOpen(false)}><ClipboardList className="w-5 h-5" />Kelas</Link>
+                    <Link className={`btn btn-ghost justify-start gap-3${pathname === "/admin/guru" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/guru" onClick={() => setDrawerOpen(false)}><User className="w-5 h-5" />Guru</Link>
+                    <Link className={`btn btn-ghost justify-start gap-3${pathname.startsWith("/admin/user") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/user" onClick={() => setDrawerOpen(false)}><User className="w-5 h-5" />User</Link>
+                    <Link className={`btn btn-ghost justify-start gap-3${pathname.startsWith("/admin/role") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/role" onClick={() => setDrawerOpen(false)}><Users className="w-5 h-5" />Role</Link>
+                    <Link className={`btn btn-ghost justify-start gap-3${pathname === "/admin/nilai" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/nilai" onClick={() => setDrawerOpen(false)}><BookOpen className="w-5 h-5" />Nilai</Link>
+                    <Link className={`btn btn-ghost justify-start gap-3${pathname === "/admin/absensi" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/absensi" onClick={() => setDrawerOpen(false)}><CalendarCheck className="w-5 h-5" />Absensi</Link>
+                    <Link className={`btn btn-ghost justify-start gap-3${pathname === "/admin/keuangan" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/keuangan" onClick={() => setDrawerOpen(false)}><Wallet className="w-5 h-5" />Keuangan</Link>
+                  </nav>
+                  <div className="mt-auto flex flex-col gap-2 pt-8 border-t border-base-300">
+                    <button className="btn btn-ghost justify-start gap-3"><User className="w-5 h-5" />Profil</button>
+                    <button className="btn btn-ghost justify-start gap-3" onClick={handleLogout}>Keluar</button>
+                  </div>
+                </aside>
+              </div>
+            </div>
+            {/* Sidebar desktop */}
+            <aside className={`bg-base-200 text-base-content p-4 flex-col shadow-xl min-h-screen transition-[width] duration-300 ease-in-out hidden md:flex ${sidebarOpen ? 'w-64' : 'w-20'}`} style={{transitionProperty: 'width'}}>
+              <div className={`font-bold text-2xl mb-8 text-primary flex items-center gap-2 transition-all duration-200 ${sidebarOpen ? '' : 'justify-center'}`}>
+                <BookOpen className="w-7 h-7 text-primary" />
+                {sidebarOpen && <span>SIAKAD</span>}
+              </div>
+              <nav className={`flex flex-col ${sidebarOpen ? 'gap-1' : 'gap-0'} transition-all duration-300 ease-in-out`}>
+                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname === "/admin" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Dashboard"><BookOpen className="w-5 h-5" /></div>{sidebarOpen && 'Dashboard'}</Link>
+                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname.startsWith("/admin/siswa") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/siswa"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Siswa"><Users className="w-5 h-5" /></div>{sidebarOpen && 'Siswa'}</Link>
+                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname === "/admin/kelas" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/kelas"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Kelas"><ClipboardList className="w-5 h-5" /></div>{sidebarOpen && 'Kelas'}</Link>
+                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname === "/admin/guru" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/guru"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Guru"><User className="w-5 h-5" /></div>{sidebarOpen && 'Guru'}</Link>
+                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname.startsWith("/admin/user") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/user"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="User"><User className="w-5 h-5" /></div>{sidebarOpen && 'User'}</Link>
+                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname.startsWith("/admin/role") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/role"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Role"><Users className="w-5 h-5" /></div>{sidebarOpen && 'Role'}</Link>
+                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname === "/admin/nilai" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/nilai"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Nilai"><BookOpen className="w-5 h-5" /></div>{sidebarOpen && 'Nilai'}</Link>
+                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname === "/admin/absensi" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/absensi"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Absensi"><CalendarCheck className="w-5 h-5" /></div>{sidebarOpen && 'Absensi'}</Link>
+                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname === "/admin/keuangan" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/keuangan"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Keuangan"><Wallet className="w-5 h-5" /></div>{sidebarOpen && 'Keuangan'}</Link>
+              </nav>
+              <div className="mt-auto flex flex-col gap-2 pt-8 border-t border-base-300">
+                <button className="btn btn-ghost justify-start gap-3"><User className="w-5 h-5" />{sidebarOpen && 'Profil'}</button>
+                <button className="btn btn-ghost justify-start gap-3" onClick={handleLogout}>{sidebarOpen && 'Keluar'}</button>
+              </div>
+            </aside>
+            {/* Main Content desktop */}
+            <div className="flex-1 flex flex-col hidden md:flex">
+              {/* Topbar desktop */}
+              <header className="w-full bg-base-100 shadow flex items-center justify-between px-6 py-4 gap-4">
+                <div className="flex items-center gap-3">
+                  <button className="btn btn-ghost btn-circle text-base-content" onClick={() => setSidebarOpen((v) => !v)} aria-label="Toggle Sidebar">
+                    {sidebarOpen ? <ChevronLeft className="w-6 h-6 text-base-content" /> : <ChevronRight className="w-6 h-6 text-base-content" />}
+                  </button>
+                </div>
+                <div className="flex-1 flex items-center max-w-lg mx-4">
+                  <label className="flex items-center w-full bg-base-200 border border-base-300 rounded-full px-3 py-1 gap-2 focus-within:border-primary transition-all">
+                    <Search className="w-5 h-5 text-base-content/70" />
+                    <input type="text" className="grow bg-transparent outline-none text-base-content placeholder:text-base-content/50" placeholder="Cari..." />
+                  </label>
+                </div>
+                <div className="flex items-center gap-4">
                   <div className="dropdown dropdown-end">
                     <label tabIndex={0} className="btn btn-ghost btn-circle indicator">
                       <Bell className="w-6 h-6 text-base-content" />
                       {unreadCount > 0 && (
-                        <span className="indicator-item badge badge-primary badge-xs">{unreadCount > 9 ? '9+' : unreadCount}</span>
+                        <span className="indicator-item badge badge-primary badge-sm">{unreadCount > 99 ? '99+' : unreadCount}</span>
                       )}
                     </label>
-                    <div tabIndex={0} className="dropdown-content z-50 shadow-lg bg-base-100 rounded-box w-72 border border-base-300 overflow-hidden">
-                      <div className="flex items-center justify-between px-4 py-2 border-b border-base-300 bg-base-200">
+                    <div tabIndex={0} className="dropdown-content z-50 shadow-lg bg-base-100 rounded-box w-80 border border-base-300 overflow-hidden">
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-base-300 bg-base-200">
                         <h3 className="font-semibold">Notifikasi</h3>
                         {unreadCount > 0 && (
                           <button 
-                            className="btn btn-ghost btn-xs flex items-center gap-1 text-xs"
+                            className="btn btn-ghost btn-xs flex items-center gap-1"
                             onClick={markAllAsRead}
                           >
-                            <Check className="w-3 h-3" /> Tandai Semua Dibaca
+                            <Check className="w-4 h-4" /> Tandai Semua Dibaca
                           </button>
                         )}
                       </div>
-                      <div className="max-h-80 overflow-y-auto">
+                      <div className="max-h-96 overflow-y-auto">
                         {notifLoading ? (
-                          <div className="flex justify-center items-center p-4">
-                            <span className="loading loading-spinner loading-sm text-primary"></span>
+                          <div className="flex justify-center items-center p-6">
+                            <span className="loading loading-spinner loading-md text-primary"></span>
                           </div>
                         ) : notifications.length === 0 ? (
-                          <div className="p-4 text-center text-base-content/70">
+                          <div className="p-6 text-center text-base-content/70">
+                            <Bell className="w-12 h-12 mx-auto mb-2 opacity-30" />
                             <p>Tidak ada notifikasi</p>
                           </div>
                         ) : (
@@ -309,21 +481,21 @@ export default function RootLayout({
                             {notifications.map((notif) => (
                               <div 
                                 key={notif.id} 
-                                className={`p-3 border-b border-base-300 hover:bg-base-200 cursor-pointer ${!notif.isRead ? 'bg-primary/5' : ''}`}
+                                className={`p-4 border-b border-base-300 hover:bg-base-200 cursor-pointer ${!notif.isRead ? 'bg-primary/5' : ''}`}
                                 onClick={() => !notif.isRead && markAsRead(notif.id)}
                               >
                                 <div className="flex justify-between items-start gap-2 mb-1">
                                   <h4 className={`text-sm font-medium ${!notif.isRead ? 'text-primary' : ''}`}>{notif.title}</h4>
                                   <span className={`badge badge-sm ${getNotifBadgeClass(notif.type)}`}>{notif.type}</span>
                                 </div>
-                                <p className="text-xs text-base-content/80 line-clamp-2">{notif.message}</p>
+                                <p className="text-sm text-base-content/80 line-clamp-2">{notif.message}</p>
                                 <p className="text-xs text-base-content/60 mt-1">{formatNotifTime(notif.created_at)}</p>
                               </div>
                             ))}
                           </div>
                         )}
                       </div>
-                      <div className="p-2 border-t border-base-300 bg-base-200">
+                      <div className="p-3 border-t border-base-300 bg-base-200">
                         <Link 
                           href="/admin/notifikasi" 
                           className="btn btn-sm btn-block btn-ghost"
@@ -336,32 +508,32 @@ export default function RootLayout({
                   </div>
                   <div className="dropdown dropdown-end">
                     <label tabIndex={0} className="btn btn-ghost btn-circle avatar ring-2 ring-primary hover:ring-4 hover:ring-primary/60 transition-all duration-200">
-                      {renderAvatar("w-8 h-8")}
+                      {renderAvatar("w-10 h-10")}
                     </label>
-                    <ul tabIndex={0} className="mt-3 shadow dropdown-content bg-base-100 rounded-xl overflow-hidden border border-base-300 w-56 transition-all duration-200 z-50">
+                    <ul tabIndex={0} className="mt-3 shadow dropdown-content bg-base-100 rounded-xl overflow-hidden border border-base-300 w-64 transition-all duration-200 z-50">
                       <div className="px-4 py-3 bg-primary/10 border-b border-base-300">
                         <div className="flex items-center gap-3">
-                          {renderAvatar("w-10 h-10")}
+                          {renderAvatar("w-12 h-12")}
                           <div className="flex flex-col">
-                            <span className="text-sm font-medium text-base-content">{userData?.name || 'User'}</span>
+                            <span className="text-base font-medium text-base-content">{userData?.name || 'User'}</span>
                             <span className="text-xs text-base-content/70">{userData?.email || ''}</span>
-                            <span className="text-xs mt-1 badge badge-xs badge-primary">{userData?.role?.name || 'User'}</span>
+                            <span className="text-xs mt-1 badge badge-sm badge-primary">{userData?.role?.name || 'User'}</span>
                           </div>
                         </div>
                       </div>
                       <div className="p-1">
                         <li>
-                          <a className="flex items-center gap-2 p-2 text-sm hover:bg-primary/10 rounded-lg transition-all duration-200">
-                            <User className="w-4 h-4 text-primary" />
+                          <a className="flex items-center gap-2 p-3 hover:bg-primary/10 rounded-lg transition-all duration-200">
+                            <User className="w-5 h-5 text-primary" />
                             <span>Profil Saya</span>
                           </a>
                         </li>
                         <li>
                           <button 
                             onClick={handleLogout} 
-                            className="flex items-center gap-2 p-2 w-full text-sm text-left hover:bg-error/10 hover:text-error rounded-lg transition-all duration-200"
+                            className="flex items-center gap-2 p-3 w-full text-left hover:bg-error/10 hover:text-error rounded-lg transition-all duration-200"
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
                               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                               <polyline points="16 17 21 12 16 7"></polyline>
                               <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -372,193 +544,26 @@ export default function RootLayout({
                       </div>
                     </ul>
                   </div>
-                </div>
-              </header>
-              {/* Konten utama di mobile */}
-              <main className="flex-1 p-4 bg-base-100 transition-all duration-200">{children}</main>
-            </div>
-            <div className="drawer-side z-40">
-              <label htmlFor="drawer-sidebar" className="drawer-overlay"></label>
-              <aside className="menu p-4 w-64 min-h-full bg-base-200 text-base-content flex flex-col relative">
-                <div className="font-bold text-2xl mb-8 text-primary flex items-center gap-2 mt-4">
-                  <BookOpen className="w-7 h-7 text-primary" />
-                  <span>SIAKAD</span>
-                  <button className="btn btn-ghost btn-circle ml-auto md:hidden" onClick={() => setDrawerOpen(false)} aria-label="Tutup Menu">
-                    <X className="w-6 h-6 text-base-content" />
-                  </button>
-                </div>
-                <nav className="flex flex-col gap-1">
-                  <Link className={`btn btn-ghost justify-start gap-3${pathname === "/admin" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin" onClick={() => setDrawerOpen(false)}><BookOpen className="w-5 h-5" />Dashboard</Link>
-                  <Link className={`btn btn-ghost justify-start gap-3${pathname.startsWith("/admin/siswa") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/siswa" onClick={() => setDrawerOpen(false)}><Users className="w-5 h-5" />Siswa</Link>
-                  <Link className={`btn btn-ghost justify-start gap-3${pathname === "/admin/kelas" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/kelas" onClick={() => setDrawerOpen(false)}><ClipboardList className="w-5 h-5" />Kelas</Link>
-                  <Link className={`btn btn-ghost justify-start gap-3${pathname === "/admin/guru" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/guru" onClick={() => setDrawerOpen(false)}><User className="w-5 h-5" />Guru</Link>
-                  <Link className={`btn btn-ghost justify-start gap-3${pathname.startsWith("/admin/user") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/user" onClick={() => setDrawerOpen(false)}><User className="w-5 h-5" />User</Link>
-                  <Link className={`btn btn-ghost justify-start gap-3${pathname.startsWith("/admin/role") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/role" onClick={() => setDrawerOpen(false)}><Users className="w-5 h-5" />Role</Link>
-                  <Link className={`btn btn-ghost justify-start gap-3${pathname === "/admin/nilai" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/nilai" onClick={() => setDrawerOpen(false)}><BookOpen className="w-5 h-5" />Nilai</Link>
-                  <Link className={`btn btn-ghost justify-start gap-3${pathname === "/admin/absensi" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/absensi" onClick={() => setDrawerOpen(false)}><CalendarCheck className="w-5 h-5" />Absensi</Link>
-                  <Link className={`btn btn-ghost justify-start gap-3${pathname === "/admin/keuangan" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/keuangan" onClick={() => setDrawerOpen(false)}><Wallet className="w-5 h-5" />Keuangan</Link>
-                </nav>
-                <div className="mt-auto flex flex-col gap-2 pt-8 border-t border-base-300">
-                  <button className="btn btn-ghost justify-start gap-3"><User className="w-5 h-5" />Profil</button>
-                  <button className="btn btn-ghost justify-start gap-3" onClick={handleLogout}>Keluar</button>
-                </div>
-              </aside>
-            </div>
-          </div>
-          {/* Sidebar desktop */}
-          <aside className={`bg-base-200 text-base-content p-4 flex-col shadow-xl min-h-screen transition-[width] duration-300 ease-in-out hidden md:flex ${sidebarOpen ? 'w-64' : 'w-20'}`} style={{transitionProperty: 'width'}}>
-            <div className={`font-bold text-2xl mb-8 text-primary flex items-center gap-2 transition-all duration-200 ${sidebarOpen ? '' : 'justify-center'}`}>
-              <BookOpen className="w-7 h-7 text-primary" />
-              {sidebarOpen && <span>SIAKAD</span>}
-            </div>
-            <nav className={`flex flex-col ${sidebarOpen ? 'gap-1' : 'gap-0'} transition-all duration-300 ease-in-out`}>
-              <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname === "/admin" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Dashboard"><BookOpen className="w-5 h-5" /></div>{sidebarOpen && 'Dashboard'}</Link>
-              <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname.startsWith("/admin/siswa") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/siswa"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Siswa"><Users className="w-5 h-5" /></div>{sidebarOpen && 'Siswa'}</Link>
-              <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname === "/admin/kelas" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/kelas"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Kelas"><ClipboardList className="w-5 h-5" /></div>{sidebarOpen && 'Kelas'}</Link>
-              <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname === "/admin/guru" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/guru"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Guru"><User className="w-5 h-5" /></div>{sidebarOpen && 'Guru'}</Link>
-              <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname.startsWith("/admin/user") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/user"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="User"><User className="w-5 h-5" /></div>{sidebarOpen && 'User'}</Link>
-              <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname.startsWith("/admin/role") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/role"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Role"><Users className="w-5 h-5" /></div>{sidebarOpen && 'Role'}</Link>
-              <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname === "/admin/nilai" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/nilai"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Nilai"><BookOpen className="w-5 h-5" /></div>{sidebarOpen && 'Nilai'}</Link>
-              <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname === "/admin/absensi" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/absensi"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Absensi"><CalendarCheck className="w-5 h-5" /></div>{sidebarOpen && 'Absensi'}</Link>
-              <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname === "/admin/keuangan" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/keuangan"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Keuangan"><Wallet className="w-5 h-5" /></div>{sidebarOpen && 'Keuangan'}</Link>
-            </nav>
-            <div className="mt-auto flex flex-col gap-2 pt-8 border-t border-base-300">
-              <button className="btn btn-ghost justify-start gap-3"><User className="w-5 h-5" />{sidebarOpen && 'Profil'}</button>
-              <button className="btn btn-ghost justify-start gap-3" onClick={handleLogout}>{sidebarOpen && 'Keluar'}</button>
-            </div>
-          </aside>
-          {/* Main Content desktop */}
-          <div className="flex-1 flex flex-col hidden md:flex">
-            {/* Topbar desktop */}
-            <header className="w-full bg-base-100 shadow flex items-center justify-between px-6 py-4 gap-4">
-              <div className="flex items-center gap-3">
-                <button className="btn btn-ghost btn-circle text-base-content" onClick={() => setSidebarOpen((v) => !v)} aria-label="Toggle Sidebar">
-                  {sidebarOpen ? <ChevronLeft className="w-6 h-6 text-base-content" /> : <ChevronRight className="w-6 h-6 text-base-content" />}
-                </button>
-              </div>
-              <div className="flex-1 flex items-center max-w-lg mx-4">
-                <label className="flex items-center w-full bg-base-200 border border-base-300 rounded-full px-3 py-1 gap-2 focus-within:border-primary transition-all">
-                  <Search className="w-5 h-5 text-base-content/70" />
-                  <input type="text" className="grow bg-transparent outline-none text-base-content placeholder:text-base-content/50" placeholder="Cari..." />
-                </label>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="dropdown dropdown-end">
-                  <label tabIndex={0} className="btn btn-ghost btn-circle indicator">
-                    <Bell className="w-6 h-6 text-base-content" />
-                    {unreadCount > 0 && (
-                      <span className="indicator-item badge badge-primary badge-sm">{unreadCount > 99 ? '99+' : unreadCount}</span>
-                    )}
-                  </label>
-                  <div tabIndex={0} className="dropdown-content z-50 shadow-lg bg-base-100 rounded-box w-80 border border-base-300 overflow-hidden">
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-base-300 bg-base-200">
-                      <h3 className="font-semibold">Notifikasi</h3>
-                      {unreadCount > 0 && (
-                        <button 
-                          className="btn btn-ghost btn-xs flex items-center gap-1"
-                          onClick={markAllAsRead}
-                        >
-                          <Check className="w-4 h-4" /> Tandai Semua Dibaca
-                        </button>
-                      )}
-                    </div>
-                    <div className="max-h-96 overflow-y-auto">
-                      {notifLoading ? (
-                        <div className="flex justify-center items-center p-6">
-                          <span className="loading loading-spinner loading-md text-primary"></span>
-                        </div>
-                      ) : notifications.length === 0 ? (
-                        <div className="p-6 text-center text-base-content/70">
-                          <Bell className="w-12 h-12 mx-auto mb-2 opacity-30" />
-                          <p>Tidak ada notifikasi</p>
-                        </div>
-                      ) : (
-                        <div>
-                          {notifications.map((notif) => (
-                            <div 
-                              key={notif.id} 
-                              className={`p-4 border-b border-base-300 hover:bg-base-200 cursor-pointer ${!notif.isRead ? 'bg-primary/5' : ''}`}
-                              onClick={() => !notif.isRead && markAsRead(notif.id)}
-                            >
-                              <div className="flex justify-between items-start gap-2 mb-1">
-                                <h4 className={`text-sm font-medium ${!notif.isRead ? 'text-primary' : ''}`}>{notif.title}</h4>
-                                <span className={`badge badge-sm ${getNotifBadgeClass(notif.type)}`}>{notif.type}</span>
-                              </div>
-                              <p className="text-sm text-base-content/80 line-clamp-2">{notif.message}</p>
-                              <p className="text-xs text-base-content/60 mt-1">{formatNotifTime(notif.created_at)}</p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-3 border-t border-base-300 bg-base-200">
-                      <Link 
-                        href="/admin/notifikasi" 
-                        className="btn btn-sm btn-block btn-ghost"
-                        onClick={() => document.activeElement instanceof HTMLElement && document.activeElement.blur()}
-                      >
-                        Lihat Semua Notifikasi
-                      </Link>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <select
+                      className="select select-bordered w-28 text-base-content"
+                      value={theme}
+                      onChange={e => {
+                        setTheme(e.target.value);
+                      }}
+                    >
+                      {themes.map(t => (
+                        <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
-                <div className="dropdown dropdown-end">
-                  <label tabIndex={0} className="btn btn-ghost btn-circle avatar ring-2 ring-primary hover:ring-4 hover:ring-primary/60 transition-all duration-200">
-                    {renderAvatar("w-10 h-10")}
-                  </label>
-                  <ul tabIndex={0} className="mt-3 shadow dropdown-content bg-base-100 rounded-xl overflow-hidden border border-base-300 w-64 transition-all duration-200 z-50">
-                    <div className="px-4 py-3 bg-primary/10 border-b border-base-300">
-                      <div className="flex items-center gap-3">
-                        {renderAvatar("w-12 h-12")}
-                        <div className="flex flex-col">
-                          <span className="text-base font-medium text-base-content">{userData?.name || 'User'}</span>
-                          <span className="text-xs text-base-content/70">{userData?.email || ''}</span>
-                          <span className="text-xs mt-1 badge badge-sm badge-primary">{userData?.role?.name || 'User'}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="p-1">
-                      <li>
-                        <a className="flex items-center gap-2 p-3 hover:bg-primary/10 rounded-lg transition-all duration-200">
-                          <User className="w-5 h-5 text-primary" />
-                          <span>Profil Saya</span>
-                        </a>
-                      </li>
-                      <li>
-                        <button 
-                          onClick={handleLogout} 
-                          className="flex items-center gap-2 p-3 w-full text-left hover:bg-error/10 hover:text-error rounded-lg transition-all duration-200"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                            <polyline points="16 17 21 12 16 7"></polyline>
-                            <line x1="21" y1="12" x2="9" y2="12"></line>
-                          </svg>
-                          <span>Keluar</span>
-                        </button>
-                      </li>
-                    </div>
-                  </ul>
-                </div>
-                <div className="flex items-center gap-2">
-                  <select
-                    className="select select-bordered w-28 text-base-content"
-                    value={theme}
-                    onChange={e => {
-                      setTheme(e.target.value);
-                    }}
-                  >
-                    {themes.map(t => (
-                      <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </header>
-            {/* Content */}
-            <main className="flex-1 p-6 bg-base-100 transition-all duration-200">{children}</main>
+              </header>
+              {/* Content */}
+              <main className="flex-1 p-6 bg-base-100 transition-all duration-200">{children}</main>
+            </div>
           </div>
-        </div>
+        </UIProvider>
       </body>
     </html>
   );

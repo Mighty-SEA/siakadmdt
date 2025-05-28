@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Save } from "lucide-react";
+import { Save, CheckCircle2, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useUI } from "@/lib/ui-context";
 
 export default function TambahSiswaPage() {
   const [tab, setTab] = useState<'pribadi' | 'ortu'>('pribadi');
@@ -26,6 +27,7 @@ export default function TambahSiswaPage() {
   });
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { showToast } = useUI();
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const { name, value } = e.target;
@@ -46,13 +48,12 @@ export default function TambahSiswaPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        alert("Siswa berhasil ditambahkan!");
-        router.push("/admin/siswa");
+        router.push(`/admin/siswa?status=success&message=${encodeURIComponent("Siswa berhasil ditambahkan!")}`);
       } else {
-        alert(data.error || "Gagal menambah siswa");
+        showToast(data.error || "Gagal menambah siswa", "error");
       }
     } catch (_err) {
-      alert("Terjadi kesalahan jaringan");
+      showToast("Terjadi kesalahan jaringan", "error");
     } finally {
       setLoading(false);
     }
