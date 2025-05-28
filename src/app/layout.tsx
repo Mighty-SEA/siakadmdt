@@ -7,6 +7,15 @@ import { User, Users, BookOpen, ClipboardList, CalendarCheck, Wallet, Bell, Sear
 import { usePathname, useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 
+// Tipe data untuk user
+type UserData = {
+  id: number;
+  name: string;
+  email: string;
+  avatar?: string | null;
+  role: { id: number; name: string };
+};
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -26,6 +35,8 @@ export default function RootLayout({
   const [theme, setTheme] = useState("light");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  // State untuk menyimpan data user
+  const [userData, setUserData] = useState<UserData | null>(null);
   const pathname = usePathname();
   const router = useRouter();
   const themes = [
@@ -41,6 +52,19 @@ export default function RootLayout({
       document.documentElement.setAttribute("data-theme", savedTheme);
     } else {
       document.documentElement.setAttribute("data-theme", theme);
+    }
+  }, []);
+
+  // Ambil data user dari cookie saat mount
+  useEffect(() => {
+    const userCookie = Cookies.get('user');
+    if (userCookie) {
+      try {
+        const parsedUser = JSON.parse(userCookie);
+        setUserData(parsedUser);
+      } catch (error) {
+        console.error("Error parsing user cookie:", error);
+      }
     }
   }, []);
 
@@ -71,6 +95,31 @@ export default function RootLayout({
       drawerInputRef.current.checked = drawerOpen;
     }
   }, [drawerOpen]);
+
+  // Helper untuk menampilkan avatar
+  const renderAvatar = (className: string = "") => {
+    if (userData?.avatar) {
+      // Periksa apakah avatar adalah URL lengkap atau path relatif
+      const avatarSrc = userData.avatar.startsWith('http') 
+        ? userData.avatar 
+        : userData.avatar.includes('/avatar/') 
+          ? userData.avatar 
+          : `/avatar/${userData.avatar}`;
+      
+      return (
+        <div className={`rounded-full ${className} overflow-hidden`}>
+          <img src={avatarSrc} alt={userData.name} className="w-full h-full object-cover" />
+        </div>
+      );
+    }
+    
+    // Tampilkan inisial jika tidak ada avatar
+    return (
+      <div className={`rounded-full ${className} bg-base-200 flex items-center justify-center`}>
+        <User className="w-7 h-7 text-base-content" />
+      </div>
+    );
+  };
 
   // Fungsi logout
   const handleLogout = () => {
@@ -108,9 +157,7 @@ export default function RootLayout({
                   <button className="btn btn-ghost btn-circle"><Bell className="w-6 h-6 text-base-content" /></button>
                   <div className="dropdown dropdown-end">
                     <label tabIndex={0} className="btn btn-ghost btn-circle avatar ring-2 ring-primary hover:ring-4 hover:ring-primary/60 transition-all duration-200">
-                      <div className="w-8 h-8 rounded-full bg-base-200 flex items-center justify-center">
-                        <User className="w-6 h-6 text-base-content" />
-                      </div>
+                      {renderAvatar("w-8 h-8")}
                     </label>
                     <ul tabIndex={0} className="mt-3 p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-40">
                       <li><a>Profil</a></li>
@@ -191,9 +238,7 @@ export default function RootLayout({
                 <button className="btn btn-ghost btn-circle text-base-content"><Bell className="w-6 h-6 text-base-content" /></button>
                 <div className="dropdown dropdown-end">
                   <label tabIndex={0} className="btn btn-ghost btn-circle avatar ring-2 ring-primary hover:ring-4 hover:ring-primary/60 transition-all duration-200">
-                    <div className="w-10 h-10 rounded-full bg-base-200 flex items-center justify-center">
-                      <User className="w-7 h-7 text-base-content" />
-                    </div>
+                    {renderAvatar("w-10 h-10")}
                   </label>
                   <ul tabIndex={0} className="mt-3 p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
                     <li><a>Profil</a></li>
@@ -201,7 +246,6 @@ export default function RootLayout({
                   </ul>
                 </div>
                 <div className="flex items-center gap-2">
-                  <label className="font-semibold text-base-content">Tema:</label>
                   <select
                     className="select select-bordered w-28 text-base-content"
                     value={theme}
