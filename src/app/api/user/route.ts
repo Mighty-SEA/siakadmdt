@@ -7,8 +7,24 @@ import path from "path";
 export async function GET() {
   try {
     const users = await prisma.user.findMany({ orderBy: { id: "asc" }, include: { role: true } });
-    return NextResponse.json({ users });
-  } catch {
+    
+    // Pastikan avatar URL selalu konsisten
+    const normalizedUsers = users.map(user => {
+      if (user.avatar) {
+        // Jika avatar tidak dimulai dengan http atau / maka tambahkan /
+        if (!user.avatar.startsWith('http') && !user.avatar.startsWith('/')) {
+          user.avatar = `/avatar/${user.avatar}`;
+        } else if (user.avatar.startsWith('avatar_')) {
+          // Jika hanya nama file avatar, tambahkan path lengkap
+          user.avatar = `/avatar/${user.avatar}`;
+        }
+      }
+      return user;
+    });
+    
+    return NextResponse.json({ users: normalizedUsers });
+  } catch (error) {
+    console.error("Error getting users:", error);
     return NextResponse.json({ error: "Gagal mengambil data user" }, { status: 500 });
   }
 }
@@ -63,9 +79,14 @@ export async function PUT(req: Request) {
       include: { role: true },
     });
     if (oldUser && body.avatar && oldUser.avatar && oldUser.avatar !== body.avatar) {
-      const avatarPath = path.join(process.cwd(), "public", "avatar", oldUser.avatar.replace(/^.*[\\/]/, ""));
-      if (fs.existsSync(avatarPath)) {
-        fs.unlinkSync(avatarPath);
+      try {
+        const oldAvatarFile = oldUser.avatar.replace(/^.*[\\/]/, "").replace(/^\/avatar\//, "");
+        const avatarPath = path.join(process.cwd(), "public", "avatar", oldAvatarFile);
+        if (fs.existsSync(avatarPath)) {
+          fs.unlinkSync(avatarPath);
+        }
+      } catch (error) {
+        console.error("Gagal menghapus avatar lama:", error);
       }
     }
     return NextResponse.json({ user });
@@ -83,9 +104,14 @@ export async function DELETE(req: Request) {
     const oldUser = await prisma.user.findUnique({ where: { id: Number(id) } });
     await prisma.user.delete({ where: { id: Number(id) } });
     if (oldUser && oldUser.avatar) {
-      const avatarPath = path.join(process.cwd(), "public", "avatar", oldUser.avatar.replace(/^.*[\\/]/, ""));
-      if (fs.existsSync(avatarPath)) {
-        fs.unlinkSync(avatarPath);
+      try {
+        const oldAvatarFile = oldUser.avatar.replace(/^.*[\\/]/, "").replace(/^\/avatar\//, "");
+        const avatarPath = path.join(process.cwd(), "public", "avatar", oldAvatarFile);
+        if (fs.existsSync(avatarPath)) {
+          fs.unlinkSync(avatarPath);
+        }
+      } catch (error) {
+        console.error("Gagal menghapus avatar:", error);
       }
     }
     return NextResponse.json({ success: true });

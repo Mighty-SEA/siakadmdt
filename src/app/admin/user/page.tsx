@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Pencil, Trash2, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { normalizeAvatarUrl } from "@/lib/utils";
 
 type User = {
   id: number;
@@ -22,13 +23,15 @@ export default function UserPage() {
 
   useEffect(() => {
     setLoading(true);
-    fetch("/api/user")
+    fetch(`/api/user?t=${Date.now()}`)
       .then(res => res.json())
       .then(data => {
+        console.log("User list data:", data);
         setUsers(data.users || []);
         setLoading(false);
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error("Error fetching users:", error);
         setError("Gagal mengambil data user");
         setLoading(false);
       });
@@ -89,11 +92,12 @@ export default function UserPage() {
                   <td>
                     {u.avatar ? (
                       <Image 
-                        src={u.avatar.startsWith('http') ? u.avatar : u.avatar.includes('/avatar/') ? u.avatar : `/avatar/${u.avatar}`} 
+                        src={normalizeAvatarUrl(u.avatar)} 
                         alt={u.name} 
                         width={32} 
                         height={32} 
-                        className="w-8 h-8 rounded-full object-cover border" 
+                        className="w-8 h-8 rounded-full object-cover border"
+                        key={`avatar-list-${u.id}-${u.avatar}`}
                       />
                     ) : (
                       <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">

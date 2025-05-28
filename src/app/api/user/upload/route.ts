@@ -19,6 +19,6 @@ export async function POST(req: Request) {
   const buffer = Buffer.from(await file.arrayBuffer());
   const filePath = path.join(process.cwd(), "public", "avatar", fileName);
   await writeFile(filePath, buffer);
-  const url = fileName;
+  const url = `/avatar/${fileName}`;
   return NextResponse.json({ url });
 } 

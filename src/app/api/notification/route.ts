@@ -13,7 +13,7 @@ export async function GET(req: Request) {
     // Dapatkan user ID dari cookie jika tidak ada di query params
     if (!userId) {
       const cookieStore = await cookies();
-      const userCookie = cookieStore.get("user");
+      const userCookie = await cookieStore.get("user");
       
       if (!userCookie?.value) {
         return NextResponse.json(

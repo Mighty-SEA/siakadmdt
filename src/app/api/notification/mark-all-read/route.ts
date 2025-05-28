@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     
     if (!userIdToUse) {
       const cookieStore = await cookies();
-      const userCookie = cookieStore.get("user");
+      const userCookie = await cookieStore.get("user");
       
       if (!userCookie?.value) {
         return NextResponse.json(

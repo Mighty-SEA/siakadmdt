@@ -38,7 +38,7 @@ export async function POST(req: Request) {
   try {
     // Dapatkan user ID dari cookie atau dari request body
     const cookieStore = await cookies();
-    const userCookie = cookieStore.get("user");
+    const userCookie = await cookieStore.get("user");
     
     let userId: number;
     

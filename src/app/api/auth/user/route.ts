@@ -7,9 +7,9 @@ export async function GET() {
     // Mendapatkan timestamp untuk menghindari cache
     const timestamp = Date.now();
     
-    // Get cookie user
-    const cookieStore = cookies();
-    const userCookie = cookieStore.get("user");
+    // Get cookie user - gunakan await karena cookies() adalah async API di Next.js terbaru
+    const cookieStore = await cookies();
+    const userCookie = await cookieStore.get("user");
     
     if (!userCookie?.value) {
       return NextResponse.json({ error: "Tidak terautentikasi" }, { status: 401 });

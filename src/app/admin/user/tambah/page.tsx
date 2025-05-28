@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Save } from "lucide-react";
 import Image from "next/image";
+import { normalizeAvatarUrl } from "@/lib/utils";
 
 export default function TambahUserPage() {
   const [form, setForm] = useState({
@@ -54,8 +55,10 @@ export default function TambahUserPage() {
           body: formData,
         });
         const dataUpload = await resUpload.json();
+        console.log("Upload response:", dataUpload);
         if (resUpload.ok) {
           avatarUrl = dataUpload.url;
+          console.log("Avatar URL set to:", avatarUrl);
         } else {
           alert(dataUpload.error || "Gagal upload avatar");
           setLoading(false);
@@ -74,13 +77,15 @@ export default function TambahUserPage() {
         }),
       });
       const data = await res.json();
+      console.log("User API response:", data);
       if (res.ok) {
         alert("User berhasil ditambahkan!");
         router.push("/admin/user");
       } else {
         alert(data.error || "Gagal menambah user");
       }
-    } catch {
+    } catch (error) {
+      console.error("Error:", error);
       alert("Terjadi kesalahan jaringan");
     } finally {
       setLoading(false);
@@ -100,9 +105,23 @@ export default function TambahUserPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6 items-start">
           <div className="md:col-span-2 flex flex-col items-center mb-2">
             {avatarPreview ? (
-              <Image src={avatarPreview} alt="Avatar preview" width={112} height={112} className="w-28 h-28 rounded-full object-cover border-4 border-primary shadow-lg mb-2" />
+              <Image 
+                src={avatarPreview} 
+                alt="Avatar preview" 
+                width={112} 
+                height={112} 
+                className="w-28 h-28 rounded-full object-cover border-4 border-primary shadow-lg mb-2"
+                key={`preview-${Date.now()}`}
+              />
             ) : form.avatar ? (
-              <Image src={form.avatar.startsWith('http') ? form.avatar : form.avatar.includes('/avatar/') ? form.avatar : `/avatar/${form.avatar}`} alt="Avatar preview" width={112} height={112} className="w-28 h-28 rounded-full object-cover border-4 border-primary shadow-lg mb-2" />
+              <Image 
+                src={normalizeAvatarUrl(form.avatar)} 
+                alt="Avatar user" 
+                width={112} 
+                height={112} 
+                className="w-28 h-28 rounded-full object-cover border-4 border-primary shadow-lg mb-2"
+                key={`avatar-${form.avatar}`}
+              />
             ) : (
               <div className="w-28 h-28 rounded-full bg-primary text-white flex items-center justify-center font-bold text-4xl mb-2 shadow-lg border-4 border-primary">
                 {form.name?.[0]?.toUpperCase() || "?"}
