@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Cookies from "js-cookie";
 
 export default function LoginPage() {
@@ -10,7 +10,6 @@ export default function LoginPage() {
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [isLocked, setIsLocked] = useState(false);
   const [lockTime, setLockTime] = useState<Date | null>(null);
-  const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams?.get('returnUrl') || '/admin';
   const [isMounted, setIsMounted] = useState(false);
@@ -118,8 +117,13 @@ export default function LoginPage() {
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          "Pragma": "no-cache" 
+        },
         body: JSON.stringify(form),
+        cache: 'no-store',
       });
       const data = await res.json();
       
@@ -128,10 +132,25 @@ export default function LoginPage() {
         setLoginAttempts(0);
         localStorage.removeItem('loginLock');
         
-        // Simpan user ke cookie (bukan localStorage)
-        Cookies.set("user", JSON.stringify(data.user), { expires: 7 });
-        // Gunakan returnUrl jika ada
-        router.push(returnUrl);
+        // Hapus cookie lama jika ada untuk memastikan data bersih
+        Cookies.remove('user', { path: '/' });
+        
+        // Simpan user ke cookie dengan opsi yang lebih baik untuk mencegah caching
+        const userData = { 
+          ...data.user, 
+          loginTimestamp: Date.now(),
+          sessionId: Date.now().toString() // Tambahkan session ID unik untuk menghindari masalah cache
+        };
+        
+        Cookies.set("user", JSON.stringify(userData), { 
+          expires: 7, 
+          secure: true,
+          sameSite: 'strict',
+          path: '/'
+        });
+        
+        // Gunakan hard navigation untuk memastikan halaman di-refresh sepenuhnya
+        window.location.href = returnUrl;
       } else {
         // Tambah percobaan login
         const newAttempts = loginAttempts + 1;

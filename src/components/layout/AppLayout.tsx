@@ -13,6 +13,8 @@ type UserData = {
   email: string;
   avatar?: string | null;
   role: { id: number; name: string };
+  loginTimestamp?: number;
+  sessionId?: string;
 };
 
 // Tipe data untuk notifikasi
@@ -49,6 +51,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
     "light","dark","cupcake","bumblebee","emerald","corporate","synthwave","retro","cyberpunk","valentine","halloween","garden","forest","aqua","lofi","pastel","fantasy","wireframe","black","luxury","dracula","cmyk","autumn","business","acid","lemonade","night","coffee","winter","dim","nord","sunset","caramellatte","abyss","silk"
   ];
   const drawerInputRef = useRef<HTMLInputElement>(null);
+  
+  // State untuk tracking session ID
+  const [currentSessionId, setCurrentSessionId] = useState<string>("");
 
   // Fungsi untuk mengambil notifikasi
   const fetchNotifications = useCallback(async () => {
@@ -69,6 +74,38 @@ export default function AppLayout({ children }: AppLayoutProps) {
     }
   }, [userData?.id]);
 
+  // Fungsi untuk mengambil data user dari cookie dan memvalidasi session
+  const getUserFromCookie = useCallback(() => {
+    const userCookie = Cookies.get('user');
+    if (userCookie) {
+      try {
+        const parsedUser = JSON.parse(userCookie);
+        // Jika tidak ada sessionId, tambahkan
+        if (!parsedUser.sessionId) {
+          parsedUser.sessionId = Date.now().toString();
+          // Update cookie dengan sessionId
+          Cookies.set("user", JSON.stringify(parsedUser), { 
+            expires: 7, 
+            secure: true,
+            sameSite: 'strict',
+            path: '/'
+          });
+        }
+        
+        // Update session ID state jika berbeda
+        if (parsedUser.sessionId !== currentSessionId) {
+          setCurrentSessionId(parsedUser.sessionId);
+        }
+        
+        return parsedUser;
+      } catch (error) {
+        console.error("Error parsing user cookie:", error);
+        return null;
+      }
+    }
+    return null;
+  }, [currentSessionId]);
+
   // Inisialisasi tema saat komponen di-mount (hanya sekali)
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -79,20 +116,84 @@ export default function AppLayout({ children }: AppLayoutProps) {
       document.documentElement.setAttribute("data-theme", "light");
     }
     setIsMounted(true);
-  }, []); // Dependency array kosong, hanya dijalankan sekali saat mount
-
-  // Ambil data user dari cookie saat mount
-  useEffect(() => {
-    const userCookie = Cookies.get('user');
-    if (userCookie) {
-      try {
-        const parsedUser = JSON.parse(userCookie);
-        setUserData(parsedUser);
-      } catch (error) {
-        console.error("Error parsing user cookie:", error);
+    
+    // Check user session every time cookies change (external change detection)
+    const checkUserSession = () => {
+      const user = getUserFromCookie();
+      if (user && JSON.stringify(user) !== JSON.stringify(userData)) {
+        console.log("User data changed in cookie, updating state");
+        setUserData(user);
       }
+    };
+    
+    // Setup interval to check for cookie changes every 2 seconds
+    const cookieCheckInterval = setInterval(checkUserSession, 2000);
+    
+    return () => clearInterval(cookieCheckInterval);
+  }, [getUserFromCookie, userData]); 
+
+  // Ambil data user dari cookie saat mount dan setiap navigasi
+  useEffect(() => {
+    const user = getUserFromCookie();
+    if (user) {
+      console.log("Setting user data from cookie");
+      setUserData(user);
+    } else if (pathname !== '/login') {
+      // Jika tidak ada cookie user dan bukan di halaman login, redirect ke login
+      router.push('/login');
     }
-  }, []);
+  }, [pathname, getUserFromCookie, router]);
+  
+  // Refresh data user secara agresif setiap 5 detik saat berada di halaman admin
+  useEffect(() => {
+    if (!userData?.id || pathname === '/login') return;
+    
+    // Fetch data user setiap 5 detik
+    const userRefreshInterval = setInterval(async () => {
+      try {
+        // Buat timestamp unik untuk menghindari caching
+        const timestamp = Date.now();
+        
+        // Gunakan endpoint khusus untuk mendapatkan data user saat ini
+        const res = await fetch(`/api/auth/user?t=${timestamp}`, {
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
+          }
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          if (data.user) {
+            const updatedUser = {
+              ...data.user,
+              loginTimestamp: data.timestamp || Date.now()
+            };
+            
+            // Perbarui cookie hanya jika data berbeda
+            if (JSON.stringify(updatedUser) !== JSON.stringify(userData)) {
+              console.log("Updating user data from active polling");
+              
+              // Update cookie dengan data baru
+              Cookies.set("user", JSON.stringify(updatedUser), { 
+                expires: 7, 
+                secure: true,
+                sameSite: 'strict',
+                path: '/'
+              });
+              
+              // Update state
+              setUserData(updatedUser);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error in active user data refresh:", error);
+      }
+    }, 2000); // Poll every 2 seconds for faster updates
+    
+    return () => clearInterval(userRefreshInterval);
+  }, [userData, pathname]);
   
   // Ambil notifikasi saat user tersedia
   useEffect(() => {
@@ -247,7 +348,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
   // Fungsi logout
   const handleLogout = () => {
     // Hapus cookie
-    Cookies.remove('user');
+    Cookies.remove('user', { path: '/' });
+    setUserData(null);
+    setCurrentSessionId("");
     // Redirect ke halaman login
     router.push('/login');
   };

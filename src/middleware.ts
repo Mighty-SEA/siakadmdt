@@ -42,6 +42,17 @@ export function middleware(request: NextRequest) {
   // Tambahkan header keamanan untuk semua response
   addSecurityHeaders(response);
   
+  // Tambahkan header khusus untuk halaman admin
+  if (pathname.startsWith('/admin')) {
+    // Tambahkan header untuk mencegah caching dengan nilai yang lebih agresif
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+    response.headers.set('Surrogate-Control', 'no-store');
+    // Tambahkan timestamp server untuk membantu deteksi perubahan otentikasi
+    response.headers.set('X-Auth-Timestamp', Date.now().toString());
+    // Secara eksplisit menolak penggunaan cache penyimpanan
+    response.headers.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+  }
+  
   return response;
 }
 
@@ -75,6 +86,11 @@ function addSecurityHeaders(response: NextResponse) {
     'Permissions-Policy', 
     'camera=(), microphone=(), geolocation=(), interest-cohort=()'
   );
+  
+  // Tambahkan header cache-control untuk mencegah caching pada semua response
+  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  response.headers.set('Pragma', 'no-cache');
+  response.headers.set('Expires', '0');
   
   return response;
 }
