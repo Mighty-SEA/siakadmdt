@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
-import { User, Users, BookOpen, ClipboardList, CalendarCheck, Wallet, Bell, Search, ChevronLeft, ChevronRight, Menu, X, Check } from "lucide-react";
+import { User, Users, BookOpen, ClipboardList, CalendarCheck, Wallet, Bell, Search, ChevronLeft, ChevronRight, Menu, X, Check, LayoutDashboard } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { UIProvider } from "@/lib/ui-context";
@@ -289,24 +289,24 @@ export default function RootLayout({
                       </label>
                       <div tabIndex={0} className="dropdown-content z-50 shadow-lg bg-base-100 rounded-box w-72 border border-base-300 overflow-hidden">
                         <div className="flex items-center justify-between px-4 py-2 border-b border-base-300 bg-base-200">
-                          <h3 className="font-semibold">Notifikasi</h3>
+                          <h3 className="font-semibold text-base-content">Notifikasi</h3>
                           {unreadCount > 0 && (
                             <button 
-                              className="btn btn-ghost btn-xs flex items-center gap-1 text-xs"
+                              className="btn btn-ghost btn-xs flex items-center gap-1 text-base-content"
                               onClick={markAllAsRead}
                             >
-                              <Check className="w-3 h-3" /> Tandai Semua Dibaca
+                              <Check className="w-4 h-4" /> Tandai Semua Dibaca
                             </button>
                           )}
                         </div>
-                        <div className="max-h-80 overflow-y-auto">
+                        <div className="max-h-64 overflow-y-auto">
                           {notifLoading ? (
                             <div className="flex justify-center items-center p-4">
-                              <span className="loading loading-spinner loading-sm text-primary"></span>
+                              <span className="loading loading-spinner loading-md text-primary"></span>
                             </div>
                           ) : notifications.length === 0 ? (
                             <div className="p-4 text-center text-base-content/70">
-                              <p>Tidak ada notifikasi</p>
+                              <p className="text-base-content">Tidak ada notifikasi</p>
                             </div>
                           ) : (
                             <div>
@@ -317,14 +317,16 @@ export default function RootLayout({
                                   onClick={() => !notif.isRead && markAsRead(notif.id)}
                                 >
                                   <div className="flex justify-between items-start gap-2 mb-1">
-                                    <h4 className={`text-sm font-medium ${!notif.isRead ? 'text-primary' : ''}`}>{notif.title}</h4>
+                                    <h4 className={`text-sm font-medium ${!notif.isRead ? 'text-primary' : 'text-base-content'}`}>{notif.title}</h4>
                                     <span className={`badge badge-sm ${getNotifBadgeClass(notif.type)}`}>{notif.type}</span>
                                   </div>
                                   <p 
                                     className="text-xs text-base-content/80 line-clamp-2"
                                     dangerouslySetInnerHTML={{ __html: notif.message }}
                                   ></p>
-                                  <p className="text-xs text-base-content/60 mt-1">{formatNotifTime(notif.created_at)}</p>
+                                  <div className="text-xs text-base-content/60 mt-1">
+                                    {formatNotifTime(notif.created_at)}
+                                  </div>
                                 </div>
                               ))}
                             </div>
@@ -333,7 +335,7 @@ export default function RootLayout({
                         <div className="p-2 border-t border-base-300 bg-base-200">
                           <Link 
                             href="/admin/notifikasi" 
-                            className="btn btn-sm btn-block btn-ghost"
+                            className="btn btn-sm btn-block btn-ghost text-base-content"
                             onClick={() => document.activeElement instanceof HTMLElement && document.activeElement.blur()}
                           >
                             Lihat Semua Notifikasi
@@ -395,15 +397,15 @@ export default function RootLayout({
                     </button>
                   </div>
                   <nav className="flex flex-col gap-1">
-                    <Link className={`btn btn-ghost justify-start gap-3${pathname === "/admin" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin" onClick={() => setDrawerOpen(false)}><BookOpen className="w-5 h-5" />Dashboard</Link>
-                    <Link className={`btn btn-ghost justify-start gap-3${pathname.startsWith("/admin/siswa") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/siswa" onClick={() => setDrawerOpen(false)}><Users className="w-5 h-5" />Siswa</Link>
-                    <Link className={`btn btn-ghost justify-start gap-3${pathname === "/admin/kelas" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/kelas" onClick={() => setDrawerOpen(false)}><ClipboardList className="w-5 h-5" />Kelas</Link>
-                    <Link className={`btn btn-ghost justify-start gap-3${pathname === "/admin/guru" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/guru" onClick={() => setDrawerOpen(false)}><User className="w-5 h-5" />Guru</Link>
-                    <Link className={`btn btn-ghost justify-start gap-3${pathname.startsWith("/admin/user") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/user" onClick={() => setDrawerOpen(false)}><User className="w-5 h-5" />User</Link>
-                    <Link className={`btn btn-ghost justify-start gap-3${pathname.startsWith("/admin/role") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/role" onClick={() => setDrawerOpen(false)}><Users className="w-5 h-5" />Role</Link>
-                    <Link className={`btn btn-ghost justify-start gap-3${pathname === "/admin/nilai" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/nilai" onClick={() => setDrawerOpen(false)}><BookOpen className="w-5 h-5" />Nilai</Link>
-                    <Link className={`btn btn-ghost justify-start gap-3${pathname === "/admin/absensi" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/absensi" onClick={() => setDrawerOpen(false)}><CalendarCheck className="w-5 h-5" />Absensi</Link>
-                    <Link className={`btn btn-ghost justify-start gap-3${pathname === "/admin/keuangan" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/keuangan" onClick={() => setDrawerOpen(false)}><Wallet className="w-5 h-5" />Keuangan</Link>
+                    <Link className={`btn btn-ghost justify-start gap-3${pathname && pathname === "/admin" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin" onClick={() => setDrawerOpen(false)}><BookOpen className="w-5 h-5" />Dashboard</Link>
+                    <Link className={`btn btn-ghost justify-start gap-3${pathname && pathname.startsWith("/admin/siswa") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/siswa" onClick={() => setDrawerOpen(false)}><Users className="w-5 h-5" />Siswa</Link>
+                    <Link className={`btn btn-ghost justify-start gap-3${pathname && pathname === "/admin/kelas" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/kelas" onClick={() => setDrawerOpen(false)}><ClipboardList className="w-5 h-5" />Kelas</Link>
+                    <Link className={`btn btn-ghost justify-start gap-3${pathname && pathname === "/admin/guru" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/guru" onClick={() => setDrawerOpen(false)}><User className="w-5 h-5" />Guru</Link>
+                    <Link className={`btn btn-ghost justify-start gap-3${pathname && pathname.startsWith("/admin/user") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/user" onClick={() => setDrawerOpen(false)}><User className="w-5 h-5" />User</Link>
+                    <Link className={`btn btn-ghost justify-start gap-3${pathname && pathname.startsWith("/admin/role") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/role" onClick={() => setDrawerOpen(false)}><Users className="w-5 h-5" />Role</Link>
+                    <Link className={`btn btn-ghost justify-start gap-3${pathname && pathname === "/admin/nilai" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/nilai" onClick={() => setDrawerOpen(false)}><BookOpen className="w-5 h-5" />Nilai</Link>
+                    <Link className={`btn btn-ghost justify-start gap-3${pathname && pathname === "/admin/absensi" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/absensi" onClick={() => setDrawerOpen(false)}><CalendarCheck className="w-5 h-5" />Absensi</Link>
+                    <Link className={`btn btn-ghost justify-start gap-3${pathname && pathname === "/admin/keuangan" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/keuangan" onClick={() => setDrawerOpen(false)}><Wallet className="w-5 h-5" />Keuangan</Link>
                   </nav>
                   <div className="mt-auto flex flex-col gap-2 pt-8 border-t border-base-300">
                     <button className="btn btn-ghost justify-start gap-3"><User className="w-5 h-5" />Profil</button>
@@ -419,15 +421,15 @@ export default function RootLayout({
                 {sidebarOpen && <span>SIAKAD</span>}
               </div>
               <nav className={`flex flex-col ${sidebarOpen ? 'gap-1' : 'gap-0'} transition-all duration-300 ease-in-out`}>
-                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname === "/admin" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Dashboard"><BookOpen className="w-5 h-5" /></div>{sidebarOpen && 'Dashboard'}</Link>
-                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname.startsWith("/admin/siswa") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/siswa"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Siswa"><Users className="w-5 h-5" /></div>{sidebarOpen && 'Siswa'}</Link>
-                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname === "/admin/kelas" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/kelas"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Kelas"><ClipboardList className="w-5 h-5" /></div>{sidebarOpen && 'Kelas'}</Link>
-                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname === "/admin/guru" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/guru"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Guru"><User className="w-5 h-5" /></div>{sidebarOpen && 'Guru'}</Link>
-                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname.startsWith("/admin/user") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/user"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="User"><User className="w-5 h-5" /></div>{sidebarOpen && 'User'}</Link>
-                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname.startsWith("/admin/role") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/role"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Role"><Users className="w-5 h-5" /></div>{sidebarOpen && 'Role'}</Link>
-                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname === "/admin/nilai" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/nilai"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Nilai"><BookOpen className="w-5 h-5" /></div>{sidebarOpen && 'Nilai'}</Link>
-                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname === "/admin/absensi" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/absensi"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Absensi"><CalendarCheck className="w-5 h-5" /></div>{sidebarOpen && 'Absensi'}</Link>
-                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname === "/admin/keuangan" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/keuangan"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Keuangan"><Wallet className="w-5 h-5" /></div>{sidebarOpen && 'Keuangan'}</Link>
+                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname && pathname === "/admin" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Dashboard"><BookOpen className="w-5 h-5" /></div>{sidebarOpen && 'Dashboard'}</Link>
+                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname && pathname.startsWith("/admin/siswa") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/siswa"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Siswa"><Users className="w-5 h-5" /></div>{sidebarOpen && 'Siswa'}</Link>
+                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname && pathname === "/admin/kelas" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/kelas"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Kelas"><ClipboardList className="w-5 h-5" /></div>{sidebarOpen && 'Kelas'}</Link>
+                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname && pathname === "/admin/guru" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/guru"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Guru"><User className="w-5 h-5" /></div>{sidebarOpen && 'Guru'}</Link>
+                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname && pathname.startsWith("/admin/user") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/user"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="User"><User className="w-5 h-5" /></div>{sidebarOpen && 'User'}</Link>
+                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname && pathname.startsWith("/admin/role") ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/role"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Role"><Users className="w-5 h-5" /></div>{sidebarOpen && 'Role'}</Link>
+                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname && pathname === "/admin/nilai" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/nilai"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Nilai"><BookOpen className="w-5 h-5" /></div>{sidebarOpen && 'Nilai'}</Link>
+                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname && pathname === "/admin/absensi" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/absensi"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Absensi"><CalendarCheck className="w-5 h-5" /></div>{sidebarOpen && 'Absensi'}</Link>
+                <Link className={`btn btn-ghost ${sidebarOpen ? "justify-start gap-3" : "justify-center w-full gap-0"}${pathname && pathname === "/admin/keuangan" ? " btn-active bg-primary/10 text-primary" : ""}`} href="/admin/keuangan"><div className={sidebarOpen ? undefined : "tooltip tooltip-right"} data-tip="Keuangan"><Wallet className="w-5 h-5" /></div>{sidebarOpen && 'Keuangan'}</Link>
               </nav>
               <div className="mt-auto flex flex-col gap-2 pt-8 border-t border-base-300">
                 <button className="btn btn-ghost justify-start gap-3"><User className="w-5 h-5" />{sidebarOpen && 'Profil'}</button>
@@ -459,10 +461,10 @@ export default function RootLayout({
                     </label>
                     <div tabIndex={0} className="dropdown-content z-50 shadow-lg bg-base-100 rounded-box w-80 border border-base-300 overflow-hidden">
                       <div className="flex items-center justify-between px-4 py-3 border-b border-base-300 bg-base-200">
-                        <h3 className="font-semibold">Notifikasi</h3>
+                        <h3 className="font-semibold text-base-content">Notifikasi</h3>
                         {unreadCount > 0 && (
                           <button 
-                            className="btn btn-ghost btn-xs flex items-center gap-1"
+                            className="btn btn-ghost btn-xs flex items-center gap-1 text-base-content"
                             onClick={markAllAsRead}
                           >
                             <Check className="w-4 h-4" /> Tandai Semua Dibaca
@@ -488,7 +490,7 @@ export default function RootLayout({
                                 onClick={() => !notif.isRead && markAsRead(notif.id)}
                               >
                                 <div className="flex justify-between items-start gap-2 mb-1">
-                                  <h4 className={`text-sm font-medium ${!notif.isRead ? 'text-primary' : ''}`}>{notif.title}</h4>
+                                  <h4 className={`text-sm font-medium ${!notif.isRead ? 'text-primary' : 'text-base-content'}`}>{notif.title}</h4>
                                   <span className={`badge badge-sm ${getNotifBadgeClass(notif.type)}`}>{notif.type}</span>
                                 </div>
                                 <p 
@@ -504,7 +506,7 @@ export default function RootLayout({
                       <div className="p-3 border-t border-base-300 bg-base-200">
                         <Link 
                           href="/admin/notifikasi" 
-                          className="btn btn-sm btn-block btn-ghost"
+                          className="btn btn-sm btn-block btn-ghost text-base-content"
                           onClick={() => document.activeElement instanceof HTMLElement && document.activeElement.blur()}
                         >
                           Lihat Semua Notifikasi
@@ -529,7 +531,7 @@ export default function RootLayout({
                       </div>
                       <div className="p-1">
                         <li>
-                          <a className="flex items-center gap-2 p-3 hover:bg-primary/10 rounded-lg transition-all duration-200">
+                          <a className="flex items-center gap-2 p-3 hover:bg-primary/10 rounded-lg transition-all duration-200 text-base-content">
                             <User className="w-5 h-5 text-primary" />
                             <span>Profil Saya</span>
                           </a>
@@ -537,7 +539,7 @@ export default function RootLayout({
                         <li>
                           <button 
                             onClick={handleLogout} 
-                            className="flex items-center gap-2 p-3 w-full text-left hover:bg-error/10 hover:text-error rounded-lg transition-all duration-200"
+                            className="flex items-center gap-2 p-3 w-full text-left hover:bg-error/10 hover:text-error rounded-lg transition-all duration-200 text-base-content"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
                               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>

@@ -120,15 +120,15 @@ export default function RolePage() {
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
           <div className="bg-base-100 rounded-xl shadow-lg p-6 w-full max-w-md relative">
             <button className="btn btn-sm btn-circle absolute right-2 top-2" onClick={() => setShowForm(false)}><X /></button>
-            <h3 className="text-lg font-bold mb-4">{form.id ? "Edit Role" : "Tambah Role"}</h3>
+            <h3 className="text-lg font-bold mb-4 text-base-content">{form.id ? "Edit Role" : "Tambah Role"}</h3>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div>
                 <label className="block text-base font-semibold mb-1 text-base-content">Nama Role <span className="text-error">*</span></label>
-                <input type="text" name="name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="input input-bordered w-full" placeholder="Nama role" required autoFocus />
+                <input type="text" name="name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="input input-bordered w-full text-base-content" placeholder="Nama role" required autoFocus />
               </div>
               {formError && <div className="alert alert-error py-2 text-sm">{formError}</div>}
               <div className="flex justify-end gap-2 mt-2">
-                <button type="button" className="btn btn-outline" onClick={() => setShowForm(false)}>Batal</button>
+                <button type="button" className="btn btn-outline text-base-content" onClick={() => setShowForm(false)}>Batal</button>
                 <button type="submit" className="btn btn-primary" disabled={saving}><Save className="w-4 h-4" /> Simpan</button>
               </div>
             </form>

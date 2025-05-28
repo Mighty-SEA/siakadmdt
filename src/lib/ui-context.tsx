@@ -129,14 +129,14 @@ export function UIProvider({ children }: { children: ReactNode }) {
       {/* Modal konfirmasi */}
       <dialog id="confirm_modal" className="modal modal-bottom sm:modal-middle" ref={confirmModalRef}>
         <div className="modal-box">
-          <h3 className="font-bold text-lg flex items-center gap-2">
+          <h3 className="font-bold text-lg flex items-center gap-2 text-base-content">
             {confirmModal.title.toLowerCase().includes("hapus") && <Trash2 className="w-5 h-5" />}
             {confirmModal.title}
           </h3>
-          <p className="py-4" dangerouslySetInnerHTML={{ __html: confirmModal.message }}></p>
+          <p className="py-4 text-base-content" dangerouslySetInnerHTML={{ __html: confirmModal.message }}></p>
           <div className="modal-action">
             <form method="dialog">
-              <button className="btn" onClick={hideConfirmModal}>
+              <button className="btn text-base-content" onClick={hideConfirmModal}>
                 {confirmModal.cancelText}
               </button>
             </form>
@@ -152,7 +152,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
           </div>
         </div>
         <form method="dialog" className="modal-backdrop">
-          <button onClick={hideConfirmModal}>Batal</button>
+          <button onClick={hideConfirmModal} className="text-base-content">Batal</button>
         </form>
       </dialog>
     </UIContext.Provider>

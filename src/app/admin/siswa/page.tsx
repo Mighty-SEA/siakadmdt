@@ -67,8 +67,8 @@ export default function SiswaPage() {
 
   useEffect(() => {
     // Tampilkan toast berdasarkan query parameter
-    const status = searchParams.get('status');
-    const message = searchParams.get('message');
+    const status = searchParams?.get('status');
+    const message = searchParams?.get('message');
     
     if (status && message) {
       showToast(decodeURIComponent(message), status as 'success' | 'error');
@@ -307,12 +307,12 @@ export default function SiswaPage() {
                       <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-200 rounded-box w-28">
                         <li>
                           <button className="flex items-center gap-2 text-primary" onClick={() => router.push(`/admin/siswa/edit/${s.id}`)}>
-                            <Pencil className="w-4 h-4" /> Edit
+                            <Pencil className="w-4 h-4" /> <span className="text-base-content">Edit</span>
                           </button>
                         </li>
                         <li>
                           <button className="flex items-center gap-2 text-error" onClick={() => openDeleteModal(s.id)}>
-                            <Trash2 className="w-4 h-4" /> Hapus
+                            <Trash2 className="w-4 h-4" /> <span className="text-base-content">Hapus</span>
                           </button>
                         </li>
                       </ul>
