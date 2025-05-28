@@ -6,12 +6,20 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed": "prisma db seed",
+    "seed:users": "prisma db seed -- -- --users",
+    "seed:students": "prisma db seed -- -- --students"
+  },
+  "prisma": {
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
   "dependencies": {
     "@faker-js/faker": "^9.8.0",
     "@prisma/client": "^6.8.2",
+    "@types/bcrypt": "^5.0.2",
     "@types/js-cookie": "^3.0.6",
+    "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
     "daisyui": "^5.0.38",
     "date-fns": "^4.1.0",
@@ -31,6 +39,7 @@
     "eslint-config-next": "15.3.2",
     "prisma": "^6.8.2",
     "tailwindcss": "^4.1.7",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }

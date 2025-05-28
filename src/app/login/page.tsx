@@ -7,9 +7,12 @@ export default function LoginPage() {
   const [form, setForm] = useState({ username: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [isLocked, setIsLocked] = useState(false);
+  const [lockTime, setLockTime] = useState<Date | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const returnUrl = searchParams.get('returnUrl') || '/admin';
+  const returnUrl = searchParams?.get('returnUrl') || '/admin';
 
   const themes = [
     "light","dark","cupcake","bumblebee","emerald","corporate","synthwave","retro","cyberpunk","valentine","halloween","garden","forest","aqua","lofi","pastel","fantasy","wireframe","black","luxury","dracula","cmyk","autumn","business","acid","lemonade","night","coffee","winter","dim","nord","sunset","caramellatte","abyss","silk"
@@ -24,6 +27,34 @@ export default function LoginPage() {
     } else {
       document.documentElement.setAttribute("data-theme", theme);
     }
+    
+    // Cek apakah ada lock status di localStorage
+    const lockStatus = localStorage.getItem('loginLock');
+    if (lockStatus) {
+      const { attempts, lockUntil } = JSON.parse(lockStatus);
+      const lockDate = new Date(lockUntil);
+      
+      if (lockDate > new Date()) {
+        // Masih dalam periode lock
+        setLoginAttempts(attempts);
+        setIsLocked(true);
+        setLockTime(lockDate);
+      } else {
+        // Lock sudah berakhir, hapus dari localStorage
+        localStorage.removeItem('loginLock');
+      }
+    }
+    
+    // Set interval untuk update status lock
+    const interval = setInterval(() => {
+      if (isLocked && lockTime && lockTime < new Date()) {
+        setIsLocked(false);
+        setLockTime(null);
+        localStorage.removeItem('loginLock');
+      }
+    }, 1000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -33,9 +64,42 @@ export default function LoginPage() {
     }
   }, [theme]);
 
+  // Validasi input
+  const validateForm = () => {
+    if (!form.username.trim()) {
+      setError("Username tidak boleh kosong");
+      return false;
+    }
+    
+    if (!form.password) {
+      setError("Password tidak boleh kosong");
+      return false;
+    }
+    
+    if (form.password.length < 6) {
+      setError("Password minimal 6 karakter");
+      return false;
+    }
+    
+    return true;
+  };
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    
+    // Cek apakah akun terkunci
+    if (isLocked && lockTime) {
+      const remainingTime = Math.ceil((lockTime.getTime() - Date.now()) / 1000);
+      setError(`Akun terkunci. Coba lagi dalam ${remainingTime} detik`);
+      return;
+    }
+    
+    // Validasi input
+    if (!validateForm()) {
+      return;
+    }
+    
     setLoading(true);
     try {
       const res = await fetch("/api/auth/login", {
@@ -44,13 +108,37 @@ export default function LoginPage() {
         body: JSON.stringify(form),
       });
       const data = await res.json();
+      
       if (res.ok) {
+        // Reset percobaan login
+        setLoginAttempts(0);
+        localStorage.removeItem('loginLock');
+        
         // Simpan user ke cookie (bukan localStorage)
         Cookies.set("user", JSON.stringify(data.user), { expires: 7 });
         // Gunakan returnUrl jika ada
         router.push(returnUrl);
       } else {
-        setError(data.error || "Login gagal");
+        // Tambah percobaan login
+        const newAttempts = loginAttempts + 1;
+        setLoginAttempts(newAttempts);
+        
+        // Jika sudah 3 kali gagal, kunci akun selama 30 detik
+        if (newAttempts >= 3) {
+          const lockUntil = new Date(Date.now() + 30000); // 30 detik
+          setIsLocked(true);
+          setLockTime(lockUntil);
+          
+          // Simpan status lock di localStorage
+          localStorage.setItem('loginLock', JSON.stringify({
+            attempts: newAttempts,
+            lockUntil: lockUntil.toISOString()
+          }));
+          
+          setError(`Terlalu banyak percobaan. Akun dikunci selama 30 detik`);
+        } else {
+          setError(data.error || "Login gagal");
+        }
       }
     } catch {
       setError("Terjadi kesalahan jaringan");
@@ -62,6 +150,8 @@ export default function LoginPage() {
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
     setForm(f => ({ ...f, [name]: value }));
+    // Reset error saat user mengetik
+    setError("");
   }
 
   return (
@@ -89,14 +179,43 @@ export default function LoginPage() {
         <h2 className="text-2xl font-bold text-primary mb-2 text-center">Login Admin</h2>
         <div>
           <label className="block font-semibold mb-1 text-base-content">Username / Email</label>
-          <input type="text" name="username" value={form.username} onChange={handleChange} className="input input-bordered w-full focus:ring-2 focus:ring-primary/30 transition-all text-base-content" placeholder="Username atau email" required autoFocus />
+          <input 
+            type="text" 
+            name="username" 
+            value={form.username} 
+            onChange={handleChange} 
+            className="input input-bordered w-full focus:ring-2 focus:ring-primary/30 transition-all text-base-content" 
+            placeholder="Username atau email" 
+            required 
+            autoFocus 
+            autoComplete="username"
+            maxLength={50}
+            disabled={isLocked}
+          />
         </div>
         <div>
           <label className="block font-semibold mb-1 text-base-content">Password</label>
-          <input type="password" name="password" value={form.password} onChange={handleChange} className="input input-bordered w-full focus:ring-2 focus:ring-primary/30 transition-all text-base-content" placeholder="Password" required />
+          <input 
+            type="password" 
+            name="password" 
+            value={form.password} 
+            onChange={handleChange} 
+            className="input input-bordered w-full focus:ring-2 focus:ring-primary/30 transition-all text-base-content" 
+            placeholder="Password" 
+            required 
+            autoComplete="current-password"
+            minLength={6}
+            disabled={isLocked}
+          />
         </div>
         {error && <div className="alert alert-error py-2 text-sm animate-fade-in">{error}</div>}
-        <button type="submit" className="btn btn-primary w-full transition-all duration-200 hover:scale-105 hover:shadow-lg" disabled={loading}>{loading ? "Memproses..." : "Login"}</button>
+        <button 
+          type="submit" 
+          className="btn btn-primary w-full transition-all duration-200 hover:scale-105 hover:shadow-lg" 
+          disabled={loading || isLocked}
+        >
+          {loading ? "Memproses..." : isLocked ? `Terkunci (${lockTime ? Math.ceil((lockTime.getTime() - Date.now()) / 1000) : 30}s)` : "Login"}
+        </button>
       </form>
       <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-primary/10 via-base-200/60 to-secondary/10 blur-2xl opacity-80 animate-fade-in"></div>
     </div>

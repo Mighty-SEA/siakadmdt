@@ -1,9 +1,34 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { rateLimit, getClientIp } from "@/lib/rate-limiter";
+import { format } from "date-fns";
 
 export async function POST(req: Request) {
   try {
+    // Implementasi rate limiter
+    const clientIp = getClientIp(req);
+    const rateLimitResult = rateLimit(clientIp);
+    
+    // Jika rate limit terlampaui
+    if (!rateLimitResult.success) {
+      const resetTime = format(rateLimitResult.resetAt, 'HH:mm:ss');
+      return NextResponse.json(
+        { 
+          error: `Terlalu banyak percobaan login. Coba lagi setelah ${resetTime}` 
+        }, 
+        { 
+          status: 429,
+          headers: {
+            'Retry-After': Math.ceil((rateLimitResult.resetAt.getTime() - Date.now()) / 1000).toString(),
+            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Reset': Math.ceil(rateLimitResult.resetAt.getTime() / 1000).toString()
+          }
+        }
+      );
+    }
+
     const { username, password } = await req.json();
     if (!username || !password) {
       return NextResponse.json({ error: "Username/email dan password wajib diisi" }, { status: 400 });
@@ -27,7 +52,8 @@ export async function POST(req: Request) {
     // Jangan return password
     const { password: _, ...userSafe } = user;
     return NextResponse.json({ user: userSafe });
-  } catch {
+  } catch (error) {
+    console.error("Error login:", error);
     return NextResponse.json({ error: "Gagal login" }, { status: 500 });
   }
 } 

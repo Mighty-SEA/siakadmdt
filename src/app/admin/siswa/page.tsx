@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import { Filter, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Pencil, Trash2, MoreVertical, Plus, Upload, Download, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Filter, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Pencil, Trash2, MoreVertical, Plus, Upload, Download, AlertCircle, CheckCircle2, CheckSquare, Square, UserX, GraduationCap } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUI } from "@/lib/ui-context";
@@ -61,6 +61,8 @@ export default function SiswaPage() {
   const [selectedColumns, setSelectedColumns] = useState<string[]>(desktopDefaultColumns);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [siswaToDelete, setSiswaToDelete] = useState<Student | null>(null);
+  const [selectedStudents, setSelectedStudents] = useState<number[]>([]);
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { showToast, showConfirmModal } = useUI();
@@ -221,6 +223,143 @@ export default function SiswaPage() {
     };
   }, []);
 
+  // Fungsi untuk menangani select/deselect semua siswa pada halaman saat ini
+  const handleSelectAllInPage = (checked: boolean) => {
+    if (checked) {
+      const currentPageIds = paged.map(s => s.id);
+      setSelectedStudents(prev => [...new Set([...prev, ...currentPageIds])]);
+    } else {
+      const currentPageIds = new Set(paged.map(s => s.id));
+      setSelectedStudents(prev => prev.filter(id => !currentPageIds.has(id)));
+    }
+  };
+
+  // Fungsi untuk mengecek apakah semua siswa di halaman saat ini dipilih
+  const isAllInPageSelected = () => {
+    return paged.length > 0 && paged.every(s => selectedStudents.includes(s.id));
+  };
+
+  // Fungsi untuk mengecek apakah ada siswa yang dipilih di halaman saat ini
+  const isAnyInPageSelected = () => {
+    return paged.some(s => selectedStudents.includes(s.id));
+  };
+
+  // Fungsi untuk toggle pilihan siswa
+  const toggleStudentSelection = (id: number) => {
+    setSelectedStudents(prev => 
+      prev.includes(id) 
+        ? prev.filter(studentId => studentId !== id) 
+        : [...prev, id]
+    );
+  };
+
+  // Fungsi untuk menangani bulk delete
+  const handleBulkDelete = async () => {
+    if (selectedStudents.length === 0) return;
+    
+    showConfirmModal({
+      title: "Konfirmasi Hapus Massal",
+      message: `Apakah Anda yakin ingin menghapus ${selectedStudents.length} siswa yang dipilih?`,
+      confirmText: "Hapus",
+      cancelText: "Batal",
+      onConfirm: async () => {
+        try {
+          setBulkActionLoading(true);
+          // Dapatkan data user untuk dikirim dalam header
+          const userData = getUserData();
+          const headers: Record<string, string> = {
+            "Content-Type": "application/json"
+          };
+          
+          // Tambahkan user data ke header jika tersedia
+          if (userData) {
+            headers["x-user-data"] = JSON.stringify(userData);
+          }
+          
+          const res = await fetch("/api/siswa/bulk", {
+            method: "DELETE",
+            headers,
+            body: JSON.stringify({ ids: selectedStudents }),
+          });
+          
+          if (res.ok) {
+            setSiswa(prev => prev.filter(s => !selectedStudents.includes(s.id)));
+            setSelectedStudents([]);
+            showToast(`${selectedStudents.length} siswa berhasil dihapus`, "success");
+          } else {
+            const data = await res.json();
+            showToast(data.error || "Gagal menghapus siswa", "error");
+          }
+        } catch (error) {
+          showToast("Terjadi kesalahan jaringan", "error");
+        } finally {
+          setBulkActionLoading(false);
+        }
+      }
+    });
+  };
+
+  // Fungsi untuk menangani bulk update status (aktif/alumni)
+  const handleBulkUpdateStatus = async (isAlumni: boolean) => {
+    if (selectedStudents.length === 0) return;
+    
+    const statusText = isAlumni ? "lulus (alumni)" : "aktif";
+    
+    showConfirmModal({
+      title: `Konfirmasi Ubah Status Massal`,
+      message: `Apakah Anda yakin ingin mengubah status ${selectedStudents.length} siswa yang dipilih menjadi ${statusText}?`,
+      confirmText: "Ubah",
+      cancelText: "Batal",
+      onConfirm: async () => {
+        try {
+          setBulkActionLoading(true);
+          // Dapatkan data user untuk dikirim dalam header
+          const userData = getUserData();
+          const headers: Record<string, string> = {
+            "Content-Type": "application/json"
+          };
+          
+          // Tambahkan user data ke header jika tersedia
+          if (userData) {
+            headers["x-user-data"] = JSON.stringify(userData);
+          }
+          
+          const res = await fetch("/api/siswa/bulk", {
+            method: "PUT",
+            headers,
+            body: JSON.stringify({ 
+              ids: selectedStudents,
+              data: { is_alumni: isAlumni }
+            }),
+          });
+          
+          if (res.ok) {
+            // Update status siswa di state lokal
+            setSiswa(prev => prev.map(s => 
+              selectedStudents.includes(s.id) 
+                ? { ...s, is_alumni: isAlumni } 
+                : s
+            ));
+            setSelectedStudents([]);
+            showToast(`Status ${selectedStudents.length} siswa berhasil diubah menjadi ${statusText}`, "success");
+          } else {
+            const data = await res.json();
+            showToast(data.error || "Gagal mengubah status siswa", "error");
+          }
+        } catch (error) {
+          showToast("Terjadi kesalahan jaringan", "error");
+        } finally {
+          setBulkActionLoading(false);
+        }
+      }
+    });
+  };
+
+  // Reset selected students when search changes
+  useEffect(() => {
+    setSelectedStudents([]);
+  }, [search]);
+
   return (
     <div className="card bg-base-200 shadow-xl p-4 sm:p-6 rounded-2xl border border-primary/30 text-base-content w-full max-w-full overflow-x-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
@@ -240,50 +379,108 @@ export default function SiswaPage() {
           </Link>
         </div>
       </div>
+      
       {/* Filter Kolom, Cari Nama, dan Filter Gender/Status */}
       <div className="flex flex-col md:flex-row gap-2 mb-4 items-center md:items-end w-full">
         {/* Input Cari Nama dengan ikon search dan tombol filter kolom di kanan (mobile & desktop) */}
-        <div className="flex w-full gap-2">
-          <div className="flex-1 relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/60">
-              <Search className="w-5 h-5" />
-            </span>
-            <input
-              type="text"
-              className="input input-bordered input-sm md:input-md w-full pl-10 pr-3 rounded-lg border-base-300 focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm"
-              placeholder="Cari nama atau NIS..."
-              value={search}
-              onChange={e => { setSearch(e.target.value); setPage(1); }}
-            />
-          </div>
-          <div>
-            <div className="dropdown dropdown-end dropdown-bottom">
-              <label tabIndex={0} className="btn btn-sm md:btn-md btn-outline min-w-[56px] flex justify-between items-center gap-2 cursor-pointer hover:shadow focus:shadow border-primary/40">
-                <Filter className="w-5 h-5 text-primary" />
-                <span className="badge badge-primary badge-sm">{selectedColumns.length}/{allColumns.length}</span>
-                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
-              </label>
-              <ul tabIndex={0} className="dropdown-content right-0 z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-80 border border-primary/20 grid grid-cols-3 gap-2">
-                {allColumns.map(col => (
-                  <li key={col.key} className="hover:bg-primary/10 rounded-md transition-colors col-span-1">
-                    <label className="flex items-center gap-2 cursor-pointer px-2 py-1 w-full">
-                      <input
-                        type="checkbox"
-                        className="checkbox checkbox-xs checkbox-primary"
-                        checked={selectedColumns.includes(col.key)}
-                        onChange={() => {
-                          setSelectedColumns(selectedColumns =>
-                            selectedColumns.includes(col.key)
-                              ? selectedColumns.filter(k => k !== col.key)
-                              : [...selectedColumns, col.key]
-                          );
-                        }}
-                      />
-                      <span className="text-base-content text-sm">{col.label}</span>
-                    </label>
+        <div className="flex flex-col md:flex-row w-full gap-2">
+          {/* Bulk Action Menu */}
+          {selectedStudents.length > 0 && (
+            <div className="flex items-center justify-between md:justify-start gap-2 bg-base-100 rounded-lg border border-primary/30 shadow-sm px-2 h-[38px] md:h-[46px] mb-2 md:mb-0 md:mr-2">
+              <div className="flex items-center gap-2">
+                <span className="badge badge-primary">{selectedStudents.length} dipilih</span>
+                <button 
+                  className="btn btn-xs btn-ghost text-base-content/70 hover:text-base-content"
+                  onClick={() => setSelectedStudents([])}
+                >
+                  Batal
+                </button>
+              </div>
+              <div className="dropdown dropdown-bottom dropdown-end md:dropdown-right">
+                <button tabIndex={0} className="btn btn-xs btn-primary" disabled={bulkActionLoading}>
+                  {bulkActionLoading ? (
+                    <span className="loading loading-spinner loading-xs"></span>
+                  ) : (
+                    <>Aksi</>
+                  )}
+                </button>
+                <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-52 border border-primary/20">
+                  <li>
+                    <button 
+                      className="flex items-center gap-2 text-error" 
+                      onClick={handleBulkDelete}
+                      disabled={bulkActionLoading}
+                    >
+                      <Trash2 className="w-4 h-4" /> 
+                      <span>Hapus Siswa</span>
+                    </button>
                   </li>
-                ))}
-              </ul>
+                  <li>
+                    <button 
+                      className="flex items-center gap-2 text-success" 
+                      onClick={() => handleBulkUpdateStatus(false)}
+                      disabled={bulkActionLoading}
+                    >
+                      <CheckCircle2 className="w-4 h-4" /> 
+                      <span>Set Status Aktif</span>
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      className="flex items-center gap-2 text-warning" 
+                      onClick={() => handleBulkUpdateStatus(true)}
+                      disabled={bulkActionLoading}
+                    >
+                      <GraduationCap className="w-4 h-4" /> 
+                      <span>Set Status Alumni</span>
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          )}
+          <div className="flex w-full gap-2">
+            <div className="flex-1 relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/60">
+                <Search className="w-5 h-5" />
+              </span>
+              <input
+                type="text"
+                className="input input-bordered input-sm md:input-md w-full pl-10 pr-3 rounded-lg border-base-300 focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm"
+                placeholder="Cari nama atau NIS..."
+                value={search}
+                onChange={e => { setSearch(e.target.value); setPage(1); }}
+              />
+            </div>
+            <div>
+              <div className="dropdown dropdown-end dropdown-bottom">
+                <label tabIndex={0} className="btn btn-sm md:btn-md btn-outline min-w-[56px] flex justify-between items-center gap-2 cursor-pointer hover:shadow focus:shadow border-primary/40">
+                  <Filter className="w-5 h-5 text-primary" />
+                  <span className="badge badge-primary badge-sm">{selectedColumns.length}/{allColumns.length}</span>
+                  <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+                </label>
+                <ul tabIndex={0} className="dropdown-content right-0 z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-80 border border-primary/20 grid grid-cols-3 gap-2">
+                  {allColumns.map(col => (
+                    <li key={col.key} className="hover:bg-primary/10 rounded-md transition-colors col-span-1">
+                      <label className="flex items-center gap-2 cursor-pointer px-2 py-1 w-full">
+                        <input
+                          type="checkbox"
+                          className="checkbox checkbox-xs checkbox-primary"
+                          checked={selectedColumns.includes(col.key)}
+                          onChange={() => {
+                            setSelectedColumns(selectedColumns =>
+                              selectedColumns.includes(col.key)
+                                ? selectedColumns.filter(k => k !== col.key)
+                                : [...selectedColumns, col.key]
+                            );
+                          }}
+                        />
+                        <span className="text-base-content text-sm">{col.label}</span>
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
         </div>
@@ -292,6 +489,16 @@ export default function SiswaPage() {
         <table className="table table-zebra w-full md:min-w-[600px]">
           <thead>
             <tr className="bg-base-200">
+              <th className="w-10">
+                <label className="cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="checkbox checkbox-xs checkbox-primary"
+                    checked={isAllInPageSelected()}
+                    onChange={(e) => handleSelectAllInPage(e.target.checked)}
+                  />
+                </label>
+              </th>
               {selectedColumns.includes("no") && <th>No</th>}
               {selectedColumns.includes("name") && <th>Nama</th>}
               {selectedColumns.includes("nis") && <th>NIS</th>}
@@ -315,12 +522,22 @@ export default function SiswaPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={selectedColumns.length} className="text-center">Memuat data...</td></tr>
+              <tr><td colSpan={selectedColumns.length + 1} className="text-center">Memuat data...</td></tr>
             ) : paged.length === 0 ? (
-              <tr><td colSpan={selectedColumns.length} className="text-center">Tidak ada data</td></tr>
+              <tr><td colSpan={selectedColumns.length + 1} className="text-center">Tidak ada data</td></tr>
             ) : (
               paged.map((s, i) => (
-                <tr key={s.id}>
+                <tr key={s.id} className={selectedStudents.includes(s.id) ? "bg-primary/5" : undefined}>
+                  <td>
+                    <label className="cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="checkbox checkbox-xs checkbox-primary"
+                        checked={selectedStudents.includes(s.id)}
+                        onChange={() => toggleStudentSelection(s.id)}
+                      />
+                    </label>
+                  </td>
                   {selectedColumns.includes("no") && <td>{(page - 1) * pageSize + i + 1}</td>}
                   {selectedColumns.includes("name") && <td>{s.name}</td>}
                   {selectedColumns.includes("nis") && <td>{s.nis}</td>}

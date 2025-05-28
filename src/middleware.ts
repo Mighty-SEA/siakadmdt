@@ -2,11 +2,13 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 /**
- * Middleware Next.js untuk melindungi rute admin
+ * Middleware Next.js untuk melindungi rute admin dan menambahkan header keamanan
  * 
  * Middleware ini berjalan sebelum request mencapai halaman yang diminta.
  * Jika pengguna mencoba mengakses rute admin tanpa terautentikasi,
  * mereka akan diarahkan ke halaman login.
+ * 
+ * Juga menambahkan header keamanan untuk semua response.
  */
 export function middleware(request: NextRequest) {
   // Cek apakah user sudah login dengan memeriksa cookie
@@ -26,13 +28,55 @@ export function middleware(request: NextRequest) {
     const url = new URL('/login', request.url);
     url.searchParams.set('returnUrl', pathname);
     
-    // Redirect langsung ke halaman login
-    return NextResponse.redirect(url);
+    // Redirect langsung ke halaman login dengan header keamanan
+    const response = NextResponse.redirect(url);
+    // Tambahkan header keamanan
+    addSecurityHeaders(response);
+    return response;
   }
 
   console.log('Melanjutkan ke halaman yang diminta');
   // Lanjutkan request normal jika sudah login atau bukan rute admin
-  return NextResponse.next();
+  const response = NextResponse.next();
+  
+  // Tambahkan header keamanan untuk semua response
+  addSecurityHeaders(response);
+  
+  return response;
+}
+
+/**
+ * Menambahkan header keamanan ke response
+ */
+function addSecurityHeaders(response: NextResponse) {
+  // Mencegah clickjacking dengan X-Frame-Options
+  response.headers.set('X-Frame-Options', 'DENY');
+  
+  // Mengaktifkan proteksi XSS di browser
+  response.headers.set('X-XSS-Protection', '1; mode=block');
+  
+  // Mencegah MIME type sniffing
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  
+  // Content Security Policy untuk mencegah XSS dan injeksi
+  response.headers.set(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:;"
+  );
+  
+  // HTTP Strict Transport Security (HSTS)
+  response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  
+  // Referrer Policy
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  
+  // Permissions Policy (sebelumnya Feature Policy)
+  response.headers.set(
+    'Permissions-Policy', 
+    'camera=(), microphone=(), geolocation=(), interest-cohort=()'
+  );
+  
+  return response;
 }
 
 /**
@@ -42,11 +86,14 @@ export function middleware(request: NextRequest) {
  * https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
  */
 export const config = {
-  // Jalankan middleware hanya pada rute admin 
-  // Menggunakan pattern yang lebih spesifik
+  // Jalankan middleware pada semua rute untuk menambahkan header keamanan
   matcher: [
     // Khusus untuk path yang dimulai dengan /admin
     '/admin', 
-    '/admin/:path*'
+    '/admin/:path*',
+    // Tambahkan path login untuk menerapkan header keamanan
+    '/login',
+    // Tambahkan path API untuk menerapkan header keamanan
+    '/api/:path*'
   ],
 }; 
