@@ -2,6 +2,13 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createNotification } from "@/lib/notification";
 
+// Interface untuk data siswa
+interface Student {
+  id: number;
+  name: string;
+  nis: string;
+}
+
 // Fungsi helper untuk mendapatkan semua admin
 async function getAdminUsers(): Promise<number[]> {
   try {
@@ -75,7 +82,7 @@ export async function DELETE(req: Request) {
     const siswaList = await prisma.student.findMany({
       where: { id: { in: ids.map(Number) } },
       select: { id: true, name: true, nis: true }
-    });
+    }) as Student[];
     
     if (siswaList.length === 0) {
       return NextResponse.json({ error: "Tidak ada siswa yang ditemukan" }, { status: 404 });
@@ -86,10 +93,20 @@ export async function DELETE(req: Request) {
       where: { id: { in: ids.map(Number) } }
     });
     
+    // Buat daftar siswa untuk notifikasi
+    let siswaListHtml = "";
+    if (siswaList.length > 0) {
+      siswaListHtml = "<ul>";
+      siswaList.forEach((siswa: Student) => {
+        siswaListHtml += `<li><b>${siswa.name}</b> (${siswa.nis})</li>`;
+      });
+      siswaListHtml += "</ul>";
+    }
+    
     // Buat notifikasi untuk hapus siswa massal
     await sendNotificationToAdmins(
       "Siswa Dihapus Massal",
-      `${siswaList.length} siswa telah dihapus dari sistem`,
+      `${siswaList.length} siswa telah dihapus dari sistem:${siswaListHtml}`,
       "warning",
       req
     );
@@ -123,7 +140,7 @@ export async function PUT(req: Request) {
     const siswaList = await prisma.student.findMany({
       where: { id: { in: ids.map(Number) } },
       select: { id: true, name: true, nis: true }
-    });
+    }) as Student[];
     
     if (siswaList.length === 0) {
       return NextResponse.json({ error: "Tidak ada siswa yang ditemukan" }, { status: 404 });
@@ -143,20 +160,32 @@ export async function PUT(req: Request) {
       data: updateData
     });
     
+    // Buat daftar siswa untuk notifikasi
+    let siswaListHtml = "";
+    if (siswaList.length > 0) {
+      siswaListHtml = "<ul>";
+      siswaList.forEach((siswa: Student) => {
+        siswaListHtml += `<li><b>${siswa.name}</b> (${siswa.nis})</li>`;
+      });
+      siswaListHtml += "</ul>";
+    }
+    
     // Buat pesan notifikasi berdasarkan jenis update
-    let notificationMessage = `${siswaList.length} siswa telah diperbarui`;
+    let notificationTitle = "Siswa Diperbarui Massal";
+    let notificationMessage = `${siswaList.length} siswa telah diperbarui:${siswaListHtml}`;
     let notificationType: "success" | "info" | "warning" = "info";
     
     // Jika update status alumni, buat pesan khusus
     if ('is_alumni' in updateData) {
       const statusText = updateData.is_alumni ? "lulus (alumni)" : "aktif";
-      notificationMessage = `${siswaList.length} siswa telah diubah statusnya menjadi ${statusText}`;
+      notificationTitle = `Status Siswa Diubah Massal`;
+      notificationMessage = `${siswaList.length} siswa telah diubah statusnya menjadi ${statusText}:${siswaListHtml}`;
       notificationType = "info";
     }
     
     // Buat notifikasi untuk update siswa massal
     await sendNotificationToAdmins(
-      "Siswa Diperbarui Massal",
+      notificationTitle,
       notificationMessage,
       notificationType,
       req
@@ -164,7 +193,7 @@ export async function PUT(req: Request) {
     
     return NextResponse.json({ 
       success: true, 
-      message: notificationMessage,
+      message: notificationMessage.split(':')[0], // Hanya ambil bagian pertama tanpa daftar siswa
       updatedCount: siswaList.length
     });
   } catch (e: unknown) {

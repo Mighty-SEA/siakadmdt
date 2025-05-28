@@ -257,9 +257,29 @@ export default function SiswaPage() {
   const handleBulkDelete = async () => {
     if (selectedStudents.length === 0) return;
     
+    // Dapatkan informasi siswa yang akan dihapus untuk ditampilkan di notifikasi
+    const selectedStudentsInfo = siswa
+      .filter(s => selectedStudents.includes(s.id))
+      .map(s => ({ id: s.id, name: s.name, nis: s.nis }));
+    
+    // Buat pesan konfirmasi dengan daftar siswa
+    let confirmMessage = `Apakah Anda yakin ingin menghapus ${selectedStudents.length} siswa yang dipilih?`;
+    
+    // Tambahkan daftar lengkap siswa di modal konfirmasi
+    if (selectedStudentsInfo.length > 0) {
+      confirmMessage += '<ul class="mt-2 list-disc pl-5 text-left">';
+      // Tampilkan semua siswa di modal konfirmasi
+      for (let i = 0; i < selectedStudentsInfo.length; i++) {
+        const student = selectedStudentsInfo[i];
+        confirmMessage += `<li class="text-sm"><span class="font-semibold">${student.name}</span> (${student.nis})</li>`;
+      }
+      
+      confirmMessage += '</ul>';
+    }
+    
     showConfirmModal({
       title: "Konfirmasi Hapus Massal",
-      message: `Apakah Anda yakin ingin menghapus ${selectedStudents.length} siswa yang dipilih?`,
+      message: confirmMessage,
       confirmText: "Hapus",
       cancelText: "Batal",
       onConfirm: async () => {
@@ -283,9 +303,12 @@ export default function SiswaPage() {
           });
           
           if (res.ok) {
+            // Untuk toast, hanya tampilkan total
+            const toastMessage = `${selectedStudents.length} siswa berhasil dihapus`;
+            
             setSiswa(prev => prev.filter(s => !selectedStudents.includes(s.id)));
             setSelectedStudents([]);
-            showToast(`${selectedStudents.length} siswa berhasil dihapus`, "success");
+            showToast(toastMessage, "success");
           } else {
             const data = await res.json();
             showToast(data.error || "Gagal menghapus siswa", "error");
@@ -305,9 +328,29 @@ export default function SiswaPage() {
     
     const statusText = isAlumni ? "lulus (alumni)" : "aktif";
     
+    // Dapatkan informasi siswa yang akan diupdate untuk ditampilkan di notifikasi
+    const selectedStudentsInfo = siswa
+      .filter(s => selectedStudents.includes(s.id))
+      .map(s => ({ id: s.id, name: s.name, nis: s.nis }));
+    
+    // Buat pesan konfirmasi dengan daftar siswa
+    let confirmMessage = `Apakah Anda yakin ingin mengubah status ${selectedStudents.length} siswa yang dipilih menjadi ${statusText}?`;
+    
+    // Tambahkan daftar lengkap siswa di modal konfirmasi
+    if (selectedStudentsInfo.length > 0) {
+      confirmMessage += '<ul class="mt-2 list-disc pl-5 text-left">';
+      // Tampilkan semua siswa di modal konfirmasi
+      for (let i = 0; i < selectedStudentsInfo.length; i++) {
+        const student = selectedStudentsInfo[i];
+        confirmMessage += `<li class="text-sm"><span class="font-semibold">${student.name}</span> (${student.nis})</li>`;
+      }
+      
+      confirmMessage += '</ul>';
+    }
+    
     showConfirmModal({
       title: `Konfirmasi Ubah Status Massal`,
-      message: `Apakah Anda yakin ingin mengubah status ${selectedStudents.length} siswa yang dipilih menjadi ${statusText}?`,
+      message: confirmMessage,
       confirmText: "Ubah",
       cancelText: "Batal",
       onConfirm: async () => {
@@ -334,6 +377,9 @@ export default function SiswaPage() {
           });
           
           if (res.ok) {
+            // Untuk toast, hanya tampilkan total
+            const toastMessage = `Status ${selectedStudents.length} siswa berhasil diubah menjadi ${statusText}`;
+            
             // Update status siswa di state lokal
             setSiswa(prev => prev.map(s => 
               selectedStudents.includes(s.id) 
@@ -341,7 +387,7 @@ export default function SiswaPage() {
                 : s
             ));
             setSelectedStudents([]);
-            showToast(`Status ${selectedStudents.length} siswa berhasil diubah menjadi ${statusText}`, "success");
+            showToast(toastMessage, "success");
           } else {
             const data = await res.json();
             showToast(data.error || "Gagal mengubah status siswa", "error");

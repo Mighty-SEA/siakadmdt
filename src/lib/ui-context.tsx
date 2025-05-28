@@ -24,7 +24,7 @@ type ConfirmModalType = {
 // Tipe data untuk context UI
 type UIContextType = {
   toast: ToastType;
-  showToast: (message: string, type: "success" | "error") => void;
+  showToast: (message: string, type: "success" | "error", duration?: number) => void;
   confirmModal: ConfirmModalType;
   showConfirmModal: (options: Omit<ConfirmModalType, "show">) => void;
   hideConfirmModal: () => void;
@@ -79,11 +79,11 @@ export function UIProvider({ children }: { children: ReactNode }) {
   const confirmModalRef = useRef<HTMLDialogElement>(null);
 
   // Fungsi untuk menampilkan toast
-  const showToast = (message: string, type: "success" | "error") => {
+  const showToast = (message: string, type: "success" | "error", duration: number = 3000) => {
     setToast({ show: true, message, type });
     setTimeout(() => {
       setToast((prev) => ({ ...prev, show: false }));
-    }, 3000);
+    }, duration);
   };
 
   // Fungsi untuk menampilkan modal konfirmasi
