@@ -260,9 +260,10 @@ export default function NotifikasiPage() {
                   </button>
                 </div>
               </div>
-              <p className="text-sm mt-1 whitespace-pre-line">
-                {notification.message}
-              </p>
+              <div 
+                className="text-sm mt-1 whitespace-pre-line"
+                dangerouslySetInnerHTML={{ __html: notification.message }}
+              ></div>
             </div>
           ))}
         </div>

@@ -5,6 +5,7 @@ import { Save } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useUI } from "@/lib/ui-context";
+import Cookies from "js-cookie";
 
 export default function EditSiswaPage() {
   const [tab, setTab] = useState<'pribadi' | 'ortu'>('pribadi');
@@ -73,13 +74,38 @@ export default function EditSiswaPage() {
     setForm(f => ({ ...f, [name]: value }));
   }
 
+  // Mendapatkan data user dari cookie
+  function getUserData() {
+    try {
+      const userCookie = Cookies.get("user");
+      if (userCookie) {
+        return JSON.parse(userCookie);
+      }
+      return null;
+    } catch (error) {
+      console.error("Error parsing user cookie:", error);
+      return null;
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     try {
+      // Dapatkan data user untuk dikirim dalam header
+      const userData = getUserData();
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json"
+      };
+      
+      // Tambahkan user data ke header jika tersedia
+      if (userData) {
+        headers["x-user-data"] = JSON.stringify(userData);
+      }
+      
       const res = await fetch("/api/siswa", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({
           id,
           ...form,

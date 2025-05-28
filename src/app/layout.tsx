@@ -320,7 +320,10 @@ export default function RootLayout({
                                     <h4 className={`text-sm font-medium ${!notif.isRead ? 'text-primary' : ''}`}>{notif.title}</h4>
                                     <span className={`badge badge-sm ${getNotifBadgeClass(notif.type)}`}>{notif.type}</span>
                                   </div>
-                                  <p className="text-xs text-base-content/80 line-clamp-2">{notif.message}</p>
+                                  <p 
+                                    className="text-xs text-base-content/80 line-clamp-2"
+                                    dangerouslySetInnerHTML={{ __html: notif.message }}
+                                  ></p>
                                   <p className="text-xs text-base-content/60 mt-1">{formatNotifTime(notif.created_at)}</p>
                                 </div>
                               ))}
@@ -488,7 +491,10 @@ export default function RootLayout({
                                   <h4 className={`text-sm font-medium ${!notif.isRead ? 'text-primary' : ''}`}>{notif.title}</h4>
                                   <span className={`badge badge-sm ${getNotifBadgeClass(notif.type)}`}>{notif.type}</span>
                                 </div>
-                                <p className="text-sm text-base-content/80 line-clamp-2">{notif.message}</p>
+                                <p 
+                                  className="text-sm text-base-content/80 line-clamp-2"
+                                  dangerouslySetInnerHTML={{ __html: notif.message }}
+                                ></p>
                                 <p className="text-xs text-base-content/60 mt-1">{formatNotifTime(notif.created_at)}</p>
                               </div>
                             ))}

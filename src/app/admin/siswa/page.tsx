@@ -4,6 +4,7 @@ import { Filter, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUI } from "@/lib/ui-context";
+import Cookies from "js-cookie";
 
 type Student = {
   id: number;
@@ -121,13 +122,39 @@ export default function SiswaPage() {
   const totalPage = Math.ceil(filtered.length / pageSize);
   const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
 
+  // Mendapatkan data user dari cookie
+  function getUserData() {
+    try {
+      const userCookie = Cookies.get("user");
+      if (userCookie) {
+        return JSON.parse(userCookie);
+      }
+      return null;
+    } catch (error) {
+      console.error("Error parsing user cookie:", error);
+      return null;
+    }
+  }
+
   async function handleDelete(id: number) {
     try {
+      // Dapatkan data user untuk dikirim dalam header
+      const userData = getUserData();
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json"
+      };
+      
+      // Tambahkan user data ke header jika tersedia
+      if (userData) {
+        headers["x-user-data"] = JSON.stringify(userData);
+      }
+      
       const res = await fetch("/api/siswa", {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ id }),
       });
+      
       if (res.ok) {
         setSiswa(siswa => siswa.filter(s => s.id !== id));
         showToast("Siswa berhasil dihapus", "success");
