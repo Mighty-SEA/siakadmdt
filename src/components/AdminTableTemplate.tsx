@@ -16,12 +16,12 @@ interface AdminTableTemplateProps {
   importUrl?: string;
   exportUrl?: string;
   addUrl: string;
-  editUrl: (id: number) => string;
+  editUrl: (id: string) => string;
   deleteUrl: string;
   rowKey?: string;
   defaultColumns?: string[];
   searchPlaceholder?: string;
-  renderBulkAction?: (selected: number[], bulkDelete: () => void, loading: boolean) => React.ReactNode;
+  renderBulkAction?: (selected: string[], bulkDelete: () => void, loading: boolean) => React.ReactNode;
   refreshKey?: number;
 }
 
@@ -46,7 +46,7 @@ export default function AdminTableTemplate({
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [selectedColumns, setSelectedColumns] = useState<string[]>(defaultColumns || columns.map(c => c.key));
-  const [selectedRows, setSelectedRows] = useState<number[]>([]);
+  const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
   const longPressActiveRef = useRef(false);
@@ -56,7 +56,11 @@ export default function AdminTableTemplate({
     fetch(fetchUrl)
       .then(res => res.json())
       .then(res => {
-        setData(res.data || res.siswa || res.kelas || []);
+        setData(res.data || []);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error("Error fetching data:", error);
         setLoading(false);
       });
   }, [fetchUrl, refreshKey]);
@@ -96,7 +100,7 @@ export default function AdminTableTemplate({
     }
   };
   const isAllInPageSelected = () => paged.length > 0 && paged.every(row => selectedRows.includes(row[rowKey]));
-  const toggleRowSelection = (id: number) => {
+  const toggleRowSelection = (id: string) => {
     setSelectedRows(prev => prev.includes(id) ? prev.filter(rowId => rowId !== id) : [...prev, id]);
   };
   const handleSelectAll = () => setSelectedRows(filtered.map(row => row[rowKey]));
