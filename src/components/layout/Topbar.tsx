@@ -206,8 +206,11 @@ function NotificationDropdown({
   formatNotifTime,
   isMobile = false
 }: NotificationDropdownProps) {
+  // Gunakan key yang stabil, hanya berubah ketika unreadCount atau jumlah notifikasi berubah
+  const notifKey = `${unreadCount}-${notifications.length}`;
+  
   return (
-    <div className="dropdown dropdown-end">
+    <div className="dropdown dropdown-end" key={notifKey}>
       <label tabIndex={0} className="btn btn-ghost btn-circle indicator">
         <Bell className={`${isMobile ? 'w-6 h-6' : 'w-6 h-6'} text-base-content`} />
         {unreadCount > 0 && (

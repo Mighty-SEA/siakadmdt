@@ -5,6 +5,7 @@ import { Pencil, Trash2, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { normalizeAvatarUrl } from "@/lib/utils";
+import { useUI } from "@/lib/ui-context";
 
 type User = {
   id: number;
@@ -20,6 +21,7 @@ export default function UserPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const router = useRouter();
+  const { showToast, showConfirmModal } = useUI();
 
   useEffect(() => {
     setLoading(true);
@@ -38,23 +40,40 @@ export default function UserPage() {
   }, []);
 
   async function handleDelete(id: number) {
-    if (!confirm("Yakin ingin menghapus user ini?")) return;
-    try {
-      const res = await fetch("/api/user", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
-      });
-      if (res.ok) {
-        setUsers(users => users.filter(u => u.id !== id));
-        alert("User berhasil dihapus");
-      } else {
-        const data = await res.json();
-        alert(data.error || "Gagal menghapus user");
+    const userData = users.find(u => u.id === id);
+    if (!userData) return;
+    
+    showConfirmModal({
+      title: "Konfirmasi Hapus",
+      message: `Apakah Anda yakin ingin menghapus user <span class="font-semibold text-primary">${userData.name}</span> (${userData.email})?`,
+      confirmText: "Hapus",
+      cancelText: "Batal",
+      onConfirm: async () => {
+        try {
+          const res = await fetch("/api/user", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id }),
+          });
+          
+          if (res.ok) {
+            setUsers(users => users.filter(u => u.id !== id));
+            showToast("User berhasil dihapus", "success");
+            
+            // Reload notifikasi setelah operasi hapus
+            if (typeof window !== 'undefined' && window.reloadNotifications) {
+              window.reloadNotifications();
+            }
+          } else {
+            const data = await res.json();
+            showToast(data.error || "Gagal menghapus user", "error");
+          }
+        } catch (error) {
+          console.error("Error deleting user:", error);
+          showToast("Terjadi kesalahan jaringan", "error");
+        }
       }
-    } catch {
-      alert("Terjadi kesalahan jaringan");
-    }
+    });
   }
 
   return (

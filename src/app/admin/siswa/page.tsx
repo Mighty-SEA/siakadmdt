@@ -168,6 +168,11 @@ export default function SiswaPage() {
       if (res.ok) {
         setSiswa(siswa => siswa.filter(s => s.id !== id));
         showToast("Siswa berhasil dihapus", "success");
+        
+        // Reload notifikasi setelah operasi hapus
+        if (typeof window !== 'undefined' && window.reloadNotifications) {
+          window.reloadNotifications();
+        }
       } else {
         const data = await res.json();
         showToast(data.error || "Gagal menghapus siswa", "error");
@@ -258,150 +263,103 @@ export default function SiswaPage() {
   const handleBulkDelete = async () => {
     if (selectedStudents.length === 0) return;
     
-    // Dapatkan informasi siswa yang akan dihapus untuk ditampilkan di notifikasi
-    const selectedStudentsInfo = siswa
-      .filter(s => selectedStudents.includes(s.id))
-      .map(s => ({ id: s.id, name: s.name, nis: s.nis }));
-    
-    // Buat pesan konfirmasi dengan daftar siswa
-    let confirmMessage = `Apakah Anda yakin ingin menghapus ${selectedStudents.length} siswa yang dipilih?`;
-    
-    // Tambahkan daftar lengkap siswa di modal konfirmasi
-    if (selectedStudentsInfo.length > 0) {
-      confirmMessage += '<ul class="mt-2 list-disc pl-5 text-left">';
-      // Tampilkan semua siswa di modal konfirmasi
-      for (let i = 0; i < selectedStudentsInfo.length; i++) {
-        const student = selectedStudentsInfo[i];
-        confirmMessage += `<li class="text-sm"><span class="font-semibold">${student.name}</span> (${student.nis})</li>`;
+    setBulkActionLoading(true);
+    try {
+      // Dapatkan data user untuk dikirim dalam header
+      const userData = getUserData();
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json"
+      };
+      
+      // Tambahkan user data ke header jika tersedia
+      if (userData) {
+        headers["x-user-data"] = JSON.stringify(userData);
       }
       
-      confirmMessage += '</ul>';
-    }
-    
-    showConfirmModal({
-      title: "Konfirmasi Hapus Massal",
-      message: confirmMessage,
-      confirmText: "Hapus",
-      cancelText: "Batal",
-      onConfirm: async () => {
-        try {
-          setBulkActionLoading(true);
-          // Dapatkan data user untuk dikirim dalam header
-          const userData = getUserData();
-          const headers: Record<string, string> = {
-            "Content-Type": "application/json"
-          };
-          
-          // Tambahkan user data ke header jika tersedia
-          if (userData) {
-            headers["x-user-data"] = JSON.stringify(userData);
-          }
-          
-          const res = await fetch("/api/siswa/bulk", {
-            method: "DELETE",
-            headers,
-            body: JSON.stringify({ ids: selectedStudents }),
-          });
-          
-          if (res.ok) {
-            // Untuk toast, hanya tampilkan total
-            const toastMessage = `${selectedStudents.length} siswa berhasil dihapus`;
-            
-            setSiswa(prev => prev.filter(s => !selectedStudents.includes(s.id)));
-            setSelectedStudents([]);
-            showToast(toastMessage, "success");
-          } else {
-            const data = await res.json();
-            showToast(data.error || "Gagal menghapus siswa", "error");
-          }
-        } catch (error) {
-          console.error("Error bulk deleting students:", error);
-          showToast("Terjadi kesalahan jaringan", "error");
-        } finally {
-          setBulkActionLoading(false);
+      const res = await fetch("/api/siswa/bulk", {
+        method: "DELETE",
+        headers,
+        body: JSON.stringify({ ids: selectedStudents }),
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok) {
+        setSiswa(prev => prev.filter(s => !selectedStudents.includes(s.id)));
+        setSelectedStudents([]);
+        showToast(data.message || `${selectedStudents.length} siswa berhasil dihapus`, "success");
+        
+        // Reload notifikasi setelah operasi bulk delete
+        if (typeof window !== 'undefined' && window.reloadNotifications) {
+          window.reloadNotifications();
         }
+      } else {
+        showToast(data.error || "Gagal menghapus siswa", "error");
       }
-    });
+    } catch (error) {
+      console.error("Error in bulk delete:", error);
+      showToast("Terjadi kesalahan jaringan", "error");
+    } finally {
+      setBulkActionLoading(false);
+    }
   };
 
   // Fungsi untuk menangani bulk update status (aktif/alumni)
   const handleBulkUpdateStatus = async (isAlumni: boolean) => {
     if (selectedStudents.length === 0) return;
     
-    const statusText = isAlumni ? "lulus (alumni)" : "aktif";
-    
-    // Dapatkan informasi siswa yang akan diupdate untuk ditampilkan di notifikasi
-    const selectedStudentsInfo = siswa
-      .filter(s => selectedStudents.includes(s.id))
-      .map(s => ({ id: s.id, name: s.name, nis: s.nis }));
-    
-    // Buat pesan konfirmasi dengan daftar siswa
-    let confirmMessage = `Apakah Anda yakin ingin mengubah status ${selectedStudents.length} siswa yang dipilih menjadi ${statusText}?`;
-    
-    // Tambahkan daftar lengkap siswa di modal konfirmasi
-    if (selectedStudentsInfo.length > 0) {
-      confirmMessage += '<ul class="mt-2 list-disc pl-5 text-left">';
-      // Tampilkan semua siswa di modal konfirmasi
-      for (let i = 0; i < selectedStudentsInfo.length; i++) {
-        const student = selectedStudentsInfo[i];
-        confirmMessage += `<li class="text-sm"><span class="font-semibold">${student.name}</span> (${student.nis})</li>`;
+    setBulkActionLoading(true);
+    try {
+      // Dapatkan data user untuk dikirim dalam header
+      const userData = getUserData();
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json"
+      };
+      
+      // Tambahkan user data ke header jika tersedia
+      if (userData) {
+        headers["x-user-data"] = JSON.stringify(userData);
       }
       
-      confirmMessage += '</ul>';
-    }
-    
-    showConfirmModal({
-      title: `Konfirmasi Ubah Status Massal`,
-      message: confirmMessage,
-      confirmText: "Ubah",
-      cancelText: "Batal",
-      onConfirm: async () => {
-        try {
-          setBulkActionLoading(true);
-          // Dapatkan data user untuk dikirim dalam header
-          const userData = getUserData();
-          const headers: Record<string, string> = {
-            "Content-Type": "application/json"
-          };
-          
-          // Tambahkan user data ke header jika tersedia
-          if (userData) {
-            headers["x-user-data"] = JSON.stringify(userData);
-          }
-          
-          const res = await fetch("/api/siswa/bulk", {
-            method: "PUT",
-            headers,
-            body: JSON.stringify({ 
-              ids: selectedStudents,
-              data: { is_alumni: isAlumni }
-            }),
-          });
-          
-          if (res.ok) {
-            // Untuk toast, hanya tampilkan total
-            const toastMessage = `Status ${selectedStudents.length} siswa berhasil diubah menjadi ${statusText}`;
-            
-            // Update status siswa di state lokal
-            setSiswa(prev => prev.map(s => 
-              selectedStudents.includes(s.id) 
-                ? { ...s, is_alumni: isAlumni } 
-                : s
-            ));
-            setSelectedStudents([]);
-            showToast(toastMessage, "success");
-          } else {
-            const data = await res.json();
-            showToast(data.error || "Gagal mengubah status siswa", "error");
-          }
-        } catch (error) {
-          console.error("Error bulk updating student status:", error);
-          showToast("Terjadi kesalahan jaringan", "error");
-        } finally {
-          setBulkActionLoading(false);
+      const res = await fetch("/api/siswa/bulk", {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({ 
+          ids: selectedStudents,
+          data: { is_alumni: isAlumni }
+        }),
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok) {
+        setSiswa(prev => 
+          prev.map(s => 
+            selectedStudents.includes(s.id) 
+              ? { ...s, is_alumni: isAlumni } 
+              : s
+          )
+        );
+        setSelectedStudents([]);
+        showToast(
+          data.message || 
+          `Status ${selectedStudents.length} siswa berhasil diubah menjadi ${isAlumni ? 'Alumni' : 'Aktif'}`, 
+          "success"
+        );
+        
+        // Reload notifikasi setelah operasi bulk update
+        if (typeof window !== 'undefined' && window.reloadNotifications) {
+          window.reloadNotifications();
         }
+      } else {
+        showToast(data.error || "Gagal mengubah status siswa", "error");
       }
-    });
+    } catch (error) {
+      console.error("Error in bulk update:", error);
+      showToast("Terjadi kesalahan jaringan", "error");
+    } finally {
+      setBulkActionLoading(false);
+    }
   };
 
   // Reset selected students when search changes

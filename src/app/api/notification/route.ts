@@ -47,7 +47,13 @@ export async function GET(req: Request) {
         where: { userId: user.id, isRead: false },
       });
       
-      return NextResponse.json({ notifications, unreadCount });
+      // Buat respons dengan header anti-caching
+      const response = NextResponse.json({ notifications, unreadCount, timestamp: Date.now() });
+      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      response.headers.set('Pragma', 'no-cache');
+      response.headers.set('Expires', '0');
+      
+      return response;
     } else {
       const whereClause: { userId: number; isRead?: boolean } = { userId: parseInt(userId) };
       
@@ -65,7 +71,13 @@ export async function GET(req: Request) {
         where: { userId: parseInt(userId), isRead: false },
       });
       
-      return NextResponse.json({ notifications, unreadCount });
+      // Buat respons dengan header anti-caching
+      const response = NextResponse.json({ notifications, unreadCount, timestamp: Date.now() });
+      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      response.headers.set('Pragma', 'no-cache');
+      response.headers.set('Expires', '0');
+      
+      return response;
     }
   } catch (error: unknown) {
     console.error("Error fetching notifications:", error);
@@ -119,12 +131,40 @@ export async function PATCH(req: Request) {
       );
     }
     
+    // Dapatkan data notifikasi untuk mendapatkan userId
+    const notif = await prisma.notification.findUnique({
+      where: { id: parseInt(id) }
+    });
+    
+    if (!notif) {
+      return NextResponse.json(
+        { error: "Notification not found" },
+        { status: 404 }
+      );
+    }
+    
     const notification = await prisma.notification.update({
       where: { id: parseInt(id) },
       data: { isRead },
     });
     
-    return NextResponse.json({ notification });
+    // Hitung jumlah notifikasi yang belum dibaca
+    const unreadCount = await prisma.notification.count({
+      where: { userId: notif.userId, isRead: false },
+    });
+    
+    // Buat respons dengan header anti-caching
+    const response = NextResponse.json({ 
+      notification, 
+      unreadCount,
+      timestamp: Date.now() 
+    });
+    
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+    
+    return response;
   } catch (error) {
     console.error("Error updating notification:", error);
     return NextResponse.json(

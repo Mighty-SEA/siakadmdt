@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Save } from "lucide-react";
 import Image from "next/image";
 import { normalizeAvatarUrl } from "@/lib/utils";
+import { useUI } from "@/lib/ui-context";
 
 export default function TambahUserPage() {
   const [form, setForm] = useState({
@@ -19,6 +20,7 @@ export default function TambahUserPage() {
   const [roles, setRoles] = useState<{ id: number; name: string }[]>([]);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string>("");
+  const { showToast } = useUI();
 
   useEffect(() => {
     fetch("/api/role")
@@ -41,7 +43,7 @@ export default function TambahUserPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name || !form.email || !form.password) {
-      alert("Semua field wajib diisi!");
+      showToast("Semua field wajib diisi!", "error");
       return;
     }
     setLoading(true);
@@ -60,7 +62,7 @@ export default function TambahUserPage() {
           avatarUrl = dataUpload.url;
           console.log("Avatar URL set to:", avatarUrl);
         } else {
-          alert(dataUpload.error || "Gagal upload avatar");
+          showToast(dataUpload.error || "Gagal upload avatar", "error");
           setLoading(false);
           return;
         }
@@ -79,14 +81,20 @@ export default function TambahUserPage() {
       const data = await res.json();
       console.log("User API response:", data);
       if (res.ok) {
-        alert("User berhasil ditambahkan!");
+        showToast("User berhasil ditambahkan!", "success");
+        
+        // Reload notifikasi setelah operasi tambah
+        if (typeof window !== 'undefined' && window.reloadNotifications) {
+          window.reloadNotifications();
+        }
+        
         router.push("/admin/user");
       } else {
-        alert(data.error || "Gagal menambah user");
+        showToast(data.error || "Gagal menambah user", "error");
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Terjadi kesalahan jaringan");
+      showToast("Terjadi kesalahan jaringan", "error");
     } finally {
       setLoading(false);
     }

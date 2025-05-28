@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Save } from "lucide-react";
 import Image from "next/image";
 import { normalizeAvatarUrl } from "@/lib/utils";
+import { useUI } from "@/lib/ui-context";
 
 export default function EditUserPage() {
   const [roles, setRoles] = useState<{ id: number; name: string }[]>([]);
@@ -21,6 +22,7 @@ export default function EditUserPage() {
   const id = params?.id;
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string>("");
+  const { showToast } = useUI();
 
   useEffect(() => {
     async function fetchData() {
@@ -63,7 +65,7 @@ export default function EditUserPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name || !form.email) {
-      alert("Nama dan email wajib diisi!");
+      showToast("Nama dan email wajib diisi!", "error");
       return;
     }
     setLoading(true);
@@ -82,7 +84,7 @@ export default function EditUserPage() {
           avatarUrl = dataUpload.url;
           console.log("Avatar URL set to:", avatarUrl);
         } else {
-          alert(dataUpload.error || "Gagal upload avatar");
+          showToast(dataUpload.error || "Gagal upload avatar", "error");
           setLoading(false);
           return;
         }
@@ -102,14 +104,20 @@ export default function EditUserPage() {
       const data = await res.json();
       console.log("User API response:", data);
       if (res.ok) {
-        alert("User berhasil diupdate!");
+        showToast("User berhasil diupdate!", "success");
+        
+        // Reload notifikasi setelah operasi update
+        if (typeof window !== 'undefined' && window.reloadNotifications) {
+          window.reloadNotifications();
+        }
+        
         router.push("/admin/user");
       } else {
-        alert(data.error || "Gagal mengupdate user");
+        showToast(data.error || "Gagal mengupdate user", "error");
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Terjadi kesalahan jaringan");
+      showToast("Terjadi kesalahan jaringan", "error");
     } finally {
       setLoading(false);
     }

@@ -198,13 +198,56 @@ export default function AppLayout({ children }: AppLayoutProps) {
   // Ambil notifikasi saat user tersedia
   useEffect(() => {
     if (userData?.id && pathname !== "/login") {
+      // Ambil notifikasi saat component mount
       fetchNotifications();
       
-      // Polling untuk mendapatkan notifikasi baru setiap 30 detik
-      const interval = setInterval(fetchNotifications, 30000);
+      // Polling lebih lambat (setiap 60 detik) agar tidak terlalu sering me-refresh UI
+      const interval = setInterval(() => {
+        // Gunakan timestamp untuk mencegah cache
+        const timestamp = Date.now();
+        fetch(`/api/notification?limit=5&t=${timestamp}`)
+          .then(res => res.json())
+          .then(data => {
+            // Periksa jika jumlah notifikasi belum dibaca berubah
+            if (data.unreadCount !== unreadCount) {
+              console.log("Perubahan jumlah notifikasi:", { 
+                sebelumnya: unreadCount, 
+                sekarang: data.unreadCount 
+              });
+              setNotifications(data.notifications || []);
+              setUnreadCount(data.unreadCount || 0);
+            }
+          })
+          .catch(error => {
+            console.error("Error polling notifications:", error);
+          });
+      }, 60000); // Poll setiap 60 detik (1 menit)
+      
       return () => clearInterval(interval);
     }
-  }, [userData?.id, pathname, fetchNotifications]);
+  }, [userData?.id, pathname, fetchNotifications, unreadCount]);
+
+  // Fungsi untuk reload notifikasi secara manual, digunakan setelah operasi seperti tambah/edit/hapus
+  const reloadNotifications = useCallback(async () => {
+    if (!userData?.id) return;
+    
+    try {
+      const timestamp = Date.now();
+      const res = await fetch(`/api/notification?limit=5&t=${timestamp}`);
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data.notifications || []);
+        setUnreadCount(data.unreadCount || 0);
+      }
+    } catch (error) {
+      console.error("Error reloading notifications:", error);
+    }
+  }, [userData?.id]);
+
+  // Expose reloadNotifications untuk digunakan di children components
+  useEffect(() => {
+    window.reloadNotifications = reloadNotifications;
+  }, [reloadNotifications]);
 
   // Fungsi untuk menandai notifikasi sebagai sudah dibaca
   const markAsRead = async (id: number) => {
@@ -218,12 +261,22 @@ export default function AppLayout({ children }: AppLayoutProps) {
       });
 
       if (res.ok) {
+        const data = await res.json();
         setNotifications(
           notifications.map((notif) =>
             notif.id === id ? { ...notif, isRead: true } : notif
           )
         );
-        setUnreadCount((prev) => Math.max(0, prev - 1));
+        
+        // Gunakan unreadCount dari response API jika tersedia
+        if (data.unreadCount !== undefined) {
+          setUnreadCount(data.unreadCount);
+        } else {
+          setUnreadCount((prev) => Math.max(0, prev - 1));
+        }
+        
+        // Refresh notifikasi setelah menandai sebagai dibaca
+        fetchNotifications();
       }
     } catch (error) {
       console.error("Error marking notification as read:", error);
