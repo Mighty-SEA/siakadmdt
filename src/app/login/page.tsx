@@ -144,8 +144,8 @@ export default function LoginPage() {
         
         Cookies.set("user", JSON.stringify(userData), { 
           expires: 7, 
-          secure: true,
-          sameSite: 'strict',
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
           path: '/'
         });
         
