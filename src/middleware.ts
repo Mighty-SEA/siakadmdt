@@ -21,7 +21,7 @@ export function middleware(request: NextRequest) {
   console.log('Middleware dipanggil untuk path:', pathname);
   console.log('Status autentikasi:', isAuthenticated ? 'Terautentikasi' : 'Tidak terautentikasi');
 
-  // Jika mengakses rute admin dan belum login
+  // Hanya redirect ke login jika akses /admin dan belum login
   if (pathname.startsWith('/admin') && !isAuthenticated) {
     console.log('Melakukan redirect ke halaman login');
     // Redirect ke halaman login dengan parameter returnUrl untuk redirect kembali setelah login
@@ -102,14 +102,15 @@ function addSecurityHeaders(response: NextResponse) {
  * https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
  */
 export const config = {
-  // Jalankan middleware pada semua rute untuk menambahkan header keamanan
+  // Jalankan middleware hanya pada rute yang spesifik
   matcher: [
-    // Khusus untuk path yang dimulai dengan /admin
-    '/admin', 
+    // Path admin yang perlu dilindungi login
     '/admin/:path*',
-    // Tambahkan path login untuk menerapkan header keamanan
+    
+    // Rute login untuk menerapkan header keamanan
     '/login',
-    // Tambahkan path API untuk menerapkan header keamanan
+    
+    // API untuk menerapkan header keamanan
     '/api/:path*'
   ],
 }; 

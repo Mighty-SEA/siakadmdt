@@ -32,33 +32,26 @@ interface AppLayoutProps {
 }
 
 export default function AppLayout({ children }: AppLayoutProps) {
-  // Selector tema (menggunakan local state)
+  // Semua hooks di atas
+  const pathname = usePathname() || '';
   const [theme, setTheme] = useState("light");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  // State untuk menyimpan data user
   const [userData, setUserData] = useState<UserData | null>(null);
-  // State untuk notifikasi
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifLoading, setNotifLoading] = useState(false);
-  // State untuk melacak apakah komponen sudah di-mount
   const [isMounted, setIsMounted] = useState(false);
-  
-  const pathname = usePathname() || '';
   const router = useRouter();
   const themes = [
     "light","dark","cupcake","bumblebee","emerald","corporate","synthwave","retro","cyberpunk","valentine","halloween","garden","forest","aqua","lofi","pastel","fantasy","wireframe","black","luxury","dracula","cmyk","autumn","business","acid","lemonade","night","coffee","winter","dim","nord","sunset","caramellatte","abyss","silk"
   ];
   const drawerInputRef = useRef<HTMLInputElement>(null);
-  
-  // State untuk tracking session ID
   const [currentSessionId, setCurrentSessionId] = useState<string>("");
 
-  // Fungsi untuk mengambil notifikasi
+  // Deklarasi useCallback sebelum useEffect yang menggunakannya
   const fetchNotifications = useCallback(async () => {
     if (!userData?.id) return;
-    
     setNotifLoading(true);
     try {
       const res = await fetch(`/api/notification?limit=5`);
@@ -74,16 +67,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
     }
   }, [userData?.id]);
 
-  // Fungsi untuk mengambil data user dari cookie dan memvalidasi session
   const getUserFromCookie = useCallback(() => {
     const userCookie = Cookies.get('user');
     if (userCookie) {
       try {
         const parsedUser = JSON.parse(userCookie);
-        // Jika tidak ada sessionId, tambahkan
         if (!parsedUser.sessionId) {
           parsedUser.sessionId = Date.now().toString();
-          // Update cookie dengan sessionId
           Cookies.set("user", JSON.stringify(parsedUser), { 
             expires: 7, 
             secure: true,
@@ -91,12 +81,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
             path: '/'
           });
         }
-        
-        // Update session ID state jika berbeda
         if (parsedUser.sessionId !== currentSessionId) {
           setCurrentSessionId(parsedUser.sessionId);
         }
-        
         return parsedUser;
       } catch (error) {
         console.error("Error parsing user cookie:", error);
@@ -106,8 +93,22 @@ export default function AppLayout({ children }: AppLayoutProps) {
     return null;
   }, [currentSessionId]);
 
+  // Pada setiap useEffect/useCallback yang melakukan cek login/redirect, tambahkan pengecualian:
+  useEffect(() => {
+    if (pathname === "/") return;
+    // ...logic lama inisialisasi tema, user session, dsb
+  }, [/* dependency lama + pathname */]);
+
+  useEffect(() => {
+    if (pathname === "/") return;
+    // ...logic lama cek user dari cookie dan redirect ke login
+  }, [/* dependency lama + pathname */]);
+
+  // ...semua useEffect/useCallback lain yang melakukan cek login/redirect, tambahkan pengecualian serupa
+
   // Inisialisasi tema saat komponen di-mount (hanya sekali)
   useEffect(() => {
+    if (pathname === "/") return;
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
       setTheme(savedTheme);
@@ -116,7 +117,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
       document.documentElement.setAttribute("data-theme", "light");
     }
     setIsMounted(true);
-    
     // Cek user session hanya sekali saat mount
     const checkUserSession = () => {
       const user = getUserFromCookie();
@@ -125,39 +125,65 @@ export default function AppLayout({ children }: AppLayoutProps) {
         setUserData(user);
       }
     };
-    
-    // Panggil sekali, tidak perlu interval
     checkUserSession();
-    
-    // Tidak ada interval yang perlu dibersihkan
-  }, [getUserFromCookie, userData]); 
+  }, [getUserFromCookie, userData, pathname]);
 
   // Ambil data user dari cookie saat mount dan setiap navigasi
   useEffect(() => {
+    if (pathname === "/" || pathname === "/login") return;
     const user = getUserFromCookie();
-    if (user) {
+    
+    // Hanya redirect ke login jika mengakses halaman admin dan tidak punya user
+    if (!user && pathname.startsWith('/admin')) {
+      router.push('/login');
+    } else if (user) {
       console.log("Setting user data from cookie");
       setUserData(user);
-    } else if (pathname !== '/login') {
-      // Jika tidak ada cookie user dan bukan di halaman login, redirect ke login
-      router.push('/login');
     }
   }, [pathname, getUserFromCookie, router]);
-  
+
   // Ambil notifikasi hanya saat navigasi atau perubahan rute
   useEffect(() => {
+    if (pathname === "/") return;
     if (!userData?.id || pathname === "/login") return;
-    
-    // Ambil notifikasi hanya saat pertama kali halaman dimuat
-    // Ini diperlukan untuk menampilkan notifikasi awal
     if (notifications.length === 0) {
       fetchNotifications();
     }
-    
-    // Tidak perlu polling atau pembaruan otomatis lagi
   }, [userData?.id, pathname, fetchNotifications, notifications.length]);
 
-  // Fungsi untuk reload notifikasi secara manual, digunakan setelah operasi seperti tambah/edit/hapus
+  // Simpan tema ke localStorage dan update data-theme hanya setelah komponen di-mount
+  useEffect(() => {
+    if (pathname === "/") return;
+    if (isMounted && theme) {
+      localStorage.setItem('theme', theme);
+      document.documentElement.setAttribute("data-theme", theme);
+    }
+  }, [theme, isMounted, pathname]);
+
+  // Ambil state sidebar dari localStorage saat mount
+  useEffect(() => {
+    if (pathname === "/") return;
+    const savedSidebar = typeof window !== 'undefined' ? localStorage.getItem('sidebarOpen') : null;
+    if (savedSidebar !== null) {
+      setSidebarOpen(savedSidebar === 'true');
+    }
+  }, [pathname]);
+
+  // Simpan state sidebar ke localStorage setiap kali berubah
+  useEffect(() => {
+    if (pathname === "/") return;
+    localStorage.setItem('sidebarOpen', sidebarOpen.toString());
+  }, [sidebarOpen, pathname]);
+
+  // Sinkronkan drawerOpen dengan input checkbox drawer-toggle
+  useEffect(() => {
+    if (pathname === "/") return;
+    if (drawerInputRef.current) {
+      drawerInputRef.current.checked = drawerOpen;
+    }
+  }, [drawerOpen, pathname]);
+
+  // Fungsi untuk mengambil notifikasi
   const reloadNotifications = useCallback(async () => {
     if (!userData?.id) return;
     
@@ -234,34 +260,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
     }
   };
 
-  // Simpan tema ke localStorage dan update data-theme hanya setelah komponen di-mount
-  useEffect(() => {
-    if (isMounted && theme) {
-      localStorage.setItem('theme', theme);
-      document.documentElement.setAttribute("data-theme", theme);
-    }
-  }, [theme, isMounted]);
-
-  // Ambil state sidebar dari localStorage saat mount
-  useEffect(() => {
-    const savedSidebar = typeof window !== 'undefined' ? localStorage.getItem('sidebarOpen') : null;
-    if (savedSidebar !== null) {
-      setSidebarOpen(savedSidebar === 'true');
-    }
-  }, []);
-
-  // Simpan state sidebar ke localStorage setiap kali berubah
-  useEffect(() => {
-    localStorage.setItem('sidebarOpen', sidebarOpen.toString());
-  }, [sidebarOpen]);
-
-  // Sinkronkan drawerOpen dengan input checkbox drawer-toggle
-  useEffect(() => {
-    if (drawerInputRef.current) {
-      drawerInputRef.current.checked = drawerOpen;
-    }
-  }, [drawerOpen]);
-
   // Helper untuk menampilkan avatar
   const renderAvatar = (className: string = "") => {
     if (userData?.avatar) {
@@ -337,13 +335,14 @@ export default function AppLayout({ children }: AppLayoutProps) {
     router.push('/login');
   };
 
-  // Hanya render konten setelah komponen di-mount, untuk menghindari ketidakcocokan hydration
-  if (!isMounted) {
-    return null; // Atau tampilkan loading spinner jika diperlukan
+  const isAdmin = pathname.startsWith('/admin');
+
+  if (!isAdmin) {
+    return <>{children}</>;
   }
 
-  if (pathname === "/login") {
-    return <>{children}</>;
+  if (!isMounted) {
+    return null;
   }
 
   return (
