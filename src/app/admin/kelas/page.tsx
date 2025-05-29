@@ -95,10 +95,19 @@ export default function KelasPage() {
   return (
     <div>
       <div className="flex justify-end mb-4">
-        <Link href="/admin/kelas/riwayat" className="btn btn-outline btn-primary gap-2">
-          <History className="w-4 h-4" />
-          <span>Riwayat Kelas</span>
-        </Link>
+        <div className="flex gap-2 w-full">
+          <Link href="/admin/classlevel" className="btn btn-outline btn-secondary gap-2">
+            <span>Tingkat Kelas</span>
+          </Link>
+          <Link href="/admin/academicyear" className="btn btn-outline btn-secondary gap-2">
+            <span>Tahun Akademik</span>
+          </Link>
+          <div className="flex-1" />
+          <Link href="/admin/kelas/riwayat" className="btn btn-outline btn-primary gap-2">
+            <History className="w-4 h-4" />
+            <span>Riwayat Kelas</span>
+          </Link>
+        </div>
       </div>
       
       <AdminTableTemplate<KelasData>

@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
-import { User, Users, BookOpen, ClipboardList, CalendarCheck, Wallet, X, History } from "lucide-react";
+import { LayoutDashboard, GraduationCap, BookOpen, School, History, FileText, CalendarCheck, ArrowDownCircle, ArrowUpCircle, Receipt, User2, Shield, Wallet, UserCircle, LogOut, X } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -19,6 +20,7 @@ export default function Sidebar({
   handleLogout
 }: SidebarProps) {
   const pathname = usePathname() || '';
+  const [keuanganOpen, setKeuanganOpen] = useState(pathname.startsWith("/admin/keuangan"));
   
   // Jika di mobile, gunakan width full
   const sidebarClass = isMobile 
@@ -26,9 +28,9 @@ export default function Sidebar({
     : `bg-base-200 text-base-content p-4 flex-col shadow-xl min-h-screen transition-[width] duration-300 ease-in-out hidden md:flex sticky top-0 h-screen ${sidebarOpen ? 'w-64' : 'w-20'}`;
   
   return (
-    <aside className={sidebarClass} style={!isMobile ? {transitionProperty: 'width'} : {}}>
+    <aside className={sidebarClass + " scrollbar-hide"} style={!isMobile ? {transitionProperty: 'width'} : {}}>
       <div className={`font-bold text-2xl mb-8 text-primary flex items-center gap-2 transition-all duration-200 ${isMobile ? '' : (sidebarOpen ? '' : 'justify-center')}`}>
-        <BookOpen className="w-7 h-7 text-primary" />
+        <LayoutDashboard className="w-7 h-7 text-primary" />
         {(isMobile || sidebarOpen) && <span>SIAKAD</span>}
         {isMobile && (
           <button className="btn btn-ghost btn-circle ml-auto md:hidden" onClick={closeMobileDrawer} aria-label="Tutup Menu">
@@ -41,15 +43,17 @@ export default function Sidebar({
             onClick={() => setSidebarOpen(!sidebarOpen)}
             aria-label={sidebarOpen ? "Tutup Menu" : "Buka Menu"}
           >
-            {sidebarOpen ? <X className="w-5 h-5" /> : <BookOpen className="w-5 h-5" />}
+            {sidebarOpen ? <X className="w-5 h-5" /> : <LayoutDashboard className="w-5 h-5" />}
           </button>
         )}
       </div>
       
       <nav className={`flex flex-col ${isMobile ? 'gap-1' : (sidebarOpen ? 'gap-1' : 'gap-0')} transition-all duration-300 ease-in-out`}>
+        {/* Data Master */}
+        <div className={`text-xs font-semibold text-gray-400 px-2 mb-1 mt-2 flex items-center${(isMobile || sidebarOpen) ? '' : ' justify-center'}`}>{(isMobile || sidebarOpen) ? 'DATA MASTER' : <span className="text-lg">&bull;</span>}</div>
         <SidebarLink 
           href="/admin" 
-          icon={<BookOpen className="w-5 h-5" />} 
+          icon={<LayoutDashboard className="w-5 h-5" />} 
           label="Dashboard" 
           active={pathname === "/admin"}
           sidebarOpen={isMobile ? true : sidebarOpen}
@@ -57,15 +61,43 @@ export default function Sidebar({
         />
         <SidebarLink 
           href="/admin/siswa" 
-          icon={<Users className="w-5 h-5" />} 
+          icon={<GraduationCap className="w-5 h-5" />} 
           label="Siswa" 
           active={pathname.startsWith("/admin/siswa")}
           sidebarOpen={isMobile ? true : sidebarOpen}
           onClick={isMobile ? closeMobileDrawer : undefined}
         />
         <SidebarLink 
+          href="/admin/guru" 
+          icon={<BookOpen className="w-5 h-5" />} 
+          label="Guru" 
+          active={pathname === "/admin/guru"}
+          sidebarOpen={isMobile ? true : sidebarOpen}
+          onClick={isMobile ? closeMobileDrawer : undefined}
+        />
+        {/* Manajemen User */}
+        <div className={`text-xs font-semibold text-gray-400 px-2 mb-1 mt-4 flex items-center${(isMobile || sidebarOpen) ? '' : ' justify-center'}`}>{(isMobile || sidebarOpen) ? 'MANAJEMEN USER' : <span className="text-lg">&bull;</span>}</div>
+        <SidebarLink 
+          href="/admin/user" 
+          icon={<User2 className="w-5 h-5" />} 
+          label="User" 
+          active={pathname.startsWith("/admin/user")}
+          sidebarOpen={isMobile ? true : sidebarOpen}
+          onClick={isMobile ? closeMobileDrawer : undefined}
+        />
+        <SidebarLink 
+          href="/admin/role" 
+          icon={<Shield className="w-5 h-5" />} 
+          label="Role" 
+          active={pathname.startsWith("/admin/role")}
+          sidebarOpen={isMobile ? true : sidebarOpen}
+          onClick={isMobile ? closeMobileDrawer : undefined}
+        />
+        {/* Akademik */}
+        <div className={`text-xs font-semibold text-gray-400 px-2 mb-1 mt-4 flex items-center${(isMobile || sidebarOpen) ? '' : ' justify-center'}`}>{(isMobile || sidebarOpen) ? 'AKADEMIK' : <span className="text-lg">&bull;</span>}</div>
+        <SidebarLink 
           href="/admin/kelas" 
-          icon={<ClipboardList className="w-5 h-5" />} 
+          icon={<School className="w-5 h-5" />} 
           label="Kelas" 
           active={pathname === "/admin/kelas"}
           sidebarOpen={isMobile ? true : sidebarOpen}
@@ -80,48 +112,8 @@ export default function Sidebar({
           onClick={isMobile ? closeMobileDrawer : undefined}
         />
         <SidebarLink 
-          href="/admin/academicyear" 
-          icon={<CalendarCheck className="w-5 h-5" />} 
-          label="Tahun Akademik" 
-          active={pathname.startsWith("/admin/academicyear")}
-          sidebarOpen={isMobile ? true : sidebarOpen}
-          onClick={isMobile ? closeMobileDrawer : undefined}
-        />
-        <SidebarLink 
-          href="/admin/classlevel" 
-          icon={<ClipboardList className="w-5 h-5" />} 
-          label="Tingkat Kelas" 
-          active={pathname.startsWith("/admin/classlevel")}
-          sidebarOpen={isMobile ? true : sidebarOpen}
-          onClick={isMobile ? closeMobileDrawer : undefined}
-        />
-        <SidebarLink 
-          href="/admin/guru" 
-          icon={<User className="w-5 h-5" />} 
-          label="Guru" 
-          active={pathname === "/admin/guru"}
-          sidebarOpen={isMobile ? true : sidebarOpen}
-          onClick={isMobile ? closeMobileDrawer : undefined}
-        />
-        <SidebarLink 
-          href="/admin/user" 
-          icon={<User className="w-5 h-5" />} 
-          label="User" 
-          active={pathname.startsWith("/admin/user")}
-          sidebarOpen={isMobile ? true : sidebarOpen}
-          onClick={isMobile ? closeMobileDrawer : undefined}
-        />
-        <SidebarLink 
-          href="/admin/role" 
-          icon={<Users className="w-5 h-5" />} 
-          label="Role" 
-          active={pathname.startsWith("/admin/role")}
-          sidebarOpen={isMobile ? true : sidebarOpen}
-          onClick={isMobile ? closeMobileDrawer : undefined}
-        />
-        <SidebarLink 
           href="/admin/nilai" 
-          icon={<BookOpen className="w-5 h-5" />} 
+          icon={<FileText className="w-5 h-5" />} 
           label="Nilai" 
           active={pathname === "/admin/nilai"}
           sidebarOpen={isMobile ? true : sidebarOpen}
@@ -135,39 +127,45 @@ export default function Sidebar({
           sidebarOpen={isMobile ? true : sidebarOpen}
           onClick={isMobile ? closeMobileDrawer : undefined}
         />
-        <SidebarLink 
-          href="/admin/keuangan" 
-          icon={<Wallet className="w-5 h-5" />} 
-          label="Keuangan" 
-          active={pathname === "/admin/keuangan"}
-          sidebarOpen={isMobile ? true : sidebarOpen}
-          onClick={isMobile ? closeMobileDrawer : undefined}
-        />
-        {/* Submenu Keuangan */}
-        {(pathname.startsWith("/admin/keuangan") && (isMobile || sidebarOpen)) && (
-          <div className="ml-8 flex flex-col gap-1">
+        {/* Keuangan */}
+        <div className={`text-xs font-semibold text-gray-400 px-2 mb-1 mt-4 flex items-center${(isMobile || sidebarOpen) ? '' : ' justify-center'}`}>{(isMobile || sidebarOpen) ? 'KEUANGAN' : <span className="text-lg">&bull;</span>}</div>
+        {/* Menu Keuangan dengan submenu */}
+        <button
+          className={`btn btn-ghost w-full flex items-center ${sidebarOpen ? "justify-start gap-3" : "justify-center gap-0"} ${keuanganOpen ? "bg-primary/10 text-primary" : ""}`}
+          onClick={() => setKeuanganOpen(!keuanganOpen)}
+          aria-expanded={keuanganOpen}
+          type="button"
+        >
+          <Wallet className="w-5 h-5" />
+          {sidebarOpen && "Keuangan"}
+          <span className={`ml-auto transition-transform ${keuanganOpen ? "rotate-90" : "rotate-0"} ${sidebarOpen ? "" : "hidden"}`}>
+            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+          </span>
+        </button>
+        {keuanganOpen && (
+          <div className={`flex flex-col gap-1${sidebarOpen || isMobile ? ' ml-6' : ''}`}>
             <SidebarLink 
               href="/admin/keuangan/income" 
-              icon={<Wallet className="w-4 h-4" />} 
+              icon={<ArrowDownCircle className="w-4 h-4" />} 
               label="Pemasukan" 
               active={pathname.startsWith("/admin/keuangan/income")}
-              sidebarOpen={true}
+              sidebarOpen={sidebarOpen || isMobile}
               onClick={isMobile ? closeMobileDrawer : undefined}
             />
             <SidebarLink 
               href="/admin/keuangan/expense" 
-              icon={<Wallet className="w-4 h-4" />} 
+              icon={<ArrowUpCircle className="w-4 h-4" />} 
               label="Pengeluaran" 
               active={pathname.startsWith("/admin/keuangan/expense")}
-              sidebarOpen={true}
+              sidebarOpen={sidebarOpen || isMobile}
               onClick={isMobile ? closeMobileDrawer : undefined}
             />
             <SidebarLink 
               href="/admin/keuangan/spp" 
-              icon={<Wallet className="w-4 h-4" />} 
+              icon={<Receipt className="w-4 h-4" />} 
               label="SPP" 
               active={pathname.startsWith("/admin/keuangan/spp")}
-              sidebarOpen={true}
+              sidebarOpen={sidebarOpen || isMobile}
               onClick={isMobile ? closeMobileDrawer : undefined}
             />
           </div>
@@ -176,18 +174,14 @@ export default function Sidebar({
       
       <div className="mt-auto flex flex-col gap-2 pt-8 border-t border-base-300">
         <button className="btn btn-ghost justify-start gap-3 text-base-content">
-          <User className="w-5 h-5" />
+          <UserCircle className="w-5 h-5" />
           {(isMobile || sidebarOpen) && 'Profil'}
         </button>
         <button 
           className="btn btn-ghost justify-start gap-3 text-base-content" 
           onClick={handleLogout}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-            <polyline points="16 17 21 12 16 7"></polyline>
-            <line x1="21" y1="12" x2="9" y2="12"></line>
-          </svg>
+          <LogOut className="w-5 h-5" />
           {(isMobile || sidebarOpen) && 'Keluar'}
         </button>
       </div>
