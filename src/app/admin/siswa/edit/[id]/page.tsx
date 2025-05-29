@@ -16,6 +16,8 @@ export default function EditSiswaPage() {
     birth_place: "",
     gender: "",
     is_alumni: "",
+    alumni_year: "",
+    certificate_number: "",
     nik: "",
     kk: "",
     origin_school: "",
@@ -46,6 +48,8 @@ export default function EditSiswaPage() {
           birth_place: siswa.birth_place || "",
           gender: siswa.gender || "",
           is_alumni: siswa.is_alumni === true ? "true" : siswa.is_alumni === false ? "false" : "",
+          alumni_year: siswa.alumni_year ? String(siswa.alumni_year) : "",
+          certificate_number: siswa.certificate_number || "",
           nik: siswa.nik || "",
           kk: siswa.kk || "",
           origin_school: siswa.origin_school || "",
@@ -111,6 +115,8 @@ export default function EditSiswaPage() {
           id,
           ...form,
           is_alumni: form.is_alumni === "true" ? true : false,
+          alumni_year: form.is_alumni === "true" ? form.alumni_year : null,
+          certificate_number: form.is_alumni === "true" ? form.certificate_number : null,
         }),
       });
       const data = await res.json();
@@ -185,6 +191,18 @@ export default function EditSiswaPage() {
                   <option value="true">Lulus</option>
                 </select>
               </div>
+              {form.is_alumni === "true" && (
+                <>
+                  <div>
+                    <label className="block text-base font-semibold mb-1 text-base-content">Tahun Alumni</label>
+                    <input type="number" name="alumni_year" value={form.alumni_year} onChange={handleChange} className="input input-bordered w-full bg-base-100 border-base-300 text-base-content rounded-lg focus:ring-2 focus:ring-primary/30 focus:shadow-primary/20" placeholder="Tahun Alumni (misal: 2024)" min="2000" max="2100" />
+                  </div>
+                  <div>
+                    <label className="block text-base font-semibold mb-1 text-base-content">Nomor Ijazah</label>
+                    <input type="text" name="certificate_number" value={form.certificate_number} onChange={handleChange} className="input input-bordered w-full bg-base-100 border-base-300 text-base-content rounded-lg focus:ring-2 focus:ring-primary/30 focus:shadow-primary/20" placeholder="Nomor Ijazah" />
+                  </div>
+                </>
+              )}
               <div>
                 <label className="block text-base font-semibold mb-1 text-base-content">NIK</label>
                 <input type="text" name="nik" value={form.nik} onChange={handleChange} className="input input-bordered w-full bg-base-100 border-base-300 text-base-content rounded-lg focus:ring-2 focus:ring-primary/30 focus:shadow-primary/20" placeholder="NIK (16 digit)" />

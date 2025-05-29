@@ -21,6 +21,8 @@ model Student {
   birth_date   DateTime?
   gender       String   // L atau P
   is_alumni    Boolean?
+  alumni_year  Int?     // Tahun lulus/alumni
+  certificate_number String? // Nomor ijazah
   nik          String?   @unique
   kk           String?
   father_name  String?

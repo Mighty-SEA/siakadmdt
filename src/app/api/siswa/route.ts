@@ -6,6 +6,19 @@ export async function GET() {
   try {
     const siswa = await prisma.student.findMany({
       orderBy: { id: "asc" },
+      include: {
+        studentClassHistories: {
+          where: { is_active: true },
+          include: {
+            classroom: {
+              include: {
+                classLevel: true,
+                academicYear: true
+              }
+            }
+          }
+        }
+      }
     });
     return NextResponse.json({ siswa });
   } catch {

@@ -13,6 +13,8 @@ type Student = {
   birth_date: string;
   gender: string;
   is_alumni: boolean;
+  alumni_year?: number;
+  certificate_number?: string;
   nik: string;
   kk: string;
   father_name: string;
@@ -27,13 +29,48 @@ type Student = {
   qr_token: string;
 };
 
+// Tambahkan fungsi untuk menentukan status siswa
+type StudentWithHistory = Student & {
+  is_alumni: boolean;
+  studentClassHistories?: {
+    classroom?: {
+      academicYear?: { is_active: boolean } | null;
+    } | null;
+  }[];
+};
+
+type StudentWithClass = Student & {
+  studentClassHistories?: {
+    id?: number;
+    classroom?: {
+      classLevel?: {
+        name?: string;
+      } | null;
+      academicYear?: { is_active: boolean } | null;
+    } | null;
+  }[];
+};
+
+function getStatusSiswa(s: StudentWithHistory) {
+  if (s.is_alumni) return "Alumni";
+  const punyaKelasAktif = s.studentClassHistories?.some(
+    (h) => h.classroom?.academicYear?.is_active
+  );
+  if (punyaKelasAktif) return "Aktif";
+  return "Tidak Aktif";
+}
+
+// Tambahkan kolom kelas di allColumns
 const allColumns = [
   { key: "no", label: "No" },
   { key: "name", label: "Nama" },
   { key: "nis", label: "NIS" },
+  { key: "kelas", label: "Kelas" },
   { key: "birth_date", label: "Tanggal Lahir" },
   { key: "gender", label: "Jenis Kelamin" },
   { key: "is_alumni", label: "Status" },
+  { key: "alumni_year", label: "Tahun Alumni" },
+  { key: "certificate_number", label: "Nomor Ijazah" },
   { key: "nik", label: "NIK" },
   { key: "kk", label: "No. KK" },
   { key: "father_name", label: "Nama Ayah" },
@@ -570,9 +607,12 @@ export default function SiswaPage() {
               {selectedColumns.includes("no") && <th>No</th>}
               {selectedColumns.includes("name") && <th>Nama</th>}
               {selectedColumns.includes("nis") && <th>NIS</th>}
+              {selectedColumns.includes("kelas") && <th>Kelas</th>}
               {selectedColumns.includes("birth_date") && <th>Tanggal Lahir</th>}
               {selectedColumns.includes("gender") && <th>Gender</th>}
               {selectedColumns.includes("is_alumni") && <th>Status</th>}
+              {selectedColumns.includes("alumni_year") && <th>Tahun Alumni</th>}
+              {selectedColumns.includes("certificate_number") && <th>Nomor Ijazah</th>}
               {selectedColumns.includes("nik") && <th>NIK</th>}
               {selectedColumns.includes("kk") && <th>No. KK</th>}
               {selectedColumns.includes("father_name") && <th>Nama Ayah</th>}
@@ -609,9 +649,37 @@ export default function SiswaPage() {
                   {selectedColumns.includes("no") && <td>{(page - 1) * pageSize + i + 1}</td>}
                   {selectedColumns.includes("name") && <td>{s.name}</td>}
                   {selectedColumns.includes("nis") && <td>{s.nis}</td>}
+                  {selectedColumns.includes("kelas") && <td> {
+                    (() => {
+                      const histories = (s as StudentWithClass).studentClassHistories || [];
+                      // Kelas aktif
+                      const kelasAktif = histories
+                        .filter(h => h.classroom && h.classroom.academicYear && h.classroom.academicYear.is_active)
+                        .map(h => h.classroom?.classLevel?.name)
+                        .filter((name): name is string => !!name)
+                        .join(", ");
+                      if (kelasAktif) return kelasAktif;
+                      // Jika tidak ada kelas aktif, cek kelas terakhir
+                      if (histories.length > 0) {
+                        // Urutkan berdasarkan id terbesar (asumsi id auto increment)
+                        const lastHistory = [...histories].sort((a, b) => (b.id || 0) - (a.id || 0))[0];
+                        const lastKelas = lastHistory.classroom?.classLevel?.name;
+                        if (lastKelas) return <span className="badge badge-error">{lastKelas}</span>;
+                      }
+                      return "-";
+                    })()
+                  } </td>}
                   {selectedColumns.includes("birth_date") && <td>{new Date(s.birth_date).toLocaleDateString("id-ID")}</td>}
                   {selectedColumns.includes("gender") && <td>{s.gender === "L" ? "Laki-laki" : s.gender === "P" ? "Perempuan" : s.gender}</td>}
-                  {selectedColumns.includes("is_alumni") && <td><span className={`badge ${s.is_alumni ? 'badge-ghost' : 'badge-success'}`}>{s.is_alumni ? 'Lulus' : 'Aktif'}</span></td>}
+                  {selectedColumns.includes("is_alumni") && (
+                    <td>
+                      {getStatusSiswa(s as StudentWithHistory) === "Aktif" && <span className="badge badge-success">Aktif</span>}
+                      {getStatusSiswa(s as StudentWithHistory) === "Alumni" && <span className="badge badge-ghost">Alumni</span>}
+                      {getStatusSiswa(s as StudentWithHistory) === "Tidak Aktif" && <span className="badge badge-error">Tidak Aktif</span>}
+                    </td>
+                  )}
+                  {selectedColumns.includes("alumni_year") && s.is_alumni ? <td>{s.alumni_year}</td> : null}
+                  {selectedColumns.includes("certificate_number") && s.is_alumni ? <td>{s.certificate_number}</td> : null}
                   {selectedColumns.includes("nik") && <td>{s.nik}</td>}
                   {selectedColumns.includes("kk") && <td>{s.kk}</td>}
                   {selectedColumns.includes("father_name") && <td>{s.father_name}</td>}
