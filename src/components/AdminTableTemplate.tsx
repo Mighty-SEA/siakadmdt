@@ -223,25 +223,29 @@ export default function AdminTableTemplate<T extends { [key: string]: unknown }>
                 <span className="badge badge-primary badge-sm">{selectedColumns.length}/{columns.length}</span>
                 <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
               </label>
-              <ul tabIndex={0} className="dropdown-content right-0 z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-80 border border-primary/20 grid grid-cols-3 gap-2">
+              <ul tabIndex={0} className="dropdown-content right-0 z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-80 border border-primary/20 grid grid-cols-2 md:grid-cols-3 gap-2 overflow-y-auto max-h-72">
+                <div className="col-span-full font-semibold text-primary mb-2">Tampilkan Kolom</div>
                 {columns.map(col => (
-                  <li key={col.key} className="hover:bg-primary/10 rounded-md transition-colors col-span-1">
-                    <label className="flex items-center gap-2 cursor-pointer px-2 py-1 w-full">
-                      <input
-                        type="checkbox"
-                        className="checkbox checkbox-xs checkbox-primary"
-                        checked={selectedColumns.includes(col.key)}
-                        onChange={() => {
-                          setSelectedColumns(selectedColumns =>
-                            selectedColumns.includes(col.key)
-                              ? selectedColumns.filter(k => k !== col.key)
-                              : [...selectedColumns, col.key]
-                          );
-                        }}
-                      />
-                      <span className="text-base-content text-sm">{col.label}</span>
-                    </label>
-                  </li>
+                  <label
+                    key={col.key}
+                    className={`flex items-center gap-2 cursor-pointer px-2 py-2 rounded-lg transition-colors
+                      ${selectedColumns.includes(col.key) ? "bg-primary/10 font-bold" : "hover:bg-base-300/40"}
+                    `}
+                  >
+                    <input
+                      type="checkbox"
+                      className="checkbox checkbox-xs checkbox-primary"
+                      checked={selectedColumns.includes(col.key)}
+                      onChange={() => {
+                        setSelectedColumns(selectedColumns =>
+                          selectedColumns.includes(col.key)
+                            ? selectedColumns.filter(k => k !== col.key)
+                            : [...selectedColumns, col.key]
+                        );
+                      }}
+                    />
+                    <span className="text-base-content text-sm">{col.label}</span>
+                  </label>
                 ))}
               </ul>
             </div>
