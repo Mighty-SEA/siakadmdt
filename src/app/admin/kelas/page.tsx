@@ -27,6 +27,7 @@ interface KelasData {
   created_at?: string;
   updated_at?: string;
   studentClassHistories?: { id: string }[];
+  [key: string]: unknown;
 }
 
 export default function KelasPage() {
@@ -100,11 +101,10 @@ export default function KelasPage() {
         </Link>
       </div>
       
-      <AdminTableTemplate
+      <AdminTableTemplate<KelasData>
         title="Daftar Kelas"
         fetchUrl="/api/kelas"
         addUrl="/admin/kelas/tambah"
-        editUrl={id => `/admin/kelas/edit/${id}`}
         deleteUrl="/api/kelas"
         defaultColumns={["no", "classLevel", "academicYear", "teacher", "students", "aksi"]}
         columns={[

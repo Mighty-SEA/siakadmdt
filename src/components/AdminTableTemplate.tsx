@@ -1,46 +1,42 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import { Filter, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Pencil, Trash2, MoreHorizontal, Upload, Download, Plus } from "lucide-react";
+import { Filter, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2, MoreHorizontal, Upload, Download, Plus } from "lucide-react";
 import Link from "next/link";
 
-interface Column {
+interface Column<T> {
   key: string;
   label: string;
-  render?: (row: any, index: number) => React.ReactNode;
+  render?: (row: T, index: number) => React.ReactNode;
 }
 
-interface AdminTableTemplateProps {
+interface AdminTableTemplateProps<T> {
   title: string;
-  columns: Column[];
+  columns: Column<T>[];
   fetchUrl: string;
   importUrl?: string;
   exportUrl?: string;
   addUrl: string;
-  editUrl: (id: string) => string;
   deleteUrl: string;
   rowKey?: string;
   defaultColumns?: string[];
   searchPlaceholder?: string;
-  renderBulkAction?: (selected: string[], bulkDelete: () => void, loading: boolean) => React.ReactNode;
   refreshKey?: number;
 }
 
-export default function AdminTableTemplate({
+export default function AdminTableTemplate<T extends { [key: string]: unknown }>({
   title,
   columns,
   fetchUrl,
   importUrl,
   exportUrl,
   addUrl,
-  editUrl,
   deleteUrl,
   rowKey = "id",
   defaultColumns,
   searchPlaceholder = "Cari...",
-  renderBulkAction,
   refreshKey = 0,
-}: AdminTableTemplateProps) {
-  const [data, setData] = useState<any[]>([]);
+}: AdminTableTemplateProps<T>) {
+  const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -92,18 +88,18 @@ export default function AdminTableTemplate({
   // Bulk select
   const handleSelectAllInPage = (checked: boolean) => {
     if (checked) {
-      const currentPageIds = paged.map(row => row[rowKey]);
+      const currentPageIds = paged.map(row => String(row[rowKey]));
       setSelectedRows(prev => [...new Set([...prev, ...currentPageIds])]);
     } else {
-      const currentPageIds = new Set(paged.map(row => row[rowKey]));
+      const currentPageIds = new Set(paged.map(row => String(row[rowKey])));
       setSelectedRows(prev => prev.filter(id => !currentPageIds.has(id)));
     }
   };
-  const isAllInPageSelected = () => paged.length > 0 && paged.every(row => selectedRows.includes(row[rowKey]));
+  const isAllInPageSelected = () => paged.length > 0 && paged.every(row => selectedRows.includes(String(row[rowKey])));
   const toggleRowSelection = (id: string) => {
     setSelectedRows(prev => prev.includes(id) ? prev.filter(rowId => rowId !== id) : [...prev, id]);
   };
-  const handleSelectAll = () => setSelectedRows(filtered.map(row => row[rowKey]));
+  const handleSelectAll = () => setSelectedRows(filtered.map(row => String(row[rowKey])));
   const handleDeselectAll = () => setSelectedRows([]);
 
   // Bulk delete
@@ -116,7 +112,7 @@ export default function AdminTableTemplate({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids: selectedRows }),
       });
-      setData(prev => prev.filter(row => !selectedRows.includes(row[rowKey])));
+      setData(prev => prev.filter(row => !selectedRows.includes(String(row[rowKey]))));
       setSelectedRows([]);
     } catch {
       // TODO: showToast error jika ada
@@ -281,20 +277,20 @@ export default function AdminTableTemplate({
             ) : paged.length === 0 ? (
               <tr><td colSpan={selectedColumns.length + 1} className="text-center">Tidak ada data</td></tr>
             ) : (
-              paged.map((row, i) => (
-                <tr key={row[rowKey]} className={selectedRows.includes(row[rowKey]) ? "bg-primary/5" : undefined}>
+              paged.map((row) => (
+                <tr key={String(row[rowKey])} className={selectedRows.includes(String(row[rowKey])) ? "bg-primary/5" : undefined}>
                   <td>
                     <label className="cursor-pointer">
                       <input
                         type="checkbox"
                         className="checkbox checkbox-xs checkbox-primary"
-                        checked={selectedRows.includes(row[rowKey])}
-                        onChange={() => toggleRowSelection(row[rowKey])}
+                        checked={selectedRows.includes(String(row[rowKey]))}
+                        onChange={() => toggleRowSelection(String(row[rowKey]))}
                       />
                     </label>
                   </td>
                   {columns.map((col, index) => selectedColumns.includes(col.key) && (
-                    <td key={col.key}>{col.render ? col.render(row, index + (page - 1) * pageSize) : row[col.key]}</td>
+                    <td key={col.key}>{col.render ? col.render(row, index + (page - 1) * pageSize) : (row[col.key] as React.ReactNode)}</td>
                   ))}
                 </tr>
               ))

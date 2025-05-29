@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Save } from "lucide-react";
 import Link from "next/link";
-import { useUI } from "@/lib/ui-context";
 import { useAppActionFeedback } from '@/lib/useAppActionFeedback';
 
 export default function TambahIncomePage() {
@@ -15,7 +14,6 @@ export default function TambahIncomePage() {
   });
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { showToast } = useUI();
   const { showActionToast } = useAppActionFeedback();
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {

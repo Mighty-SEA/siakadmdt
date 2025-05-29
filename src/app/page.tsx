@@ -16,7 +16,7 @@ export default function Home() {
     } else {
       document.documentElement.setAttribute("data-theme", theme);
     }
-  }, []);
+  }, [theme]);
 
   useEffect(() => {
     if (theme) {

@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { useUI } from "@/lib/ui-context";
 import { useAppActionFeedback } from "@/lib/useAppActionFeedback";
 
 export default function EditGuruPage() {
@@ -13,7 +12,6 @@ export default function EditGuruPage() {
   const [gender, setGender] = useState("");
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
-  const { showToast } = useUI();
   const { showActionToast } = useAppActionFeedback();
 
   useEffect(() => {

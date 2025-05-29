@@ -14,6 +14,7 @@ type ClassroomRow = {
   teacher?: { name: string } | null;
   created_at?: string;
   updated_at?: string;
+  [key: string]: unknown;
 };
 
 export default function ClassroomPage() {
@@ -63,11 +64,10 @@ export default function ClassroomPage() {
   };
 
   return (
-    <AdminTableTemplate
+    <AdminTableTemplate<ClassroomRow>
       title="Daftar Rombel/Kelas"
       fetchUrl="/api/classroom"
       addUrl="/admin/classroom/tambah"
-      editUrl={id => `/admin/classroom/edit/${id}`}
       deleteUrl="/api/classroom"
       defaultColumns={["no", "classLevel", "academicYear", "teacher", "created_at", "updated_at", "aksi"]}
       columns={[

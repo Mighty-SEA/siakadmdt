@@ -5,10 +5,11 @@ const prisma = new PrismaClient();
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    if (!params.id) {
+    const { id } = await params;
+    if (!id) {
       return NextResponse.json(
         { error: "ID riwayat kelas diperlukan" },
         { status: 400 }
@@ -28,7 +29,7 @@ export async function PUT(
     if (is_active) {
       // Cari riwayat kelas yang akan diaktifkan untuk mendapatkan ID siswa
       const targetRiwayat = await prisma.studentClassHistory.findUnique({
-        where: { id: parseInt(params.id) },
+        where: { id: parseInt(id) },
         select: { student_id: true },
       });
 
@@ -53,7 +54,7 @@ export async function PUT(
 
     // Update status riwayat kelas yang dipilih
     const updatedRiwayat = await prisma.studentClassHistory.update({
-      where: { id: parseInt(params.id) },
+      where: { id: parseInt(id) },
       data: { is_active },
     });
 

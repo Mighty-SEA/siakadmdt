@@ -71,12 +71,12 @@ export async function POST(req: Request) {
     });
     await sendNotificationToAdmins(
       "Pemasukan Ditambahkan",
-      `Pemasukan <b>${created.description}</b> sebesar <b>Rp${created.amount.toLocaleString('id-ID')}</b> berhasil ditambahkan ke sistem`,
+      `Pemasukan <b>${created.description}</b> sebesar <b>Rp${Number(created.amount).toLocaleString('id-ID')}</b> berhasil ditambahkan ke sistem`,
       "success",
       req
     );
     return NextResponse.json(created);
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: "Gagal menambah data" }, { status: 500 });
   }
 }
@@ -98,12 +98,12 @@ export async function PUT(req: Request) {
     });
     await sendNotificationToAdmins(
       "Pemasukan Diupdate",
-      `Pemasukan <b>${updated.description}</b> sebesar <b>Rp${updated.amount.toLocaleString('id-ID')}</b> berhasil diupdate`,
+      `Pemasukan <b>${updated.description}</b> sebesar <b>Rp${Number(updated.amount).toLocaleString('id-ID')}</b> berhasil diupdate`,
       "info",
       req
     );
     return NextResponse.json(updated);
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: "Gagal update data" }, { status: 500 });
   }
 }
@@ -116,7 +116,7 @@ export async function DELETE(req: Request) {
       const deleted = await prisma.income.delete({ where: { id: Number(id) } });
       await sendNotificationToAdmins(
         "Pemasukan Dihapus",
-        `Pemasukan <b>${deleted.description}</b> sebesar <b>Rp${deleted.amount.toLocaleString('id-ID')}</b> berhasil dihapus`,
+        `Pemasukan <b>${deleted.description}</b> sebesar <b>Rp${Number(deleted.amount).toLocaleString('id-ID')}</b> berhasil dihapus`,
         "warning",
         req
       );
@@ -135,7 +135,7 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ success: true });
     }
     return NextResponse.json({ error: "ID tidak valid" }, { status: 400 });
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: "Gagal hapus data" }, { status: 500 });
   }
 } 

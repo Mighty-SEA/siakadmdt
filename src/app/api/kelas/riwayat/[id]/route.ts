@@ -5,10 +5,11 @@ const prisma = new PrismaClient();
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    if (!params.id) {
+    const { id } = await params;
+    if (!id) {
       return NextResponse.json(
         { error: "ID riwayat kelas diperlukan" },
         { status: 400 }
@@ -16,7 +17,7 @@ export async function GET(
     }
 
     const riwayatKelas = await prisma.studentClassHistory.findUnique({
-      where: { id: parseInt(params.id) },
+      where: { id: parseInt(id) },
       include: {
         student: true,
         classroom: {

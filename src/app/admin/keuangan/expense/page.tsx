@@ -4,7 +4,7 @@ import type { Expense } from '@/lib/types';
 import { Pencil, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useUI } from '@/lib/ui-context';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useAppActionFeedback } from '@/lib/useAppActionFeedback';
 import React from 'react';
@@ -12,7 +12,6 @@ import React from 'react';
 export default function ExpensePage() {
   const { showConfirmModal } = useUI();
   const { showActionToast } = useAppActionFeedback();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -49,18 +48,17 @@ export default function ExpensePage() {
   };
 
   return (
-    <AdminTableTemplate
+    <AdminTableTemplate<Expense>
       title="Daftar Pengeluaran (Expense)"
       fetchUrl="/api/expense"
       addUrl="/admin/keuangan/expense/tambah"
-      editUrl={id => `/admin/keuangan/expense/edit/${id}`}
       deleteUrl="/api/expense"
       defaultColumns={["no", "date", "description", "amount", "category", "created_at", "updated_at", "aksi"]}
       columns={[
         { key: "no", label: "No", render: (_row: Expense, i: number) => i + 1 },
         { key: "date", label: "Tanggal", render: (row: Expense) => row.date ? new Date(row.date).toLocaleDateString() : "-" },
         { key: "description", label: "Deskripsi" },
-        { key: "amount", label: "Jumlah", render: (row: Expense) => row.amount?.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }) },
+        { key: "amount", label: "Jumlah", render: (row: Expense) => Number(row.amount).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }) },
         { key: "category", label: "Kategori" },
         { key: "created_at", label: "Dibuat", render: (row: Expense) => row.created_at ? new Date(row.created_at).toLocaleDateString() : "-" },
         { key: "updated_at", label: "Diubah", render: (row: Expense) => row.updated_at ? new Date(row.updated_at).toLocaleDateString() : "-" },

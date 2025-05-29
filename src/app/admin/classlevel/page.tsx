@@ -55,11 +55,10 @@ export default function ClassLevelPage() {
   };
 
   return (
-    <AdminTableTemplate
+    <AdminTableTemplate<ClassLevel>
       title="Daftar Tingkat Kelas"
       fetchUrl="/api/classlevel"
       addUrl="/admin/classlevel/tambah"
-      editUrl={id => `/admin/classlevel/edit/${id}`}
       deleteUrl="/api/classlevel"
       defaultColumns={["no", "name", "created_at", "updated_at", "aksi"]}
       columns={[

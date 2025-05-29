@@ -58,11 +58,10 @@ export default function AcademicYearPage() {
   };
 
   return (
-    <AdminTableTemplate
+    <AdminTableTemplate<AcademicYear>
       title="Daftar Tahun Akademik"
       fetchUrl="/api/academicyear"
       addUrl="/admin/academicyear/tambah"
-      editUrl={id => `/admin/academicyear/edit/${id}`}
       deleteUrl="/api/academicyear"
       defaultColumns={["no", "year", "is_active", "created_at", "updated_at", "aksi"]}
       columns={[

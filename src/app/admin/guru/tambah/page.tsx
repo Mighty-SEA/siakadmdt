@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useUI } from "@/lib/ui-context";
 import { useAppActionFeedback } from "@/lib/useAppActionFeedback";
 
 export default function TambahGuruPage() {
@@ -10,7 +9,6 @@ export default function TambahGuruPage() {
   const [gender, setGender] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { showToast } = useUI();
   const { showActionToast } = useAppActionFeedback();
 
   async function handleSubmit(e: React.FormEvent) {

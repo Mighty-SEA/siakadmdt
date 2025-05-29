@@ -3,7 +3,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 import AdminTableTemplate from "@/components/AdminTableTemplate";
 import { useUI } from "@/lib/ui-context";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import React from "react";
 import { useAppActionFeedback } from "@/lib/useAppActionFeedback";
 
@@ -14,12 +14,12 @@ type GuruRow = {
   gender?: string;
   created_at?: string;
   updated_at?: string;
+  [key: string]: unknown;
 };
 
 export default function GuruPage() {
   const { showConfirmModal } = useUI();
   const { showActionToast } = useAppActionFeedback();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [refreshKey, setRefreshKey] = React.useState(0);
 
@@ -69,17 +69,16 @@ export default function GuruPage() {
   }
 
   return (
-    <AdminTableTemplate
+    <AdminTableTemplate<GuruRow>
       title="Daftar Guru"
       fetchUrl="/api/guru"
       importUrl="/api/guru/import"
       exportUrl="/api/guru/export"
       addUrl="/admin/guru/tambah"
-      editUrl={id => `/admin/guru/edit/${id}`}
       deleteUrl="/api/guru"
       defaultColumns={["no", "name", "nip", "gender", "aksi"]}
       columns={[
-        { key: "no", label: "No", render: (_row: any, i: number) => i + 1 },
+        { key: "no", label: "No", render: (_row: GuruRow, i: number) => i + 1 },
         { key: "name", label: "Nama" },
         { key: "nip", label: "NIP" },
         { key: "gender", label: "Gender", render: row => row.gender === "L" ? "Laki-laki" : row.gender === "P" ? "Perempuan" : row.gender || "-" },

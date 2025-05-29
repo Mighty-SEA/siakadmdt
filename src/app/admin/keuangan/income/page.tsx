@@ -4,7 +4,7 @@ import type { Income } from '@/lib/types';
 import { Pencil, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useUI } from '@/lib/ui-context';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useAppActionFeedback } from '@/lib/useAppActionFeedback';
 import React from 'react';
@@ -12,7 +12,6 @@ import React from 'react';
 export default function IncomePage() {
   const { showConfirmModal } = useUI();
   const { showActionToast } = useAppActionFeedback();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -49,18 +48,17 @@ export default function IncomePage() {
   };
 
   return (
-    <AdminTableTemplate
+    <AdminTableTemplate<Income>
       title="Daftar Pemasukan (Income)"
       fetchUrl="/api/income"
       addUrl="/admin/keuangan/income/tambah"
-      editUrl={id => `/admin/keuangan/income/edit/${id}`}
       deleteUrl="/api/income"
       defaultColumns={["no", "date", "description", "amount", "category", "created_at", "updated_at", "aksi"]}
       columns={[
         { key: "no", label: "No", render: (_row: Income, i: number) => i + 1 },
         { key: "date", label: "Tanggal", render: (row: Income) => row.date ? new Date(row.date).toLocaleDateString() : "-" },
         { key: "description", label: "Deskripsi" },
-        { key: "amount", label: "Jumlah", render: (row: Income) => row.amount?.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }) },
+        { key: "amount", label: "Jumlah", render: (row: Income) => Number(row.amount).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }) },
         { key: "category", label: "Kategori" },
         { key: "created_at", label: "Dibuat", render: (row: Income) => row.created_at ? new Date(row.created_at).toLocaleDateString() : "-" },
         { key: "updated_at", label: "Diubah", render: (row: Income) => row.updated_at ? new Date(row.updated_at).toLocaleDateString() : "-" },

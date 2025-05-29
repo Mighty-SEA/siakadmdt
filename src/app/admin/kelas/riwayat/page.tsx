@@ -33,6 +33,7 @@ interface RiwayatKelasData {
   is_active: boolean;
   created_at?: string;
   updated_at?: string;
+  [key: string]: unknown;
 }
 
 export default function RiwayatKelasPage() {
@@ -60,7 +61,6 @@ export default function RiwayatKelasPage() {
       title="Riwayat Kelas Siswa"
       fetchUrl="/api/kelas/riwayat"
       addUrl="/admin/kelas"
-      editUrl={id => `/admin/kelas/riwayat/${id}`}
       deleteUrl="/api/kelas/riwayat"
       defaultColumns={["no", "student", "classroom", "status", "created_at", "aksi"]}
       columns={[
