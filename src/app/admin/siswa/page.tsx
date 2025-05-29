@@ -442,172 +442,152 @@ export default function SiswaPage() {
     <div className="card bg-base-200 shadow-xl p-4 sm:p-6 rounded-2xl border border-primary/30 text-base-content w-full max-w-full overflow-x-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
         <h2 className="text-2xl font-bold mb-2 sm:mb-0">Daftar Siswa</h2>
-        <div className="flex gap-2">
-          <button className="btn btn-outline btn-secondary btn-sm md:btn-md gap-2 rounded-lg border-2 border-secondary hover:bg-secondary/10 hover:border-secondary focus:shadow transition-all duration-150" type="button">
-            <Upload className="w-5 h-5" />
-            <span>Import</span>
-          </button>
-          <button className="btn btn-outline btn-primary btn-sm md:btn-md gap-2 rounded-lg border-2 border-primary hover:bg-primary/10 hover:border-primary focus:shadow transition-all duration-150" type="button">
-            <Download className="w-5 h-5" />
-            <span>Export</span>
-          </button>
-          <Link href="/admin/siswa/tambah" className="btn btn-primary btn-sm md:btn-md gap-2 rounded-lg">
+        <div className="flex w-full sm:w-auto justify-between sm:justify-end gap-2">
+          <div className="flex gap-2">
+            <button className="btn btn-outline btn-secondary btn-sm md:btn-md gap-2 rounded-lg border-2 border-secondary hover:bg-secondary/10 hover:border-secondary focus:shadow transition-all duration-150" type="button">
+              <Upload className="w-5 h-5" />
+              <span>Import</span>
+            </button>
+            <button className="btn btn-outline btn-primary btn-sm md:btn-md gap-2 rounded-lg border-2 border-primary hover:bg-primary/10 hover:border-primary focus:shadow transition-all duration-150" type="button">
+              <Download className="w-5 h-5" />
+              <span>Export</span>
+            </button>
+          </div>
+          <Link href="/admin/siswa/tambah" className="btn btn-primary btn-sm md:btn-md gap-2 rounded-lg ml-auto">
             <Plus className="w-5 h-5" />
             <span>Tambah Siswa</span>
           </Link>
         </div>
       </div>
       
-      {/* Filter Kolom, Cari Nama, dan Filter Gender/Status */}
-      <div className="flex flex-col md:flex-row gap-2 mb-4 items-center md:items-end w-full">
-        {/* Mobile: search sendiri, lalu filter kolom & kelas sejajar */}
-        <div className="flex flex-col w-full gap-2 md:hidden">
-          {/* Search */}
-          <div className="flex w-full gap-2">
-            <div className="flex-1 relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/60">
-                <Search className="w-5 h-5" />
-              </span>
-              <input
-                type="text"
-                className="input input-bordered input-sm md:input-md w-full pl-10 pr-3 rounded-lg border-base-300 focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm"
-                placeholder="Cari nama atau NIS..."
-                value={search}
-                onChange={e => { setSearch(e.target.value); setPage(1); }}
-              />
-            </div>
-          </div>
-          {/* Filter kolom & kelas sejajar */}
-          <div className="flex flex-row gap-2 w-full">
-            {/* Filter Kolom Dropdown */}
-            <div className="dropdown dropdown-end dropdown-bottom flex-1">
-              <label tabIndex={0} className="btn btn-sm md:btn-md btn-outline min-w-[56px] w-full flex justify-between items-center gap-2 cursor-pointer hover:shadow focus:shadow border-primary/40">
-                <Filter className="w-5 h-5 text-primary" />
-                <span className="badge badge-primary badge-sm">{selectedColumns.length}/{allColumns.length}</span>
-                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
-              </label>
-              <ul tabIndex={0} className="dropdown-content right-0 z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-80 border border-primary/20 grid grid-cols-2 md:grid-cols-3 gap-2 overflow-y-auto max-h-72">
-                <div className="col-span-full font-semibold text-primary mb-2">Tampilkan Kolom</div>
-                {allColumns.map(col => (
-                  <label
-                    key={col.key}
-                    className={`flex items-center gap-2 cursor-pointer px-2 py-2 rounded-lg transition-colors
-                      ${selectedColumns.includes(col.key) ? "bg-primary/10 font-bold" : "hover:bg-base-300/40"}
-                    `}
-                  >
-                    <input
-                      type="checkbox"
-                      className="checkbox checkbox-xs checkbox-primary"
-                      checked={selectedColumns.includes(col.key)}
-                      onChange={() => {
-                        setSelectedColumns(selectedColumns =>
-                          selectedColumns.includes(col.key)
-                            ? selectedColumns.filter(k => k !== col.key)
-                            : [...selectedColumns, col.key]
-                        );
-                      }}
-                    />
-                    <span className="text-base-content text-sm">{col.label}</span>
-                  </label>
-                ))}
-              </ul>
-            </div>
-            {/* Filter Kelas Dropdown */}
-            <div className="dropdown dropdown-end dropdown-bottom flex-1">
-              <label tabIndex={0} className="btn btn-sm md:btn-md btn-outline min-w-[56px] w-full flex justify-between items-center gap-2 cursor-pointer hover:shadow focus:shadow border-primary/40">
-                <span className="text-primary">Kelas</span>
-                <span className="badge badge-primary badge-sm">{kelasFilter ? 1 : kelasOptions.length}</span>
-                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
-              </label>
-              <ul tabIndex={0} className="dropdown-content right-0 z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-52 border border-primary/20">
-                <li className="hover:bg-primary/10 rounded-md transition-colors">
-                  <button className={`w-full text-left px-2 py-1 ${!kelasFilter ? 'font-bold text-primary' : ''}`} onClick={() => { setKelasFilter(""); setPage(1); }}>
-                    Semua Kelas
-                  </button>
-                </li>
-                {kelasOptions.map(opt => (
-                  <li key={opt.value} className="hover:bg-primary/10 rounded-md transition-colors">
-                    <button className={`w-full text-left px-2 py-1 ${kelasFilter === opt.value ? 'font-bold text-primary' : ''}`} onClick={() => { setKelasFilter(opt.value); setPage(1); }}>
-                      {opt.label}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
+      {/* Filter kolom & kelas sejajar (mobile) */}
+      <div className="flex flex-row gap-2 w-full">
+        {/* Filter Kelas Dropdown (sekarang di kiri) */}
+        <div className="dropdown dropdown-end dropdown-bottom flex-1">
+          <label tabIndex={0} className="btn btn-sm md:btn-md btn-outline min-w-[56px] w-full flex justify-between items-center gap-2 cursor-pointer hover:shadow focus:shadow border-primary/40">
+            <span className="text-primary">Kelas</span>
+            <span className="badge badge-primary badge-sm">{kelasFilter ? 1 : kelasOptions.length}</span>
+            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+          </label>
+          <ul tabIndex={0} className="dropdown-content right-0 z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-52 border border-primary/20">
+            <li className="hover:bg-primary/10 rounded-md transition-colors">
+              <button className={`w-full text-left px-2 py-1 ${!kelasFilter ? 'font-bold text-primary' : ''}`} onClick={() => { setKelasFilter(""); setPage(1); }}>
+                Semua Kelas
+              </button>
+            </li>
+            {kelasOptions.map(opt => (
+              <li key={opt.value} className="hover:bg-primary/10 rounded-md transition-colors">
+                <button className={`w-full text-left px-2 py-1 ${kelasFilter === opt.value ? 'font-bold text-primary' : ''}`} onClick={() => { setKelasFilter(opt.value); setPage(1); }}>
+                  {opt.label}
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
-        {/* Desktop: search, filter kolom, filter kelas sejajar */}
-        <div className="hidden md:flex flex-col md:flex-row w-full gap-2">
-          <div className="flex-1 relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/60">
-              <Search className="w-5 h-5" />
-            </span>
-            <input
-              type="text"
-              className="input input-bordered input-sm md:input-md w-full pl-10 pr-3 rounded-lg border-base-300 focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm"
-              placeholder="Cari nama atau NIS..."
-              value={search}
-              onChange={e => { setSearch(e.target.value); setPage(1); }}
-            />
-          </div>
-          <div>
-            {/* Filter Kolom Dropdown */}
-            <div className="dropdown dropdown-end dropdown-bottom">
-              <label tabIndex={0} className="btn btn-sm md:btn-md btn-outline min-w-[56px] flex justify-between items-center gap-2 cursor-pointer hover:shadow focus:shadow border-primary/40">
-                <Filter className="w-5 h-5 text-primary" />
-                <span className="badge badge-primary badge-sm">{selectedColumns.length}/{allColumns.length}</span>
-                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        {/* Filter Kolom Dropdown (sekarang di kanan) */}
+        <div className="dropdown dropdown-end dropdown-bottom flex-1">
+          <label tabIndex={0} className="btn btn-sm md:btn-md btn-outline min-w-[56px] w-full flex justify-between items-center gap-2 cursor-pointer hover:shadow focus:shadow border-primary/40">
+            <Filter className="w-5 h-5 text-primary" />
+            <span className="badge badge-primary badge-sm">{selectedColumns.length}/{allColumns.length}</span>
+            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+          </label>
+          <ul tabIndex={0} className="dropdown-content right-0 z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-80 border border-primary/20 grid grid-cols-2 md:grid-cols-3 gap-2 overflow-y-auto max-h-72">
+            <div className="col-span-full font-semibold text-primary mb-2">Tampilkan Kolom</div>
+            {allColumns.map(col => (
+              <label
+                key={col.key}
+                className={`flex items-center gap-2 cursor-pointer px-2 py-2 rounded-lg transition-colors
+                  ${selectedColumns.includes(col.key) ? "bg-primary/10 font-bold" : "hover:bg-base-300/40"}
+                `}
+              >
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-xs checkbox-primary"
+                  checked={selectedColumns.includes(col.key)}
+                  onChange={() => {
+                    setSelectedColumns(selectedColumns =>
+                      selectedColumns.includes(col.key)
+                        ? selectedColumns.filter(k => k !== col.key)
+                        : [...selectedColumns, col.key]
+                    );
+                  }}
+                />
+                <span className="text-base-content text-sm">{col.label}</span>
               </label>
-              <ul tabIndex={0} className="dropdown-content right-0 z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-80 border border-primary/20 grid grid-cols-2 md:grid-cols-3 gap-2 overflow-y-auto max-h-72">
-                <div className="col-span-full font-semibold text-primary mb-2">Tampilkan Kolom</div>
-                {allColumns.map(col => (
-                  <label
-                    key={col.key}
-                    className={`flex items-center gap-2 cursor-pointer px-2 py-2 rounded-lg transition-colors
-                      ${selectedColumns.includes(col.key) ? "bg-primary/10 font-bold" : "hover:bg-base-300/40"}
-                    `}
-                  >
-                    <input
-                      type="checkbox"
-                      className="checkbox checkbox-xs checkbox-primary"
-                      checked={selectedColumns.includes(col.key)}
-                      onChange={() => {
-                        setSelectedColumns(selectedColumns =>
-                          selectedColumns.includes(col.key)
-                            ? selectedColumns.filter(k => k !== col.key)
-                            : [...selectedColumns, col.key]
-                        );
-                      }}
-                    />
-                    <span className="text-base-content text-sm">{col.label}</span>
-                  </label>
-                ))}
-              </ul>
-            </div>
-          </div>
-          <div className="flex gap-2 items-center">
-            {/* Filter Kelas Dropdown */}
-            <div className="dropdown dropdown-end dropdown-bottom">
-              <label tabIndex={0} className="btn btn-sm md:btn-md btn-outline min-w-[56px] flex justify-between items-center gap-2 cursor-pointer hover:shadow focus:shadow border-primary/40">
-                <span className="text-primary">Kelas</span>
-                <span className="badge badge-primary badge-sm">{kelasFilter ? 1 : kelasOptions.length}</span>
-                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
-              </label>
-              <ul tabIndex={0} className="dropdown-content right-0 z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-52 border border-primary/20">
-                <li className="hover:bg-primary/10 rounded-md transition-colors">
-                  <button className={`w-full text-left px-2 py-1 ${!kelasFilter ? 'font-bold text-primary' : ''}`} onClick={() => { setKelasFilter(""); setPage(1); }}>
-                    Semua Kelas
-                  </button>
-                </li>
-                {kelasOptions.map(opt => (
-                  <li key={opt.value} className="hover:bg-primary/10 rounded-md transition-colors">
-                    <button className={`w-full text-left px-2 py-1 ${kelasFilter === opt.value ? 'font-bold text-primary' : ''}`} onClick={() => { setKelasFilter(opt.value); setPage(1); }}>
-                      {opt.label}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            ))}
+          </ul>
+        </div>
+      </div>
+      
+      {/* Desktop: search, filter kelas, filter kolom sejajar */}
+      <div className="hidden md:flex flex-col md:flex-row w-full gap-2">
+        <div className="flex-1 relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/60">
+            <Search className="w-5 h-5" />
+          </span>
+          <input
+            type="text"
+            className="input input-bordered input-sm md:input-md w-full pl-10 pr-3 rounded-lg border-base-300 focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm"
+            placeholder="Cari nama atau NIS..."
+            value={search}
+            onChange={e => { setSearch(e.target.value); setPage(1); }}
+          />
+        </div>
+        {/* Filter Kelas Dropdown (sekarang di kiri) */}
+        <div className="dropdown dropdown-end dropdown-bottom">
+          <label tabIndex={0} className="btn btn-sm md:btn-md btn-outline min-w-[56px] flex justify-between items-center gap-2 cursor-pointer hover:shadow focus:shadow border-primary/40">
+            <span className="text-primary">Kelas</span>
+            <span className="badge badge-primary badge-sm">{kelasFilter ? 1 : kelasOptions.length}</span>
+            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+          </label>
+          <ul tabIndex={0} className="dropdown-content right-0 z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-52 border border-primary/20">
+            <li className="hover:bg-primary/10 rounded-md transition-colors">
+              <button className={`w-full text-left px-2 py-1 ${!kelasFilter ? 'font-bold text-primary' : ''}`} onClick={() => { setKelasFilter(""); setPage(1); }}>
+                Semua Kelas
+              </button>
+            </li>
+            {kelasOptions.map(opt => (
+              <li key={opt.value} className="hover:bg-primary/10 rounded-md transition-colors">
+                <button className={`w-full text-left px-2 py-1 ${kelasFilter === opt.value ? 'font-bold text-primary' : ''}`} onClick={() => { setKelasFilter(opt.value); setPage(1); }}>
+                  {opt.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+        {/* Filter Kolom Dropdown (sekarang di kanan) */}
+        <div>
+          <div className="dropdown dropdown-end dropdown-bottom">
+            <label tabIndex={0} className="btn btn-sm md:btn-md btn-outline min-w-[56px] flex justify-between items-center gap-2 cursor-pointer hover:shadow focus:shadow border-primary/40">
+              <Filter className="w-5 h-5 text-primary" />
+              <span className="badge badge-primary badge-sm">{selectedColumns.length}/{allColumns.length}</span>
+              <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+            </label>
+            <ul tabIndex={0} className="dropdown-content right-0 z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-80 border border-primary/20 grid grid-cols-2 md:grid-cols-3 gap-2 overflow-y-auto max-h-72">
+              <div className="col-span-full font-semibold text-primary mb-2">Tampilkan Kolom</div>
+              {allColumns.map(col => (
+                <label
+                  key={col.key}
+                  className={`flex items-center gap-2 cursor-pointer px-2 py-2 rounded-lg transition-colors
+                    ${selectedColumns.includes(col.key) ? "bg-primary/10 font-bold" : "hover:bg-base-300/40"}
+                  `}
+                >
+                  <input
+                    type="checkbox"
+                    className="checkbox checkbox-xs checkbox-primary"
+                    checked={selectedColumns.includes(col.key)}
+                    onChange={() => {
+                      setSelectedColumns(selectedColumns =>
+                        selectedColumns.includes(col.key)
+                          ? selectedColumns.filter(k => k !== col.key)
+                          : [...selectedColumns, col.key]
+                      );
+                    }}
+                  />
+                  <span className="text-base-content text-sm">{col.label}</span>
+                </label>
+              ))}
+            </ul>
           </div>
         </div>
       </div>

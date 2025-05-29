@@ -170,39 +170,19 @@ export default function AdminTableTemplate<T extends { [key: string]: unknown }>
     <div className="card bg-base-200 shadow-xl p-4 sm:p-6 rounded-2xl border border-primary/30 text-base-content w-full max-w-full overflow-x-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
         <h2 className="text-2xl font-bold mb-2 sm:mb-0">{title}</h2>
-        <div className="flex gap-2">
-          {importUrl && <button className="btn btn-outline btn-secondary btn-sm md:btn-md gap-2 rounded-lg border-2 border-secondary hover:bg-secondary/10 hover:border-secondary focus:shadow transition-all duration-150" type="button"><Upload className="w-5 h-5" /><span>Import</span></button>}
-          {exportUrl && <button className="btn btn-outline btn-primary btn-sm md:btn-md gap-2 rounded-lg border-2 border-primary hover:bg-primary/10 hover:border-primary focus:shadow transition-all duration-150" type="button"><Download className="w-5 h-5" /><span>Export</span></button>}
-          {renderActions && renderActions()}
-          <Link href={addUrl} className="btn btn-primary btn-sm md:btn-md gap-2 rounded-lg"><Plus className="w-5 h-5" /><span>Tambah</span></Link>
+        {/* Mobile: tombol Tambah di kanan, Import/Export di kiri */}
+        <div className="flex w-full sm:w-auto justify-between sm:justify-end gap-2">
+          <div className="flex gap-2">
+            {importUrl && <button className="btn btn-outline btn-secondary btn-sm md:btn-md gap-2 rounded-lg border-2 border-secondary hover:bg-secondary/10 hover:border-secondary focus:shadow transition-all duration-150" type="button"><Upload className="w-5 h-5" /><span>Import</span></button>}
+            {exportUrl && <button className="btn btn-outline btn-primary btn-sm md:btn-md gap-2 rounded-lg border-2 border-primary hover:bg-primary/10 hover:border-primary focus:shadow transition-all duration-150" type="button"><Download className="w-5 h-5" /><span>Export</span></button>}
+            {renderActions && renderActions()}
+          </div>
+          <Link href={addUrl} className="btn btn-primary btn-sm md:btn-md gap-2 rounded-lg ml-auto"><Plus className="w-5 h-5" /><span>Tambah</span></Link>
         </div>
       </div>
       {/* Filter Kolom, Cari Nama */}
       <div className="flex flex-col md:flex-row gap-2 mb-4 items-center md:items-end w-full">
         <div className="flex items-center gap-2 w-full">
-          {/* Tombol bulk action di kiri input search */}
-          <div className="dropdown dropdown-bottom">
-            <button
-              tabIndex={0}
-              className={`btn btn-sm btn-ghost rounded-full ${selectedRows.length === 0 ? 'text-base-content/30 cursor-not-allowed' : 'text-base-content'}`}
-              title="Aksi Bulk"
-              disabled={selectedRows.length === 0}
-            >
-              <MoreHorizontal className="w-5 h-5" />
-            </button>
-            <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-52 border border-primary/20">
-              <li>
-                <button
-                  className="flex items-center gap-2 text-error"
-                  onClick={handleBulkDelete}
-                  disabled={selectedRows.length === 0 || bulkActionLoading}
-                >
-                  <Trash2 className="w-4 h-4" />
-                  <span>Hapus</span>
-                </button>
-              </li>
-            </ul>
-          </div>
           {/* Input search */}
           <div className="flex-1 relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/60">
@@ -256,6 +236,28 @@ export default function AdminTableTemplate<T extends { [key: string]: unknown }>
       {selectedRows.length > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-2 mb-4 bg-base-100/50 p-2 rounded-lg border border-primary/10">
           <div className="flex flex-wrap items-center gap-1">
+            {/* Tombol bulk action di paling kiri */}
+            <div className="dropdown dropdown-bottom">
+              <button
+                tabIndex={0}
+                className={`btn btn-xs md:btn-sm btn-outline btn-primary rounded-full flex items-center justify-center text-primary transition-all duration-150 mr-1`}
+                title="Aksi Bulk"
+              >
+                <MoreHorizontal className="w-4 h-4 md:w-5 md:h-5" />
+              </button>
+              <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow-lg bg-base-200 rounded-box w-52 border border-primary/20">
+                <li>
+                  <button
+                    className="flex items-center gap-2 text-error"
+                    onClick={handleBulkDelete}
+                    disabled={bulkActionLoading}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>Hapus</span>
+                  </button>
+                </li>
+              </ul>
+            </div>
             <button 
               className="btn btn-xs md:btn-sm btn-ghost text-primary hover:bg-primary/10"
               onClick={handleSelectAll}
