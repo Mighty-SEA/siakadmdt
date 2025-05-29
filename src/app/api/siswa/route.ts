@@ -168,22 +168,27 @@ export async function DELETE(req: Request) {
     const body = await req.json();
     const { id } = body;
     if (!id) return NextResponse.json({ error: "ID diperlukan" }, { status: 400 });
-    
     // Ambil data siswa sebelum dihapus untuk notifikasi
     const siswa = await prisma.student.findUnique({
       where: { id: Number(id) }
     });
-    
     if (!siswa) {
       return NextResponse.json({ error: "Siswa tidak ditemukan" }, { status: 404 });
     }
-    
     // Simpan nama dan NIS siswa untuk notifikasi
     const nama = siswa.name;
     const nis = siswa.nis;
-    
-    await prisma.student.delete({ where: { id: Number(id) } });
-    
+    try {
+      await prisma.student.delete({ where: { id: Number(id) } });
+    } catch (e: unknown) {
+      const err = e as { code?: string; message?: string };
+      // Deteksi error constraint relasi (Prisma: P2003 atau pesan mengandung 'Foreign key constraint')
+      if (err.code === 'P2003' || (typeof err.message === 'string' && err.message.includes('Foreign key constraint'))) {
+        return NextResponse.json({ error: "Data ini tidak bisa dihapus" }, { status: 400 });
+      }
+      // Error lain
+      throw e;
+    }
     // Buat notifikasi untuk hapus siswa
     await sendNotificationToAdmins(
       "Siswa Dihapus",
@@ -191,7 +196,6 @@ export async function DELETE(req: Request) {
       "warning",
       req
     );
-    
     return NextResponse.json({ success: true });
   } catch (e: unknown) {
     const errorMsg = typeof e === "object" && e && "message" in e ? (e as Record<string, unknown>).message : "Gagal menghapus data siswa";

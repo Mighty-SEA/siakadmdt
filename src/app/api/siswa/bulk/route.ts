@@ -89,9 +89,17 @@ export async function DELETE(req: Request) {
     }
     
     // Hapus siswa secara batch
-    await prisma.student.deleteMany({
-      where: { id: { in: ids.map(Number) } }
-    });
+    try {
+      await prisma.student.deleteMany({
+        where: { id: { in: ids.map(Number) } }
+      });
+    } catch (e: unknown) {
+      const err = e as { code?: string; message?: string };
+      if (err.code === 'P2003' || (typeof err.message === 'string' && err.message.includes('Foreign key constraint'))) {
+        return NextResponse.json({ error: "Data ini tidak bisa dihapus" }, { status: 400 });
+      }
+      throw e;
+    }
     
     // Buat daftar siswa untuk notifikasi
     let siswaListHtml = "";
