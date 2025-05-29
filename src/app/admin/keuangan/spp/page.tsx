@@ -63,20 +63,21 @@ export default function SppPage() {
         { key: "paid_at", label: "Tanggal Bayar", render: (row: SppPayment) => row.paid_at ? new Date(row.paid_at).toLocaleDateString() : '-' },
         { key: "amount", label: "Nominal", render: (row: SppPayment) => Number(row.amount).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }) },
         { key: "infaq", label: "Infaq", render: (row: SppPayment) => row.infaq ? Number(row.infaq).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' }) : '-' },
-        {
-          key: "aksi", label: "Aksi", render: (row: SppPayment) => (
-            <div className="flex gap-2">
-              <Link href={`/admin/keuangan/spp/edit/${row.id}`} className="btn btn-xs btn-warning"><Pencil className="w-4 h-4" /></Link>
-              <button className="btn btn-xs btn-error" onClick={() => handleDelete(row.id)}><Trash2 className="w-4 h-4" /></button>
-            </div>
-          )
-        },
+        { key: "aksi", label: "Aksi" },
       ]}
       searchPlaceholder="Cari pembayaran SPP..."
       refreshKey={refreshKey}
       renderActions={() => (
         <Link href="/admin/keuangan/spp/qr" className="btn btn-outline btn-primary">QR SPP</Link>
       )}
+      renderRowActions={(row: SppPayment) => [
+        <Link href={`/admin/keuangan/spp/edit/${row.id}`} className="flex items-center gap-2 text-primary" key="edit">
+          <Pencil className="w-4 h-4" /> <span className="text-base-content">Edit</span>
+        </Link>,
+        <button className="flex items-center gap-2 text-error" key="hapus" onClick={() => handleDelete(row.id)}>
+          <Trash2 className="w-4 h-4" /> <span className="text-base-content">Hapus</span>
+        </button>
+      ]}
     />
   );
 } 

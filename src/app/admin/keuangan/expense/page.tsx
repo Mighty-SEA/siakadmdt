@@ -62,17 +62,18 @@ export default function ExpensePage() {
         { key: "category", label: "Kategori" },
         { key: "created_at", label: "Dibuat", render: (row: Expense) => row.created_at ? new Date(row.created_at).toLocaleDateString() : "-" },
         { key: "updated_at", label: "Diubah", render: (row: Expense) => row.updated_at ? new Date(row.updated_at).toLocaleDateString() : "-" },
-        {
-          key: "aksi", label: "Aksi", render: (row: Expense) => (
-            <div className="flex gap-2">
-              <Link href={`/admin/keuangan/expense/edit/${row.id}`} className="btn btn-xs btn-warning"><Pencil className="w-4 h-4" /></Link>
-              <button className="btn btn-xs btn-error" onClick={() => handleDelete(row.id)}><Trash2 className="w-4 h-4" /></button>
-            </div>
-          )
-        },
+        { key: "aksi", label: "Aksi" },
       ]}
       searchPlaceholder="Cari pengeluaran..."
       refreshKey={refreshKey}
+      renderRowActions={(row: Expense) => [
+        <Link href={`/admin/keuangan/expense/edit/${row.id}`} className="flex items-center gap-2 text-primary" key="edit">
+          <Pencil className="w-4 h-4" /> <span className="text-base-content">Edit</span>
+        </Link>,
+        <button className="flex items-center gap-2 text-error" key="hapus" onClick={() => handleDelete(row.id)}>
+          <Trash2 className="w-4 h-4" /> <span className="text-base-content">Hapus</span>
+        </button>
+      ]}
     />
   );
 } 

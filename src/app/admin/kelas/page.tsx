@@ -160,43 +160,21 @@ export default function KelasPage() {
             label: "Diupdate", 
             render: row => row.updated_at ? new Date(row.updated_at).toLocaleDateString() : "-" 
           },
-          {
-            key: "aksi", 
-            label: "Aksi", 
-            render: row => (
-              <div className="flex gap-2">
-                <Link 
-                  href={`/admin/kelas/edit/${row.id}`} 
-                  className="btn btn-xs btn-warning"
-                  title="Edit Kelas"
-                >
-                  <Pencil className="w-4 h-4" />
-                </Link>
-                <Link
-                  href={`/admin/kelas/${row.id}/siswa`}
-                  className="btn btn-xs btn-success"
-                  title="Manajemen Siswa"
-                >
-                  <Users className="w-4 h-4" />
-                </Link>
-                <button 
-                  className="btn btn-xs btn-error" 
-                  onClick={() => openDeleteModal(row)}
-                  disabled={deletingId === row.id}
-                  title="Hapus Kelas"
-                >
-                  {deletingId === row.id ? (
-                    <span className="loading loading-spinner loading-xs"></span>
-                  ) : (
-                    <Trash2 className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
-            )
-          },
+          { key: "aksi", label: "Aksi" },
         ]}
         searchPlaceholder="Cari nama kelas, tahun, atau wali..."
         refreshKey={refreshKey}
+        renderRowActions={(row: KelasData) => [
+          <Link href={`/admin/kelas/edit/${row.id}`} className="flex items-center gap-2 text-primary" key="edit">
+            <Pencil className="w-4 h-4" /> <span className="text-base-content">Edit</span>
+          </Link>,
+          <Link href={`/admin/kelas/${row.id}/siswa`} className="flex items-center gap-2 text-success" key="siswa">
+            <Users className="w-4 h-4" /> <span className="text-base-content">Siswa</span>
+          </Link>,
+          <button className="flex items-center gap-2 text-error" key="hapus" onClick={() => openDeleteModal(row)} disabled={deletingId === row.id}>
+            <Trash2 className="w-4 h-4" /> <span className="text-base-content">Hapus</span>
+          </button>
+        ]}
       />
     </div>
   );

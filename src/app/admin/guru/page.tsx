@@ -84,17 +84,18 @@ export default function GuruPage() {
         { key: "gender", label: "Gender", render: row => row.gender === "L" ? "Laki-laki" : row.gender === "P" ? "Perempuan" : row.gender || "-" },
         { key: "created_at", label: "Dibuat", render: row => row.created_at ? new Date(row.created_at).toLocaleDateString() : "-" },
         { key: "updated_at", label: "Diupdate", render: row => row.updated_at ? new Date(row.updated_at).toLocaleDateString() : "-" },
-        {
-          key: "aksi", label: "Aksi", render: (row: GuruRow) => (
-            <div className="flex gap-2">
-              <Link href={`/admin/guru/edit/${row.id}`} className="btn btn-xs btn-warning"><Pencil className="w-4 h-4" /></Link>
-              <button className="btn btn-xs btn-error" onClick={() => openDeleteModal(row)}><Trash2 className="w-4 h-4" /></button>
-            </div>
-          )
-        },
+        { key: "aksi", label: "Aksi" },
       ]}
       searchPlaceholder="Cari nama atau NIP..."
       refreshKey={refreshKey}
+      renderRowActions={(row: GuruRow) => [
+        <Link href={`/admin/guru/edit/${row.id}`} className="flex items-center gap-2 text-primary" key="edit">
+          <Pencil className="w-4 h-4" /> <span className="text-base-content">Edit</span>
+        </Link>,
+        <button className="flex items-center gap-2 text-error" key="hapus" onClick={() => openDeleteModal(row)}>
+          <Trash2 className="w-4 h-4" /> <span className="text-base-content">Hapus</span>
+        </button>
+      ]}
     />
   );
 } 

@@ -1,6 +1,7 @@
 "use client";
+import React from "react";
 import { useEffect, useState, useRef } from "react";
-import { Filter, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2, MoreHorizontal, Upload, Download, Plus } from "lucide-react";
+import { Filter, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Trash2, MoreHorizontal, MoreVertical, Upload, Download, Plus } from "lucide-react";
 import Link from "next/link";
 
 interface Column<T> {
@@ -22,6 +23,7 @@ interface AdminTableTemplateProps<T> {
   searchPlaceholder?: string;
   refreshKey?: number;
   renderActions?: () => React.ReactNode;
+  renderRowActions?: (row: T, index: number) => React.ReactNode;
 }
 
 export default function AdminTableTemplate<T extends { [key: string]: unknown }>({
@@ -37,6 +39,7 @@ export default function AdminTableTemplate<T extends { [key: string]: unknown }>
   searchPlaceholder = "Cari...",
   refreshKey = 0,
   renderActions,
+  renderRowActions,
 }: AdminTableTemplateProps<T>) {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
@@ -300,7 +303,7 @@ export default function AdminTableTemplate<T extends { [key: string]: unknown }>
             ) : paged.length === 0 ? (
               <tr><td colSpan={selectedColumns.length + 1} className="text-center">Tidak ada data</td></tr>
             ) : (
-              paged.map((row) => (
+              paged.map((row, i) => (
                 <tr key={String(row[rowKey])} className={selectedRows.includes(String(row[rowKey])) ? "bg-primary/5" : undefined}>
                   <td>
                     <label className="cursor-pointer">
@@ -313,7 +316,25 @@ export default function AdminTableTemplate<T extends { [key: string]: unknown }>
                     </label>
                   </td>
                   {columns.map((col, index) => selectedColumns.includes(col.key) && (
-                    <td key={col.key}>{col.render ? col.render(row, index + (page - 1) * pageSize) : (row[col.key] as React.ReactNode)}</td>
+                    col.key === "aksi"
+                      ? <td key={col.key}>
+                          {/* Mobile: Dropdown */}
+                          <div className="md:hidden dropdown dropdown-end">
+                            <label tabIndex={0} className="btn btn-xs btn-ghost rounded-full">
+                              <MoreVertical className="w-4 h-4" />
+                            </label>
+                            <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-200 rounded-box w-28">
+                              {renderRowActions && React.Children.toArray(renderRowActions(row, i)).map((action, idx) => (
+                                <li key={idx}>{action}</li>
+                              ))}
+                            </ul>
+                          </div>
+                          {/* Desktop: Horizontal */}
+                          <div className="hidden md:flex gap-2">
+                            {renderRowActions && renderRowActions(row, i)}
+                          </div>
+                        </td>
+                      : <td key={col.key}>{col.render ? col.render(row, index + (page - 1) * pageSize) : (row[col.key] as React.ReactNode)}</td>
                   ))}
                 </tr>
               ))
