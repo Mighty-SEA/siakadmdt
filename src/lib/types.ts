@@ -25,4 +25,21 @@ export type Expense = {
   updated_at?: string | null;
 };
 
+export type SppPayment = {
+  id: number;
+  student_id: number;
+  month: number;
+  year: number;
+  paid_at: string; // ISO string
+  amount: number;
+  infaq?: number;
+  student?: {
+    id: number;
+    name: string;
+    nis: string;
+  };
+  created_at?: string;
+  updated_at?: string;
+};
+
 export {}; 

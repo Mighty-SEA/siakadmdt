@@ -162,6 +162,14 @@ export default function Sidebar({
               sidebarOpen={true}
               onClick={isMobile ? closeMobileDrawer : undefined}
             />
+            <SidebarLink 
+              href="/admin/keuangan/spp" 
+              icon={<Wallet className="w-4 h-4" />} 
+              label="SPP" 
+              active={pathname.startsWith("/admin/keuangan/spp")}
+              sidebarOpen={true}
+              onClick={isMobile ? closeMobileDrawer : undefined}
+            />
           </div>
         )}
       </nav>
