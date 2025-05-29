@@ -21,6 +21,7 @@ interface AdminTableTemplateProps<T> {
   defaultColumns?: string[];
   searchPlaceholder?: string;
   refreshKey?: number;
+  renderActions?: () => React.ReactNode;
 }
 
 export default function AdminTableTemplate<T extends { [key: string]: unknown }>({
@@ -35,6 +36,7 @@ export default function AdminTableTemplate<T extends { [key: string]: unknown }>
   defaultColumns,
   searchPlaceholder = "Cari...",
   refreshKey = 0,
+  renderActions,
 }: AdminTableTemplateProps<T>) {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,8 +57,7 @@ export default function AdminTableTemplate<T extends { [key: string]: unknown }>
         setData(res.data || []);
         setLoading(false);
       })
-      .catch(error => {
-        console.error("Error fetching data:", error);
+      .catch(() => {
         setLoading(false);
       });
   }, [fetchUrl, refreshKey]);
@@ -107,15 +108,30 @@ export default function AdminTableTemplate<T extends { [key: string]: unknown }>
     if (selectedRows.length === 0) return;
     setBulkActionLoading(true);
     try {
-      await fetch(deleteUrl + "/bulk", {
+      const res = await fetch(deleteUrl, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids: selectedRows }),
       });
-      setData(prev => prev.filter(row => !selectedRows.includes(String(row[rowKey]))));
-      setSelectedRows([]);
+      if (res.ok) {
+        // Fetch ulang data dari server
+        setLoading(true);
+        fetch(fetchUrl)
+          .then(res => res.json())
+          .then(res => {
+            setData(res.data || []);
+            setLoading(false);
+          })
+          .catch(() => {
+            setLoading(false);
+          });
+        setSelectedRows([]);
+      } else {
+        // Tampilkan notifikasi jika gagal
+        alert("Gagal menghapus data. Silakan coba lagi.");
+      }
     } catch {
-      // TODO: showToast error jika ada
+      alert("Gagal menghapus data. Silakan coba lagi.");
     } finally {
       setBulkActionLoading(false);
     }
@@ -157,6 +173,7 @@ export default function AdminTableTemplate<T extends { [key: string]: unknown }>
         <div className="flex gap-2">
           {importUrl && <button className="btn btn-outline btn-secondary btn-sm md:btn-md gap-2 rounded-lg border-2 border-secondary hover:bg-secondary/10 hover:border-secondary focus:shadow transition-all duration-150" type="button"><Upload className="w-5 h-5" /><span>Import</span></button>}
           {exportUrl && <button className="btn btn-outline btn-primary btn-sm md:btn-md gap-2 rounded-lg border-2 border-primary hover:bg-primary/10 hover:border-primary focus:shadow transition-all duration-150" type="button"><Download className="w-5 h-5" /><span>Export</span></button>}
+          {renderActions && renderActions()}
           <Link href={addUrl} className="btn btn-primary btn-sm md:btn-md gap-2 rounded-lg"><Plus className="w-5 h-5" /><span>Tambah</span></Link>
         </div>
       </div>

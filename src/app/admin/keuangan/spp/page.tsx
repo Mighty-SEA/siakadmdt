@@ -74,6 +74,9 @@ export default function SppPage() {
       ]}
       searchPlaceholder="Cari pembayaran SPP..."
       refreshKey={refreshKey}
+      renderActions={() => (
+        <Link href="/admin/keuangan/spp/qr" className="btn btn-outline btn-primary">QR SPP</Link>
+      )}
     />
   );
 } 
