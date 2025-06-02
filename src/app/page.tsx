@@ -549,15 +549,22 @@ export default function Home() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: isMobileScreen ? '1fr' : 'repeat(2, 1fr)',
+              gridTemplateColumns: isMobileScreen ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
               gap: '1rem',
               justifyContent: 'center',
             }}
           >
-            <div style={{ borderRadius: '1rem', background: theme === 'dark' ? 'rgba(40,40,60,0.85)' : 'rgba(255,255,255,0.92)', padding: '2rem', boxShadow: palette.shadow, color: palette.textColor, fontWeight: 500 }}>Kegiatan 1</div>
-            <div style={{ borderRadius: '1rem', background: theme === 'dark' ? 'rgba(40,40,60,0.85)' : 'rgba(255,255,255,0.92)', padding: '2rem', boxShadow: palette.shadow, color: palette.textColor, fontWeight: 500 }}>Kegiatan 2</div>
-            <div style={{ borderRadius: '1rem', background: theme === 'dark' ? 'rgba(40,40,60,0.85)' : 'rgba(255,255,255,0.92)', padding: '2rem', boxShadow: palette.shadow, color: palette.textColor, fontWeight: 500 }}>Kegiatan 3</div>
-            <div style={{ borderRadius: '1rem', background: theme === 'dark' ? 'rgba(40,40,60,0.85)' : 'rgba(255,255,255,0.92)', padding: '2rem', boxShadow: palette.shadow, color: palette.textColor, fontWeight: 500 }}>Kegiatan 4</div>
+            {/* Placeholder Tailwind Gallery */}
+            {(isMobileScreen ? Array.from({length:4}) : Array.from({length:8})).map((_, i) => (
+              <div key={i} style={{ borderRadius: '1rem', background: theme === 'dark' ? 'rgba(40,40,60,0.85)' : 'rgba(255,255,255,0.92)', padding: '2rem', boxShadow: palette.shadow, color: palette.textColor, fontWeight: 500, display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',minHeight:120 }}>
+                <svg className="mx-auto mb-3" width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="64" height="64" rx="16" fill="#F3F4F6"/>
+                  <path d="M16 48L28 32L40 44L48 36V48H16Z" fill="#E5E7EB"/>
+                  <circle cx="22" cy="26" r="4" fill="#E5E7EB"/>
+                </svg>
+                <span style={{color:'#9CA3AF',fontSize:'1.05rem'}}>Belum ada foto</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -586,22 +593,82 @@ export default function Home() {
           style={{
             position: 'relative',
             zIndex: 1,
-            maxWidth: 600,
+            maxWidth: 900,
             margin: '0 auto',
             background: palette.blockBg,
             borderRadius: 24,
             boxShadow: palette.shadow,
-            padding: '2.5rem 0.5rem',
+            padding: isMobileScreen ? '2.5rem 0.5rem' : '2.5rem 2.5rem',
             backdropFilter: 'blur(4px)',
+            display: 'flex',
+            flexDirection: isMobileScreen ? 'column' : 'row',
+            gap: isMobileScreen ? 24 : 36,
+            alignItems: 'stretch',
+            justifyContent: 'center',
           }}
         >
-          <h2 style={{ fontSize: '2.1rem', fontWeight: 700, marginBottom: '1rem', color: palette.accentText, textShadow: palette.textShadow, letterSpacing: 0.5 }}>
+          {/* Info Kontak */}
+          <div style={{
+            flex: 1,
+            background: 'transparent',
+            borderRadius: 0,
+            boxShadow: 'none',
+            padding: isMobileScreen ? 0 : '0 0.5rem 0 0',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: isMobileScreen ? 18 : 0,
+          }}>
+            <h2 style={{ fontSize: '2.1rem', fontWeight: 800, marginBottom: '1.2rem', color: palette.accentText, textShadow: palette.textShadow, letterSpacing: 0.5, display:'flex',alignItems:'center',justifyContent:'center',gap:10 }}>
+              <svg width="28" height="28" fill="none" stroke={palette.accentText} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M21 10.5C21 16.5 12 22 12 22C12 22 3 16.5 3 10.5C3 7.18629 5.68629 4.5 9 4.5C10.6569 4.5 12 5.84315 12 7.5C12 5.84315 13.3431 4.5 15 4.5C18.3137 4.5 21 7.18629 21 10.5Z"/><circle cx="12" cy="10.5" r="2.5"/></svg>
             Kontak & Lokasi
           </h2>
-          <p style={{ color: palette.textColor, marginBottom: '0.5rem', textShadow: palette.textShadow, fontWeight: 500 }}>Hubungi kami untuk informasi lebih lanjut atau kunjungi kampus kami:</p>
-          <p style={{ fontWeight: 'bold', color: palette.textColor, textShadow: palette.textShadow }}>Email: info@sekolahanda.sch.id</p>
-          <p style={{ fontWeight: 'bold', color: palette.textColor, textShadow: palette.textShadow }}>Telepon: 0812-3456-7890</p>
-          <p style={{ color: palette.textColor, textShadow: palette.textShadow, marginTop: 8 }}>Jl. Pendidikan No. 123, Kota Anda</p>
+            <div style={{height:2,background:`linear-gradient(90deg,${palette.accentText},${palette.accentText}33,transparent)`,margin:'0 auto 18px auto',width:'60%',borderRadius:2}}></div>
+            <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
+              <span style={{fontWeight:'bold',fontSize:'1.18rem',color:palette.textColor,letterSpacing:0.5,background:`linear-gradient(90deg,${palette.accentText}22,transparent)`,padding:'2px 16px',borderRadius:8,boxShadow:'0 1px 4px #0001'}}>
+                MDT Bilal Bin Rabbah
+              </span>
+              <span style={{color:palette.textColor, textShadow:palette.textShadow, fontSize:'1.05rem',marginTop:2,display:'flex',alignItems:'center',gap:6}}>
+                <svg width="18" height="18" fill="none" stroke={palette.accentText} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M21 10.5C21 16.5 12 22 12 22C12 22 3 16.5 3 10.5C3 7.18629 5.68629 4.5 9 4.5C10.6569 4.5 12 5.84315 12 7.5C12 5.84315 13.3431 4.5 15 4.5C18.3137 4.5 21 7.18629 21 10.5Z"/><circle cx="12" cy="10.5" r="2.5"/></svg>
+                Jl. Pasir Pogor Kp. Pasirpogor No.Rt 05/03, Malakasari, Kec. Baleendah, Kabupaten Bandung, Jawa Barat 40375
+              </span>
+              <span style={{display:'flex',alignItems:'center',gap:6,color:palette.textColor,fontSize:'1.05rem',marginTop:2}}>
+                <svg width="18" height="18" fill="none" stroke="#25D366" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M21.67 20.13l-1.51-4.36a2.13 2.13 0 0 0-2-1.45h-1.11a2.13 2.13 0 0 0-2 1.45l-1.51 4.36a2.13 2.13 0 0 0 2 2.87h1.11a2.13 2.13 0 0 0 2-2.87z"/><circle cx="12" cy="12" r="10"/></svg>
+                <span style={{fontWeight:600}}>0812-3456-7890</span>
+              </span>
+              <a href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems:'center', gap:8, marginTop: 10, color: '#fff', fontWeight: 700, textDecoration: 'none', fontSize: '1.08rem', border:'2px solid #25D366', borderRadius:8, padding:'6px 18px', background:'#25D366', boxShadow:'0 2px 8px #25D36622', transition:'background 0.2s, color 0.2s' }}
+                onMouseOver={e => {e.currentTarget.style.background='#128C7E';e.currentTarget.style.color='#fff';}}
+                onMouseOut={e => {e.currentTarget.style.background='#25D366';e.currentTarget.style.color='#fff';}}
+              >
+                <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M21.67 20.13l-1.51-4.36a2.13 2.13 0 0 0-2-1.45h-1.11a2.13 2.13 0 0 0-2 1.45l-1.51 4.36a2.13 2.13 0 0 0 2 2.87h1.11a2.13 2.13 0 0 0 2-2.87z"/><circle cx="12" cy="12" r="10"/></svg>
+                Hubungi via WhatsApp
+              </a>
+            </div>
+          </div>
+          {/* Peta Google Maps */}
+          <div style={{
+            flex: 1.2,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'transparent',
+            borderRadius: 0,
+            boxShadow: 'none',
+            padding: isMobileScreen ? 0 : '0 0 0 0.5rem',
+            minHeight: isMobileScreen ? 220 : 340,
+          }}>
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d63338.96423483344!2d107.5890736!3d-7.0168981!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e68e9e2e2e2e2e3%3A0x1234567890abcdef!2sMDT%20Bilal%20Bin%20Rabbah!5e0!3m2!1sid!2sid!4v1710000000000!5m2!1sid!2sid"
+              width="100%"
+              height={isMobileScreen ? "220" : "340"}
+              style={{ border: 0, borderRadius: 14 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Lokasi MDT Bilal Bin Rabbah"
+            ></iframe>
+          </div>
         </div>
       </section>
     </div>
