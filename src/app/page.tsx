@@ -1,11 +1,19 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 
+// Helper untuk deteksi mobile
+const isMobile = typeof window !== 'undefined' && window.innerWidth < 600;
+
 export default function Home() {
   // State tema lokal landing
   const [theme, setTheme] = useState('light');
   const [activeSection, setActiveSection] = useState(0);
-  const sectionRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
+  const sectionRefs: React.RefObject<HTMLElement | null>[] = [
+    useRef<HTMLElement>(null),
+    useRef<HTMLElement>(null),
+    useRef<HTMLElement>(null),
+    useRef<HTMLElement>(null)
+  ];
 
   // Palet warna harmonis
   const palette = theme === 'dark'
@@ -94,6 +102,11 @@ export default function Home() {
     );
   }
 
+  // Fungsi scroll ke section
+  const scrollToSection = (idx: number) => {
+    sectionRefs[idx].current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <div
       style={{
@@ -109,8 +122,16 @@ export default function Home() {
       }}
       className="hide-scrollbar"
     >
-      {/* Switcher Tema */}
-      <div style={{ position: 'fixed', top: 24, right: 24, zIndex: 100 }}>
+      {/* Tombol Switch Tema (pojok kanan atas) */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 12,
+          right: 12,
+          zIndex: 110,
+          pointerEvents: 'auto',
+        }}
+      >
         <button
           onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
           style={{
@@ -120,7 +141,7 @@ export default function Home() {
             outline: `2.5px solid ${theme === 'dark' ? '#FFD36E' : '#FBAE3C'}`,
             outlineOffset: '2px',
             borderRadius: 8,
-            padding: '0.5rem 1.2rem',
+            padding: isMobile ? '0.35rem 0.7rem' : '0.5rem 1.2rem',
             fontWeight: 'bold',
             cursor: 'pointer',
             boxShadow: palette.shadow,
@@ -129,6 +150,7 @@ export default function Home() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            fontSize: isMobile ? '1.1rem' : '1.2rem',
           }}
           aria-label="Ganti tema"
         >
@@ -142,7 +164,103 @@ export default function Home() {
         </button>
       </div>
 
-      {/* Section 1: Hero */}
+      {/* Tombol Navigasi Section (center, scrollable di mobile) */}
+      <div
+        style={{
+          position: 'fixed',
+          top: isMobile ? 60 : 24,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          display: 'flex',
+          justifyContent: 'center',
+          gap: isMobile ? 6 : 12,
+          overflowX: isMobile ? 'auto' : 'visible',
+          padding: isMobile ? '0 4px' : '0 16px',
+          pointerEvents: 'auto',
+        }}
+      >
+        <div style={{ display: 'flex', gap: isMobile ? 6 : 8 }}>
+          <button
+            onClick={() => scrollToSection(0)}
+            style={{
+              background: activeSection === 0 ? palette.accentText : 'transparent',
+              color: activeSection === 0 ? (theme === 'dark' ? '#1a237e' : '#fff') : palette.textColor,
+              border: `2px solid ${palette.accentText}`,
+              outline: activeSection === 0 ? `2.5px solid ${palette.accentText}` : 'none',
+              outlineOffset: '2px',
+              borderRadius: 8,
+              padding: isMobile ? '0.35rem 0.9rem' : '0.5rem 1.1rem',
+              fontWeight: 600,
+              fontSize: isMobile ? '0.98rem' : '1rem',
+              cursor: 'pointer',
+              boxShadow: palette.shadow,
+              letterSpacing: 0.5,
+              transition: 'background 0.2s, color 0.2s, outline 0.2s',
+              minWidth: 80,
+            }}
+          >Beranda</button>
+          <button
+            onClick={() => scrollToSection(1)}
+            style={{
+              background: activeSection === 1 ? palette.accentText : 'transparent',
+              color: activeSection === 1 ? (theme === 'dark' ? '#1a237e' : '#fff') : palette.textColor,
+              border: `2px solid ${palette.accentText}`,
+              outline: activeSection === 1 ? `2.5px solid ${palette.accentText}` : 'none',
+              outlineOffset: '2px',
+              borderRadius: 8,
+              padding: isMobile ? '0.35rem 0.9rem' : '0.5rem 1.1rem',
+              fontWeight: 600,
+              fontSize: isMobile ? '0.98rem' : '1rem',
+              cursor: 'pointer',
+              boxShadow: palette.shadow,
+              letterSpacing: 0.5,
+              transition: 'background 0.2s, color 0.2s, outline 0.2s',
+              minWidth: 80,
+            }}
+          >Profil</button>
+          <button
+            onClick={() => scrollToSection(2)}
+            style={{
+              background: activeSection === 2 ? palette.accentText : 'transparent',
+              color: activeSection === 2 ? (theme === 'dark' ? '#1a237e' : '#fff') : palette.textColor,
+              border: `2px solid ${palette.accentText}`,
+              outline: activeSection === 2 ? `2.5px solid ${palette.accentText}` : 'none',
+              outlineOffset: '2px',
+              borderRadius: 8,
+              padding: isMobile ? '0.35rem 0.9rem' : '0.5rem 1.1rem',
+              fontWeight: 600,
+              fontSize: isMobile ? '0.98rem' : '1rem',
+              cursor: 'pointer',
+              boxShadow: palette.shadow,
+              letterSpacing: 0.5,
+              transition: 'background 0.2s, color 0.2s, outline 0.2s',
+              minWidth: 80,
+            }}
+          >Galeri</button>
+          <button
+            onClick={() => scrollToSection(3)}
+            style={{
+              background: activeSection === 3 ? palette.accentText : 'transparent',
+              color: activeSection === 3 ? (theme === 'dark' ? '#1a237e' : '#fff') : palette.textColor,
+              border: `2px solid ${palette.accentText}`,
+              outline: activeSection === 3 ? `2.5px solid ${palette.accentText}` : 'none',
+              outlineOffset: '2px',
+              borderRadius: 8,
+              padding: isMobile ? '0.35rem 0.9rem' : '0.5rem 1.1rem',
+              fontWeight: 600,
+              fontSize: isMobile ? '0.98rem' : '1rem',
+              cursor: 'pointer',
+              boxShadow: palette.shadow,
+              letterSpacing: 0.5,
+              transition: 'background 0.2s, color 0.2s, outline 0.2s',
+              minWidth: 80,
+            }}
+          >Kontak</button>
+        </div>
+      </div>
+
+      {/* Section 1: Beranda */}
       <section
         ref={sectionRefs[0]}
         style={{
@@ -153,7 +271,8 @@ export default function Home() {
           justifyContent: 'center',
           position: 'relative',
           textAlign: 'center',
-          padding: '2rem',
+          padding: isMobile ? '2.5rem 0.5rem 1.5rem 0.5rem' : '2rem 1rem',
+          marginTop: isMobile ? 80 : 0,
           overflow: 'hidden',
           scrollSnapAlign: 'start',
           transform: 'translateZ(0)',
@@ -170,20 +289,34 @@ export default function Home() {
             background: palette.blockBg,
             borderRadius: 24,
             boxShadow: palette.shadow,
-            padding: '2.5rem 2rem',
+            padding: '2.5rem 1rem',
             backdropFilter: 'blur(4px)',
           }}
         >
           <h1 style={{ fontSize: '2.7rem', fontWeight: 800, marginBottom: '1rem', color: palette.accentText, textShadow: palette.textShadow, letterSpacing: 1 }}>
-            Selamat Datang di SIAKAD MDT
+            Selamat Datang di Sekolah Kami
           </h1>
           <p style={{ fontSize: '1.2rem', color: palette.textColor, textShadow: palette.textShadow, maxWidth: 600, margin: '0 auto', fontWeight: 500 }}>
-            Sistem Informasi Akademik Madrasah Diniyah Terpadu untuk kemudahan pengelolaan data dan layanan pendidikan.
+            Sekolah unggulan yang berkomitmen membentuk generasi cerdas, berakhlak mulia, dan siap menghadapi masa depan. Temukan lingkungan belajar yang inspiratif, fasilitas lengkap, dan program pendidikan terbaik untuk putra-putri Anda.
           </p>
+          <a href="#profil" style={{
+            display: 'inline-block',
+            marginTop: 24,
+            padding: '0.75rem 2rem',
+            background: palette.accentText,
+            color: palette.textColor,
+            borderRadius: 8,
+            fontWeight: 700,
+            fontSize: '1.1rem',
+            textDecoration: 'none',
+            boxShadow: palette.shadow,
+            border: `2px solid ${palette.accentText}`,
+            transition: 'background 0.2s, color 0.2s',
+          }}>Lihat Info PPDB</a>
         </div>
       </section>
 
-      {/* Section 2: Tentang */}
+      {/* Section 2: Profil Sekolah */}
       <section
         ref={sectionRefs[1]}
         style={{
@@ -194,13 +327,13 @@ export default function Home() {
           justifyContent: 'center',
           position: 'relative',
           textAlign: 'center',
-          padding: '2rem',
+          padding: '2rem 1rem',
           overflow: 'hidden',
           scrollSnapAlign: 'start',
           transform: 'translateZ(0)',
           contain: 'strict',
         }}
-        id="tentang"
+        id="profil"
       >
         <Waves2Animated idx={activeSection === 1 ? 1 : activeSection} />
         <div
@@ -212,20 +345,20 @@ export default function Home() {
             background: palette.blockBg,
             borderRadius: 24,
             boxShadow: palette.shadow,
-            padding: '2.5rem 2rem',
+            padding: '2.5rem 1rem',
             backdropFilter: 'blur(4px)',
           }}
         >
           <h2 style={{ fontSize: '2.1rem', fontWeight: 700, marginBottom: '1rem', color: palette.accentText, textShadow: palette.textShadow, letterSpacing: 0.5 }}>
-            Tentang Kami
+            Profil Sekolah
           </h2>
           <p style={{ fontSize: '1.15rem', color: palette.textColor, textShadow: palette.textShadow, fontWeight: 500 }}>
-            SIAKAD MDT adalah platform digital yang membantu pengelolaan administrasi, data siswa, guru, dan kegiatan belajar mengajar di lingkungan Madrasah Diniyah Terpadu.
+            Sekolah kami berkomitmen mencetak generasi cerdas, berakhlak mulia, dan berwawasan global. Didukung tenaga pendidik profesional, fasilitas lengkap, serta lingkungan belajar yang nyaman dan islami.
           </p>
         </div>
       </section>
 
-      {/* Section 3: Galeri */}
+      {/* Section 3: Galeri Kegiatan */}
       <section
         ref={sectionRefs[2]}
         style={{
@@ -236,7 +369,7 @@ export default function Home() {
           justifyContent: 'center',
           position: 'relative',
           textAlign: 'center',
-          padding: '2rem',
+          padding: '2rem 0.5rem',
           overflow: 'hidden',
           scrollSnapAlign: 'start',
           transform: 'translateZ(0)',
@@ -254,18 +387,25 @@ export default function Home() {
             background: palette.blockBg,
             borderRadius: 24,
             boxShadow: palette.shadow,
-            padding: '2.5rem 2rem',
+            padding: '2.5rem 0.5rem',
             backdropFilter: 'blur(4px)',
           }}
         >
           <h2 style={{ fontSize: '2.1rem', fontWeight: 700, marginBottom: '2rem', color: palette.accentText, textShadow: palette.textShadow, letterSpacing: 0.5 }}>
-            Galeri
+            Galeri Kegiatan
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', justifyContent: 'center' }}>
-            <div style={{ borderRadius: '1rem', background: theme === 'dark' ? 'rgba(40,40,60,0.85)' : 'rgba(255,255,255,0.92)', padding: '2rem', boxShadow: palette.shadow, color: palette.textColor, fontWeight: 500 }}>Gambar 1</div>
-            <div style={{ borderRadius: '1rem', background: theme === 'dark' ? 'rgba(40,40,60,0.85)' : 'rgba(255,255,255,0.92)', padding: '2rem', boxShadow: palette.shadow, color: palette.textColor, fontWeight: 500 }}>Gambar 2</div>
-            <div style={{ borderRadius: '1rem', background: theme === 'dark' ? 'rgba(40,40,60,0.85)' : 'rgba(255,255,255,0.92)', padding: '2rem', boxShadow: palette.shadow, color: palette.textColor, fontWeight: 500 }}>Gambar 3</div>
-            <div style={{ borderRadius: '1rem', background: theme === 'dark' ? 'rgba(40,40,60,0.85)' : 'rgba(255,255,255,0.92)', padding: '2rem', boxShadow: palette.shadow, color: palette.textColor, fontWeight: 500 }}>Gambar 4</div>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: window.innerWidth < 600 ? '1fr' : 'repeat(2, 1fr)',
+              gap: '1rem',
+              justifyContent: 'center',
+            }}
+          >
+            <div style={{ borderRadius: '1rem', background: theme === 'dark' ? 'rgba(40,40,60,0.85)' : 'rgba(255,255,255,0.92)', padding: '2rem', boxShadow: palette.shadow, color: palette.textColor, fontWeight: 500 }}>Kegiatan 1</div>
+            <div style={{ borderRadius: '1rem', background: theme === 'dark' ? 'rgba(40,40,60,0.85)' : 'rgba(255,255,255,0.92)', padding: '2rem', boxShadow: palette.shadow, color: palette.textColor, fontWeight: 500 }}>Kegiatan 2</div>
+            <div style={{ borderRadius: '1rem', background: theme === 'dark' ? 'rgba(40,40,60,0.85)' : 'rgba(255,255,255,0.92)', padding: '2rem', boxShadow: palette.shadow, color: palette.textColor, fontWeight: 500 }}>Kegiatan 3</div>
+            <div style={{ borderRadius: '1rem', background: theme === 'dark' ? 'rgba(40,40,60,0.85)' : 'rgba(255,255,255,0.92)', padding: '2rem', boxShadow: palette.shadow, color: palette.textColor, fontWeight: 500 }}>Kegiatan 4</div>
           </div>
         </div>
       </section>
@@ -281,7 +421,7 @@ export default function Home() {
           justifyContent: 'center',
           position: 'relative',
           textAlign: 'center',
-          padding: '2rem',
+          padding: '2rem 0.5rem',
           overflow: 'hidden',
           scrollSnapAlign: 'start',
           transform: 'translateZ(0)',
@@ -299,16 +439,17 @@ export default function Home() {
             background: palette.blockBg,
             borderRadius: 24,
             boxShadow: palette.shadow,
-            padding: '2.5rem 2rem',
+            padding: '2.5rem 0.5rem',
             backdropFilter: 'blur(4px)',
           }}
         >
           <h2 style={{ fontSize: '2.1rem', fontWeight: 700, marginBottom: '1rem', color: palette.accentText, textShadow: palette.textShadow, letterSpacing: 0.5 }}>
-            Kontak
+            Kontak & Lokasi
           </h2>
-          <p style={{ color: palette.textColor, marginBottom: '0.5rem', textShadow: palette.textShadow, fontWeight: 500 }}>Hubungi kami untuk informasi lebih lanjut:</p>
-          <p style={{ fontWeight: 'bold', color: palette.textColor, textShadow: palette.textShadow }}>Email: info@mdtbilal.sch.id</p>
+          <p style={{ color: palette.textColor, marginBottom: '0.5rem', textShadow: palette.textShadow, fontWeight: 500 }}>Hubungi kami untuk informasi lebih lanjut atau kunjungi kampus kami:</p>
+          <p style={{ fontWeight: 'bold', color: palette.textColor, textShadow: palette.textShadow }}>Email: info@sekolahanda.sch.id</p>
           <p style={{ fontWeight: 'bold', color: palette.textColor, textShadow: palette.textShadow }}>Telepon: 0812-3456-7890</p>
+          <p style={{ color: palette.textColor, textShadow: palette.textShadow, marginTop: 8 }}>Jl. Pendidikan No. 123, Kota Anda</p>
         </div>
       </section>
     </div>
