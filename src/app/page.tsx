@@ -281,11 +281,7 @@ export default function Home() {
         {!isMobileScreen && (
           <div style={{ display: 'flex', alignItems: 'center' }}>
             {/* Logo */}
-            <div style={{
-              width: 44, height: 44, borderRadius: '50%', background: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', marginRight: 12, border: '2px solid #FBAE3C',
-            }}>
-              <img src="/logo.png" alt="Logo" style={{ width: 38, height: 38, objectFit: 'contain', display: 'block' }} onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerHTML = '<span style=&#39;font-weight:800;font-size:1.5rem;color:#FBAE3C;&#39;>S</span>'; }} />
-            </div>
+            <img src="/android-chrome-512x512.png" alt="Logo" style={{ width: 60, height: 60, objectFit: 'contain', display: 'block', marginRight: 18 }} onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerHTML = '<span style=\'font-weight:800;font-size:2.2rem;color:#FBAE3C;\'>S</span>'; }} />
             {/* Nama sekolah */}
             <span style={{ fontWeight: 800, fontSize: '1.35rem', color: palette.textColor, letterSpacing: 1, textShadow: '0 1px 4px #fff, 0 0.5px 0 #FBAE3C' }}>
               MDT BILAL BIN RABBAH
@@ -391,7 +387,7 @@ export default function Home() {
           {/* Ilustrasi anak belajar */}
           {!isMobileScreen && (
             <div style={{flex:'0 0 220px',display:'flex',alignItems:'center',justifyContent:'center'}}>
-              <svg width="180" height="180" viewBox="0 0 180 180" fill="none"><ellipse cx="90" cy="150" rx="60" ry="18" fill="#FBAE3C" opacity=".18"/><circle cx="90" cy="80" r="48" fill="#FFD36E"/><ellipse cx="90" cy="110" rx="32" ry="12" fill="#fff" opacity=".25"/><rect x="70" y="60" width="40" height="40" rx="20" fill="#fff"/><ellipse cx="90" cy="80" rx="12" ry="16" fill="#FBAE3C"/><ellipse cx="90" cy="80" rx="6" ry="8" fill="#fff"/></svg>
+              <img src="/android-chrome-512x512.png" alt="Logo" style={{ width: 160, height: 160, objectFit: 'contain', display: 'block' }} />
             </div>
           )}
           <div style={{flex:1}}>
