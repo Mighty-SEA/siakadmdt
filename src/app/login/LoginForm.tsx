@@ -190,7 +190,7 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-base-200 flex-col relative transition-colors duration-300">
+    <div className="min-h-screen flex items-center justify-center flex-col relative transition-colors duration-300 bg-base-200" style={{ minHeight: '100vh', padding: '0 1rem' }}>
       <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
         <label className="font-semibold text-base-content">Tema:</label>
         <select
@@ -203,36 +203,40 @@ export default function LoginForm() {
           ))}
         </select>
       </div>
-      <form onSubmit={handleSubmit} className="bg-base-100 p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center">Login Admin</h1>
-        {error && <div className="alert alert-error mb-4">{error}</div>}
+      {/* Logo besar di atas form */}
+      <img src="/android-chrome-512x512.png" alt="Logo" style={{ width: 90, height: 90, marginBottom: 18, borderRadius: 20, boxShadow: '0 4px 32px 0 rgba(251,174,60,0.18)' }} />
+      <form onSubmit={handleSubmit} className="bg-base-100 p-8 rounded-3xl shadow-2xl w-full max-w-md border border-yellow-200" style={{backdropFilter:'blur(6px)', boxShadow:'0 8px 40px 0 rgba(251,174,60,0.13), 0 2px 12px 0 rgba(0,0,0,0.10)'}}>
+        <h1 className="text-3xl font-extrabold mb-6 text-center text-yellow-600" style={{letterSpacing:1}}>Login Admin</h1>
+        {error && <div className="alert alert-error mb-4 text-sm font-semibold">{error}</div>}
         <div className="mb-4">
-          <label className="block mb-1 font-semibold">Username</label>
+          <label className="block mb-1 font-semibold text-base-content">Username</label>
           <input
             type="text"
             name="username"
-            className="input input-bordered w-full"
+            className="input input-bordered w-full text-base-content bg-base-200 focus:bg-white focus:border-yellow-400"
             value={form.username}
             onChange={handleChange}
             disabled={loading || isLocked}
             autoComplete="username"
+            placeholder="Masukkan username"
           />
         </div>
         <div className="mb-6">
-          <label className="block mb-1 font-semibold">Password</label>
+          <label className="block mb-1 font-semibold text-base-content">Password</label>
           <input
             type="password"
             name="password"
-            className="input input-bordered w-full"
+            className="input input-bordered w-full text-base-content bg-base-200 focus:bg-white focus:border-yellow-400"
             value={form.password}
             onChange={handleChange}
             disabled={loading || isLocked}
             autoComplete="current-password"
+            placeholder="Masukkan password"
           />
         </div>
         <button
           type="submit"
-          className="btn btn-primary w-full"
+          className="btn w-full text-lg font-bold border-0" style={{background:'linear-gradient(90deg,#FFD36E,#FBAE3C)',color:'#1a237e',boxShadow:'0 4px 18px 0 rgba(251,174,60,0.13)'}}
           disabled={loading || isLocked}
         >
           {loading ? "Memproses..." : "Login"}
