@@ -1,128 +1,316 @@
 "use client";
-import Image from "next/image";
-import { useState, useEffect } from "react";
-
-const galleryImages = [
-  "/next.svg",
-  "/vercel.svg",
-  "/window.svg",
-  "/file.svg",
-  "/globe.svg",
-];
+import { useState, useRef, useEffect } from "react";
 
 export default function Home() {
-  const [theme, setTheme] = useState("light");
-  const [year, setYear] = useState<number | null>(null);
+  // State tema lokal landing
+  const [theme, setTheme] = useState('light');
+  const [activeSection, setActiveSection] = useState(0);
+  const sectionRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
 
+  // Palet warna harmonis
+  const palette = theme === 'dark'
+    ? {
+        svgColor: '#181c2a', // biru tua keunguan
+        svgAccent: '#FFD36E', // kuning soft
+        svgAccent2: '#FFB86B', // oranye soft
+        textColor: '#F8F8FF', // putih keabu
+        blockBg: 'rgba(24,28,42,0.82)',
+        shadow: '0 4px 32px rgba(24,28,42,0.25)',
+        textShadow: '0 2px 12px rgba(0,0,0,0.45)',
+        accentText: '#FFD36E',
+      }
+    : {
+        svgColor: '#eaf6ff', // biru muda/putih kebiruan
+        svgAccent: '#FBAE3C', // oranye cerah
+        svgAccent2: '#FFD36E', // kuning cerah
+        textColor: '#1a237e', // biru navy
+        blockBg: 'rgba(255,255,255,0.82)',
+        shadow: '0 4px 32px rgba(30,136,229,0.10)',
+        textShadow: '0 2px 12px rgba(30,136,229,0.18)',
+        accentText: '#FBAE3C',
+      };
+
+  // Palet warna harmonis per section
+  const sectionPalettes = theme === 'dark'
+    ? [
+        // Section 1
+        { svgColor: '#007C77', svgAccent: '#7EE081', svgAccent2: '#7EE081' },
+        // Section 2
+        { svgColor: '#D84727', svgAccent: '#EF7B45', svgAccent2: '#EF7B45' },
+        // Section 3
+        { svgColor: '#12343b', svgAccent: '#FFD36E', svgAccent2: '#FFB86B' },
+        // Section 4
+        { svgColor: '#0d1333', svgAccent: '#FFB86B', svgAccent2: '#FFD36E' },
+      ]
+    : [
+        // Section 1
+        { svgColor: '#007C77', svgAccent: '#7EE081', svgAccent2: '#7EE081' },
+        // Section 2
+        { svgColor: '#D84727', svgAccent: '#EF7B45', svgAccent2: '#EF7B45' },
+        // Section 3
+        { svgColor: '#e0f7fa', svgAccent: '#FFD36E', svgAccent2: '#FFB86B' },
+        // Section 4
+        { svgColor: '#1565c0', svgAccent: '#FBAE3C', svgAccent2: '#FFD36E' },
+      ];
+
+  // Intersection Observer untuk deteksi section aktif
   useEffect(() => {
-    const savedTheme = typeof window !== 'undefined' ? localStorage.getItem('theme') : null;
-    if (savedTheme) {
-      setTheme(savedTheme);
-      document.documentElement.setAttribute("data-theme", savedTheme);
-    } else {
-      document.documentElement.setAttribute("data-theme", theme);
-    }
+    const observers: IntersectionObserver[] = [];
+    sectionRefs.forEach((ref, idx) => {
+      if (!ref.current) return;
+      const observer = new window.IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+            setActiveSection(idx);
+          }
+        },
+        { threshold: [0.6] }
+      );
+      observer.observe(ref.current);
+      observers.push(observer);
+    });
+    return () => observers.forEach(o => o.disconnect());
   }, [theme]);
 
-  useEffect(() => {
-    if (theme) {
-      localStorage.setItem('theme', theme);
-      document.documentElement.setAttribute("data-theme", theme);
-    }
-  }, [theme]);
-
-  useEffect(() => {
-    setYear(new Date().getFullYear());
-  }, []);
+  // Komponen SVG dengan animasi transisi warna
+  function Waves1Animated({ idx }: { idx: number }) {
+    const palette = sectionPalettes[idx];
+    return (
+      <svg viewBox="0 0 900 600" width="100%" height="100%" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 0, willChange: 'transform' }} xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="900" height="600" fill={palette.svgColor} style={{ transition: 'fill 1.5s cubic-bezier(.4,0,.2,1)' }}></rect>
+        <g transform="translate(900, 600)"><path d="M-486.7 0C-484.8 -68.9 -482.9 -137.9 -449.7 -186.3C-416.5 -234.7 -352.2 -262.6 -305.5 -305.5C-258.8 -348.3 -229.7 -406.1 -181.8 -438.8C-133.8 -471.5 -66.9 -479.1 0 -486.7L0 0Z" fill={palette.svgAccent} style={{ transition: 'fill 1.5s cubic-bezier(.4,0,.2,1)' }}></path></g>
+        <g transform="translate(0, 0)"><path d="M486.7 0C440.5 49.1 394.2 98.2 372.3 154.2C350.4 210.2 352.9 273.1 326.7 326.7C300.5 380.3 245.5 424.6 186.3 449.7C127 474.8 63.5 480.8 0 486.7L0 0Z" fill={palette.svgAccent2 || palette.svgAccent} style={{ transition: 'fill 1.5s cubic-bezier(.4,0,.2,1)' }}></path></g>
+      </svg>
+    );
+  }
+  function Waves2Animated({ idx }: { idx: number }) {
+    const palette = sectionPalettes[idx];
+    return (
+      <svg viewBox="0 0 900 600" width="100%" height="100%" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 0, willChange: 'transform' }} xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="900" height="600" fill={palette.svgColor} style={{ transition: 'fill 1.5s cubic-bezier(.4,0,.2,1)' }}></rect>
+        <g transform="translate(900, 0)"><path d="M0 486.7C-68.9 484.8 -137.9 482.9 -186.3 449.7C-234.7 416.5 -262.6 352.2 -305.5 305.5C-348.3 258.8 -406.1 229.7 -438.8 181.8C-471.5 133.8 -479.1 66.9 -486.7 0L0 0Z" fill={palette.svgAccent} style={{ transition: 'fill 1.5s cubic-bezier(.4,0,.2,1)' }}></path></g>
+        <g transform="translate(0, 600)"><path d="M0 -486.7C49.1 -440.5 98.2 -394.2 154.2 -372.3C210.2 -350.4 273.1 -352.9 326.7 -326.7C380.3 -300.5 424.6 -245.5 449.7 -186.3C474.8 -127 480.8 -63.5 486.7 0L0 0Z" fill={palette.svgAccent2 || palette.svgAccent} style={{ transition: 'fill 1.5s cubic-bezier(.4,0,.2,1)' }}></path></g>
+      </svg>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex flex-col bg-base-100">
-      {/* Navbar */}
-      <div className="navbar bg-base-200 shadow sticky top-0 z-50">
-        <div className="flex-1">
-          <Image src="/next.svg" alt="Logo" width={40} height={40} className="rounded" />
-          <span className="ml-2 text-xl font-bold text-primary">MDT BILAL BIN RABBAH</span>
-        </div>
-        <div className="flex-none gap-2">
-          <select
-            className="select select-bordered select-sm"
-            value={theme}
-            onChange={e => setTheme(e.target.value)}
-          >
-            {["light","dark","cupcake","bumblebee","emerald","corporate","synthwave","retro","cyberpunk","valentine","halloween","garden","forest","aqua","lofi","pastel","fantasy","wireframe","black","luxury","dracula","cmyk","autumn","business","acid","lemonade","night","coffee","winter","dim","nord","sunset","caramellatte","abyss","silk"].map(t => (
-              <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
-            ))}
-          </select>
-          <a href="#daftar" className="btn btn-primary btn-sm">Daftar</a>
-        </div>
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative',
+        height: '100vh',
+        overflowY: 'auto',
+        scrollSnapType: 'y mandatory',
+        scrollbarWidth: 'none', // Firefox
+        msOverflowStyle: 'none', // IE/Edge
+      }}
+      className="hide-scrollbar"
+    >
+      {/* Switcher Tema */}
+      <div style={{ position: 'fixed', top: 24, right: 24, zIndex: 100 }}>
+        <button
+          onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+          style={{
+            background: palette.accentText,
+            color: theme === 'dark' ? palette.textColor : '#1a237e',
+            border: `2px solid ${theme === 'dark' ? '#fff' : '#1a237e'}`,
+            outline: `2.5px solid ${theme === 'dark' ? '#FFD36E' : '#FBAE3C'}`,
+            outlineOffset: '2px',
+            borderRadius: 8,
+            padding: '0.5rem 1.2rem',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            boxShadow: palette.shadow,
+            letterSpacing: 1,
+            transition: 'outline-color 0.2s, border-color 0.2s',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          aria-label="Ganti tema"
+        >
+          {theme === 'dark' ? (
+            // Icon Matahari (untuk mode terang)
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a237e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          ) : (
+            // Icon Bulan (untuk mode gelap)
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={palette.textColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg>
+          )}
+        </button>
       </div>
 
-      {/* HERO */}
-      <section className="hero min-h-[60vh] bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center">
-        <div className="hero-content flex-col lg:flex-row-reverse gap-8">
-          <Image src="/next.svg" alt="Logo" width={120} height={120} className="rounded-xl shadow-lg bg-white" />
-          <div>
-            <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4">Selamat Datang di MDT BILAL BIN RABBAH</h1>
-            <p className="py-2 text-lg text-base-content max-w-xl">Madrasah Diniyah yang berkomitmen membina generasi Qur&#39;an, berakhlak mulia, dan berwawasan luas. Bergabunglah bersama kami untuk pendidikan agama yang berkualitas dan lingkungan belajar yang inspiratif.</p>
-            <a href="#daftar" className="btn btn-primary mt-4">Daftar Sekarang</a>
+      {/* Section 1: Hero */}
+      <section
+        ref={sectionRefs[0]}
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+          textAlign: 'center',
+          padding: '2rem',
+          overflow: 'hidden',
+          scrollSnapAlign: 'start',
+          transform: 'translateZ(0)',
+          contain: 'strict',
+        }}
+      >
+        <Waves1Animated idx={activeSection === 0 ? 0 : activeSection} />
+        <div
+          style={{
+            position: 'relative',
+            zIndex: 1,
+            maxWidth: 700,
+            margin: '0 auto',
+            background: palette.blockBg,
+            borderRadius: 24,
+            boxShadow: palette.shadow,
+            padding: '2.5rem 2rem',
+            backdropFilter: 'blur(4px)',
+          }}
+        >
+          <h1 style={{ fontSize: '2.7rem', fontWeight: 800, marginBottom: '1rem', color: palette.accentText, textShadow: palette.textShadow, letterSpacing: 1 }}>
+            Selamat Datang di SIAKAD MDT
+          </h1>
+          <p style={{ fontSize: '1.2rem', color: palette.textColor, textShadow: palette.textShadow, maxWidth: 600, margin: '0 auto', fontWeight: 500 }}>
+            Sistem Informasi Akademik Madrasah Diniyah Terpadu untuk kemudahan pengelolaan data dan layanan pendidikan.
+          </p>
+        </div>
+      </section>
+
+      {/* Section 2: Tentang */}
+      <section
+        ref={sectionRefs[1]}
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+          textAlign: 'center',
+          padding: '2rem',
+          overflow: 'hidden',
+          scrollSnapAlign: 'start',
+          transform: 'translateZ(0)',
+          contain: 'strict',
+        }}
+        id="tentang"
+      >
+        <Waves2Animated idx={activeSection === 1 ? 1 : activeSection} />
+        <div
+          style={{
+            position: 'relative',
+            zIndex: 1,
+            maxWidth: 700,
+            margin: '0 auto',
+            background: palette.blockBg,
+            borderRadius: 24,
+            boxShadow: palette.shadow,
+            padding: '2.5rem 2rem',
+            backdropFilter: 'blur(4px)',
+          }}
+        >
+          <h2 style={{ fontSize: '2.1rem', fontWeight: 700, marginBottom: '1rem', color: palette.accentText, textShadow: palette.textShadow, letterSpacing: 0.5 }}>
+            Tentang Kami
+          </h2>
+          <p style={{ fontSize: '1.15rem', color: palette.textColor, textShadow: palette.textShadow, fontWeight: 500 }}>
+            SIAKAD MDT adalah platform digital yang membantu pengelolaan administrasi, data siswa, guru, dan kegiatan belajar mengajar di lingkungan Madrasah Diniyah Terpadu.
+          </p>
+        </div>
+      </section>
+
+      {/* Section 3: Galeri */}
+      <section
+        ref={sectionRefs[2]}
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+          textAlign: 'center',
+          padding: '2rem',
+          overflow: 'hidden',
+          scrollSnapAlign: 'start',
+          transform: 'translateZ(0)',
+          contain: 'strict',
+        }}
+        id="galeri"
+      >
+        <Waves1Animated idx={activeSection === 2 ? 2 : activeSection} />
+        <div
+          style={{
+            position: 'relative',
+            zIndex: 1,
+            width: '100%',
+            maxWidth: 900,
+            background: palette.blockBg,
+            borderRadius: 24,
+            boxShadow: palette.shadow,
+            padding: '2.5rem 2rem',
+            backdropFilter: 'blur(4px)',
+          }}
+        >
+          <h2 style={{ fontSize: '2.1rem', fontWeight: 700, marginBottom: '2rem', color: palette.accentText, textShadow: palette.textShadow, letterSpacing: 0.5 }}>
+            Galeri
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', justifyContent: 'center' }}>
+            <div style={{ borderRadius: '1rem', background: theme === 'dark' ? 'rgba(40,40,60,0.85)' : 'rgba(255,255,255,0.92)', padding: '2rem', boxShadow: palette.shadow, color: palette.textColor, fontWeight: 500 }}>Gambar 1</div>
+            <div style={{ borderRadius: '1rem', background: theme === 'dark' ? 'rgba(40,40,60,0.85)' : 'rgba(255,255,255,0.92)', padding: '2rem', boxShadow: palette.shadow, color: palette.textColor, fontWeight: 500 }}>Gambar 2</div>
+            <div style={{ borderRadius: '1rem', background: theme === 'dark' ? 'rgba(40,40,60,0.85)' : 'rgba(255,255,255,0.92)', padding: '2rem', boxShadow: palette.shadow, color: palette.textColor, fontWeight: 500 }}>Gambar 3</div>
+            <div style={{ borderRadius: '1rem', background: theme === 'dark' ? 'rgba(40,40,60,0.85)' : 'rgba(255,255,255,0.92)', padding: '2rem', boxShadow: palette.shadow, color: palette.textColor, fontWeight: 500 }}>Gambar 4</div>
           </div>
         </div>
       </section>
 
-      {/* DESKRIPSI */}
-      <section className="py-12 bg-base-100" id="deskripsi">
-        <div className="container mx-auto px-4 max-w-3xl">
-          <h2 className="text-2xl font-bold text-center text-secondary mb-4">Tentang MDT BILAL BIN RABBAH</h2>
-          <p className="text-base md:text-lg text-center text-base-content">MDT BILAL BIN RABBAH adalah lembaga pendidikan diniyah yang berfokus pada pembentukan karakter islami, penguatan hafalan Al-Qur&#39;an, dan pengembangan wawasan keislaman bagi generasi muda. Kami menyediakan lingkungan belajar yang kondusif, guru-guru berpengalaman, serta program-program unggulan untuk mendukung tumbuh kembang anak secara holistik.</p>
+      {/* Section 4: Kontak */}
+      <section
+        ref={sectionRefs[3]}
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+          textAlign: 'center',
+          padding: '2rem',
+          overflow: 'hidden',
+          scrollSnapAlign: 'start',
+          transform: 'translateZ(0)',
+          contain: 'strict',
+        }}
+        id="kontak"
+      >
+        <Waves2Animated idx={activeSection === 3 ? 3 : activeSection} />
+        <div
+          style={{
+            position: 'relative',
+            zIndex: 1,
+            maxWidth: 600,
+            margin: '0 auto',
+            background: palette.blockBg,
+            borderRadius: 24,
+            boxShadow: palette.shadow,
+            padding: '2.5rem 2rem',
+            backdropFilter: 'blur(4px)',
+          }}
+        >
+          <h2 style={{ fontSize: '2.1rem', fontWeight: 700, marginBottom: '1rem', color: palette.accentText, textShadow: palette.textShadow, letterSpacing: 0.5 }}>
+            Kontak
+          </h2>
+          <p style={{ color: palette.textColor, marginBottom: '0.5rem', textShadow: palette.textShadow, fontWeight: 500 }}>Hubungi kami untuk informasi lebih lanjut:</p>
+          <p style={{ fontWeight: 'bold', color: palette.textColor, textShadow: palette.textShadow }}>Email: info@mdtbilal.sch.id</p>
+          <p style={{ fontWeight: 'bold', color: palette.textColor, textShadow: palette.textShadow }}>Telepon: 0812-3456-7890</p>
         </div>
       </section>
-
-      {/* GALERI */}
-      <section className="py-12 bg-base-200" id="galeri">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold text-center text-primary mb-8">Galeri Kegiatan</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 justify-center">
-            {galleryImages.map((img, i) => (
-              <div key={i} className="rounded-xl overflow-hidden shadow-lg bg-base-100">
-                <Image src={img} alt={`Galeri ${i+1}`} width={200} height={120} className="object-cover w-full h-32" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ALAMAT */}
-      <section className="py-12 bg-base-100" id="alamat">
-        <div className="container mx-auto px-4 max-w-2xl">
-          <h2 className="text-2xl font-bold text-center text-secondary mb-4">Alamat Madrasah</h2>
-          <div className="text-center text-base-content mb-4">
-            Jl. Contoh Alamat No. 123, Desa Maju, Kecamatan Makmur, Kabupaten Sejahtera, Provinsi Indonesia
-          </div>
-          {/* Google Maps Embed Placeholder */}
-          <div className="flex justify-center">
-            <div className="mockup-window border bg-base-200 w-full max-w-xl">
-              <iframe
-                title="Lokasi MDT BILAL BIN RABBAH"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3958.9999999999995!2d110.00000000000001!3d-7.000000000000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zN8KwMDAnMDAuMCJTIDExMMKwMDAnMDAuMCJF!5e0!3m2!1sid!2sid!4v1710000000000!5m2!1sid!2sid"
-                width="100%"
-                height="250"
-                style={{ border: 0 }}
-                allowFullScreen={true}
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              ></iframe>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* FOOTER */}
-      <footer className="footer footer-center p-6 bg-base-200 text-base-content/70 mt-8">
-        <aside>
-          <p className="font-semibold">{year && `© ${year} MDT BILAL BIN RABBAH`}</p>
-          <p>Kontak: 0812-3456-7890 | Email: info@mdtbilal.sch.id</p>
-        </aside>
-      </footer>
     </div>
   );
 }
