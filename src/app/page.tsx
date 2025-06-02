@@ -2,18 +2,30 @@
 import { useState, useRef, useEffect } from "react";
 
 // Helper untuk deteksi mobile
-const isMobile = typeof window !== 'undefined' && window.innerWidth < 600;
+const isSSR = typeof window === 'undefined';
 
 export default function Home() {
   // State tema lokal landing
   const [theme, setTheme] = useState('light');
   const [activeSection, setActiveSection] = useState(0);
+  // State untuk deteksi mobile screen (client only)
+  const [isMobileScreen, setIsMobileScreen] = useState(false);
+
   const sectionRefs: React.RefObject<HTMLElement | null>[] = [
     useRef<HTMLElement>(null),
     useRef<HTMLElement>(null),
     useRef<HTMLElement>(null),
     useRef<HTMLElement>(null)
   ];
+
+  // Efek deteksi mobile screen (client only)
+  useEffect(() => {
+    if (isSSR) return;
+    const checkMobile = () => setIsMobileScreen(window.innerWidth < 600);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Palet warna harmonis
   const palette = theme === 'dark'
@@ -107,6 +119,16 @@ export default function Home() {
     sectionRefs[idx].current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // Tambahkan state untuk dropdown menu mobile
+  type MenuItem = { label: string; idx: number };
+  const menuItems: MenuItem[] = [
+    { label: 'Beranda', idx: 0 },
+    { label: 'Profil', idx: 1 },
+    { label: 'Galeri', idx: 2 },
+    { label: 'Kontak', idx: 3 },
+  ];
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <div
       style={{
@@ -122,7 +144,7 @@ export default function Home() {
       }}
       className="hide-scrollbar"
     >
-      {/* Tombol Switch Tema (pojok kanan atas) */}
+      {/* Tombol Switch Tema & Dropdown Menu Mobile (pojok kanan atas) */}
       <div
         style={{
           position: 'fixed',
@@ -130,8 +152,13 @@ export default function Home() {
           right: 12,
           zIndex: 110,
           pointerEvents: 'auto',
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 8,
         }}
       >
+        {/* Tombol switch tema */}
         <button
           onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
           style={{
@@ -141,7 +168,7 @@ export default function Home() {
             outline: `2.5px solid ${theme === 'dark' ? '#FFD36E' : '#FBAE3C'}`,
             outlineOffset: '2px',
             borderRadius: 8,
-            padding: isMobile ? '0.35rem 0.7rem' : '0.5rem 1.2rem',
+            padding: isMobileScreen ? '0.35rem 0.7rem' : '0.5rem 1.2rem',
             fontWeight: 'bold',
             cursor: 'pointer',
             boxShadow: palette.shadow,
@@ -150,7 +177,7 @@ export default function Home() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: isMobile ? '1.1rem' : '1.2rem',
+            fontSize: isMobileScreen ? '1.1rem' : '1.2rem',
           }}
           aria-label="Ganti tema"
         >
@@ -162,101 +189,161 @@ export default function Home() {
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={palette.textColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg>
           )}
         </button>
+        {/* Tombol menu hamburger, hanya tampil di mobile */}
+        {isMobileScreen && (
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => setMobileMenuOpen((v) => !v)}
+              style={{
+                background: palette.accentText,
+                color: theme === 'dark' ? palette.textColor : '#1a237e',
+                border: `2px solid ${theme === 'dark' ? '#fff' : '#1a237e'}`,
+                borderRadius: 8,
+                padding: '0.35rem 0.7rem',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                boxShadow: palette.shadow,
+                fontSize: '1.1rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: 6,
+              }}
+              aria-label="Menu Navigasi"
+            >
+              {/* Ikon hamburger */}
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a237e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+            </button>
+            {/* Dropdown menu */}
+            {mobileMenuOpen && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '110%',
+                  right: 0,
+                  background: palette.blockBg,
+                  border: `2px solid ${palette.accentText}`,
+                  borderRadius: 10,
+                  boxShadow: palette.shadow,
+                  minWidth: 140,
+                  padding: '0.5rem 0',
+                  zIndex: 999,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 2,
+                }}
+              >
+                {menuItems.map((item) => (
+                  <button
+                    key={item.idx}
+                    onClick={() => {
+                      scrollToSection(item.idx);
+                      setMobileMenuOpen(false);
+                    }}
+                    style={{
+                      background: activeSection === item.idx ? palette.accentText : 'transparent',
+                      color: activeSection === item.idx ? (theme === 'dark' ? '#1a237e' : '#fff') : palette.textColor,
+                      border: 'none',
+                      borderRadius: 6,
+                      padding: '0.6rem 1.2rem',
+                      fontWeight: 600,
+                      fontSize: '1rem',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'background 0.2s, color 0.2s',
+                    }}
+                  >{item.label}</button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Tombol Navigasi Section (center, scrollable di mobile) */}
       <div
         style={{
           position: 'fixed',
-          top: isMobile ? 60 : 24,
+          top: isMobileScreen ? 60 : 24,
           left: 0,
           right: 0,
           zIndex: 100,
-          display: 'flex',
-          justifyContent: 'center',
-          gap: isMobile ? 6 : 12,
-          overflowX: isMobile ? 'auto' : 'visible',
-          padding: isMobile ? '0 4px' : '0 16px',
+          display: isMobileScreen ? 'none' : 'flex', // Sembunyikan di mobile
+          justifyContent: 'flex-start',
+          alignItems: 'center',
+          gap: 0,
+          overflowX: isMobileScreen ? 'auto' : 'visible',
+          padding: isMobileScreen ? '0 4px' : '0 16px',
           pointerEvents: 'auto',
         }}
       >
-        <div style={{ display: 'flex', gap: isMobile ? 6 : 8 }}>
-          <button
-            onClick={() => scrollToSection(0)}
-            style={{
-              background: activeSection === 0 ? palette.accentText : 'transparent',
-              color: activeSection === 0 ? (theme === 'dark' ? '#1a237e' : '#fff') : palette.textColor,
-              border: `2px solid ${palette.accentText}`,
-              outline: activeSection === 0 ? `2.5px solid ${palette.accentText}` : 'none',
-              outlineOffset: '2px',
-              borderRadius: 8,
-              padding: isMobile ? '0.35rem 0.9rem' : '0.5rem 1.1rem',
-              fontWeight: 600,
-              fontSize: isMobile ? '0.98rem' : '1rem',
-              cursor: 'pointer',
-              boxShadow: palette.shadow,
-              letterSpacing: 0.5,
-              transition: 'background 0.2s, color 0.2s, outline 0.2s',
-              minWidth: 80,
-            }}
-          >Beranda</button>
-          <button
-            onClick={() => scrollToSection(1)}
-            style={{
-              background: activeSection === 1 ? palette.accentText : 'transparent',
-              color: activeSection === 1 ? (theme === 'dark' ? '#1a237e' : '#fff') : palette.textColor,
-              border: `2px solid ${palette.accentText}`,
-              outline: activeSection === 1 ? `2.5px solid ${palette.accentText}` : 'none',
-              outlineOffset: '2px',
-              borderRadius: 8,
-              padding: isMobile ? '0.35rem 0.9rem' : '0.5rem 1.1rem',
-              fontWeight: 600,
-              fontSize: isMobile ? '0.98rem' : '1rem',
-              cursor: 'pointer',
-              boxShadow: palette.shadow,
-              letterSpacing: 0.5,
-              transition: 'background 0.2s, color 0.2s, outline 0.2s',
-              minWidth: 80,
-            }}
-          >Profil</button>
-          <button
-            onClick={() => scrollToSection(2)}
-            style={{
-              background: activeSection === 2 ? palette.accentText : 'transparent',
-              color: activeSection === 2 ? (theme === 'dark' ? '#1a237e' : '#fff') : palette.textColor,
-              border: `2px solid ${palette.accentText}`,
-              outline: activeSection === 2 ? `2.5px solid ${palette.accentText}` : 'none',
-              outlineOffset: '2px',
-              borderRadius: 8,
-              padding: isMobile ? '0.35rem 0.9rem' : '0.5rem 1.1rem',
-              fontWeight: 600,
-              fontSize: isMobile ? '0.98rem' : '1rem',
-              cursor: 'pointer',
-              boxShadow: palette.shadow,
-              letterSpacing: 0.5,
-              transition: 'background 0.2s, color 0.2s, outline 0.2s',
-              minWidth: 80,
-            }}
-          >Galeri</button>
-          <button
-            onClick={() => scrollToSection(3)}
-            style={{
-              background: activeSection === 3 ? palette.accentText : 'transparent',
-              color: activeSection === 3 ? (theme === 'dark' ? '#1a237e' : '#fff') : palette.textColor,
-              border: `2px solid ${palette.accentText}`,
-              outline: activeSection === 3 ? `2.5px solid ${palette.accentText}` : 'none',
-              outlineOffset: '2px',
-              borderRadius: 8,
-              padding: isMobile ? '0.35rem 0.9rem' : '0.5rem 1.1rem',
-              fontWeight: 600,
-              fontSize: isMobile ? '0.98rem' : '1rem',
-              cursor: 'pointer',
-              boxShadow: palette.shadow,
-              letterSpacing: 0.5,
-              transition: 'background 0.2s, color 0.2s, outline 0.2s',
-              minWidth: 80,
-            }}
-          >Kontak</button>
+        {/* Logo dan nama sekolah (hanya desktop/tablet) */}
+        {!isMobileScreen && (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            {/* Logo */}
+            <div style={{
+              width: 44, height: 44, borderRadius: '50%', background: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', marginRight: 12, border: '2px solid #FBAE3C',
+            }}>
+              <img src="/logo.png" alt="Logo" style={{ width: 38, height: 38, objectFit: 'contain', display: 'block' }} onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerHTML = '<span style=&#39;font-weight:800;font-size:1.5rem;color:#FBAE3C;&#39;>S</span>'; }} />
+            </div>
+            {/* Nama sekolah */}
+            <span style={{ fontWeight: 800, fontSize: '1.35rem', color: palette.textColor, letterSpacing: 1, textShadow: '0 1px 4px #fff, 0 0.5px 0 #FBAE3C' }}>
+              MDT BILAL BIN RABBAH
+            </span>
+          </div>
+        )}
+        <div style={{
+          display: 'flex',
+          gap: isMobileScreen ? 6 : 8,
+          position: !isMobileScreen ? 'absolute' : undefined,
+          left: !isMobileScreen ? '50%' : undefined,
+          top: !isMobileScreen ? '50%' : undefined,
+          transform: !isMobileScreen ? 'translate(-50%, -50%)' : undefined,
+          margin: isMobileScreen ? undefined : 0,
+        }}>
+          {menuItems.map((item) => (
+            <button
+              key={item.idx}
+              onClick={() => scrollToSection(item.idx)}
+              style={{
+                background: activeSection === item.idx
+                  ? (theme === 'dark' ? 'rgba(255,211,110,0.95)' : 'rgba(251,174,60,0.95)')
+                  : (theme === 'dark' ? 'rgba(24,28,42,0.85)' : 'rgba(255,255,255,0.85)'),
+                color: activeSection === item.idx
+                  ? (theme === 'dark' ? '#1a237e' : '#fff')
+                  : (theme === 'dark' ? '#FFD36E' : '#1a237e'),
+                border: `2px solid ${palette.accentText}`,
+                outline: `1.5px solid ${theme === 'dark' ? '#fff' : '#1a237e'}`,
+                outlineOffset: '1.5px',
+                borderRadius: 10,
+                padding: isMobileScreen ? '0.35rem 0.9rem' : '0.6rem 1.4rem',
+                fontWeight: 800,
+                fontSize: isMobileScreen ? '1rem' : '1.13rem',
+                cursor: 'pointer',
+                boxShadow: '0 6px 24px 0 rgba(30,30,60,0.18), 0 1.5px 8px 0 rgba(0,0,0,0.10)',
+                letterSpacing: 1,
+                transition: 'background 0.2s, color 0.2s, outline 0.2s',
+                minWidth: 90,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textShadow: theme === 'dark'
+                  ? '0 1px 4px #000, 0 0.5px 0 #FFD36E'
+                  : '0 1px 4px #fff, 0 0.5px 0 #FBAE3C',
+                backdropFilter: 'blur(4px)',
+              }}
+              onMouseOver={e => {
+                (e.currentTarget as HTMLButtonElement).style.background = activeSection === item.idx
+                  ? (theme === 'dark' ? 'rgba(255,211,110,1)' : 'rgba(251,174,60,1)')
+                  : (theme === 'dark' ? 'rgba(40,44,60,0.95)' : 'rgba(255,255,255,1)');
+              }}
+              onMouseOut={e => {
+                (e.currentTarget as HTMLButtonElement).style.background = activeSection === item.idx
+                  ? (theme === 'dark' ? 'rgba(255,211,110,0.95)' : 'rgba(251,174,60,0.95)')
+                  : (theme === 'dark' ? 'rgba(24,28,42,0.85)' : 'rgba(255,255,255,0.85)');
+              }}
+            >{item.label}</button>
+          ))}
         </div>
       </div>
 
@@ -271,48 +358,117 @@ export default function Home() {
           justifyContent: 'center',
           position: 'relative',
           textAlign: 'center',
-          padding: isMobile ? '2.5rem 0.5rem 1.5rem 0.5rem' : '2rem 1rem',
-          marginTop: isMobile ? 80 : 0,
+          padding: isMobileScreen ? '2.5rem 0.5rem 1.5rem 0.5rem' : '3.5rem 1rem 2.5rem 1rem',
+          marginTop: isMobileScreen ? 80 : 0,
           overflow: 'hidden',
           scrollSnapAlign: 'start',
           transform: 'translateZ(0)',
           contain: 'strict',
         }}
       >
+        {/* Ornamen background islami transparan */}
+        {!isMobileScreen && (
+          <svg width="340" height="340" viewBox="0 0 340 340" fill="none" style={{position:'absolute',top:-60,left:-60,opacity:0.13,zIndex:0}}><circle cx="170" cy="170" r="170" fill="#FBAE3C"/><path d="M170 60l18.5 56.5h59.5l-48 34.5 18.5 56.5-48-34.5-48 34.5 18.5-56.5-48-34.5h59.5z" fill="#FFD36E"/></svg>
+        )}
         <Waves1Animated idx={activeSection === 0 ? 0 : activeSection} />
         <div
           style={{
             position: 'relative',
             zIndex: 1,
-            maxWidth: 700,
+            maxWidth: 800,
             margin: '0 auto',
             background: palette.blockBg,
-            borderRadius: 24,
-            boxShadow: palette.shadow,
-            padding: '2.5rem 1rem',
-            backdropFilter: 'blur(4px)',
+            borderRadius: 32,
+            boxShadow: '0 8px 40px 0 rgba(30,30,60,0.13), 0 2px 12px 0 rgba(0,0,0,0.10)',
+            padding: isMobileScreen ? '2.2rem 1rem' : '3.2rem 2.5rem 2.5rem 2.5rem',
+            backdropFilter: 'blur(6px)',
+            display: 'flex',
+            flexDirection: isMobileScreen ? 'column' : 'row',
+            alignItems: 'center',
+            gap: isMobileScreen ? 0 : 36,
           }}
         >
-          <h1 style={{ fontSize: '2.7rem', fontWeight: 800, marginBottom: '1rem', color: palette.accentText, textShadow: palette.textShadow, letterSpacing: 1 }}>
-            Selamat Datang di Sekolah Kami
-          </h1>
-          <p style={{ fontSize: '1.2rem', color: palette.textColor, textShadow: palette.textShadow, maxWidth: 600, margin: '0 auto', fontWeight: 500 }}>
-            Sekolah unggulan yang berkomitmen membentuk generasi cerdas, berakhlak mulia, dan siap menghadapi masa depan. Temukan lingkungan belajar yang inspiratif, fasilitas lengkap, dan program pendidikan terbaik untuk putra-putri Anda.
-          </p>
-          <a href="#profil" style={{
-            display: 'inline-block',
-            marginTop: 24,
-            padding: '0.75rem 2rem',
-            background: palette.accentText,
-            color: palette.textColor,
-            borderRadius: 8,
-            fontWeight: 700,
-            fontSize: '1.1rem',
-            textDecoration: 'none',
-            boxShadow: palette.shadow,
-            border: `2px solid ${palette.accentText}`,
-            transition: 'background 0.2s, color 0.2s',
-          }}>Lihat Info PPDB</a>
+          {/* Ilustrasi anak belajar */}
+          {!isMobileScreen && (
+            <div style={{flex:'0 0 220px',display:'flex',alignItems:'center',justifyContent:'center'}}>
+              <svg width="180" height="180" viewBox="0 0 180 180" fill="none"><ellipse cx="90" cy="150" rx="60" ry="18" fill="#FBAE3C" opacity=".18"/><circle cx="90" cy="80" r="48" fill="#FFD36E"/><ellipse cx="90" cy="110" rx="32" ry="12" fill="#fff" opacity=".25"/><rect x="70" y="60" width="40" height="40" rx="20" fill="#fff"/><ellipse cx="90" cy="80" rx="12" ry="16" fill="#FBAE3C"/><ellipse cx="90" cy="80" rx="6" ry="8" fill="#fff"/></svg>
+            </div>
+          )}
+          <div style={{flex:1}}>
+            {/* Badge tahun ajaran baru */}
+            <div style={{display:'inline-block',background:'linear-gradient(90deg,#FFD36E,#FBAE3C)',color:'#1a237e',fontWeight:700,fontSize:'1.05rem',borderRadius:8,padding:'0.25rem 1.1rem',marginBottom:18,boxShadow:'0 2px 8px rgba(251,174,60,0.13)'}}>
+              PPDB {new Date().getFullYear()}/{(new Date().getFullYear()+1).toString().slice(2)}
+            </div>
+            {/* Judul gradasi dan underline animasi */}
+            <h1 style={{
+              fontSize: isMobileScreen ? '2rem' : '2.7rem',
+              fontWeight: 900,
+              marginBottom: 8,
+              background: 'linear-gradient(90deg,#FFD36E 30%,#FBAE3C 70%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              letterSpacing: 1.5,
+              position: 'relative',
+              lineHeight: 1.13,
+              textShadow: '0 2px 12px rgba(251,174,60,0.13)',
+              display: 'inline-block',
+            }}>
+              Menerima Peserta Didik Baru
+              <span style={{display:'block',height:5,marginTop:6,background:'linear-gradient(90deg,#FFD36E,#FBAE3C)',borderRadius:3,animation:'underlineAnim 2.2s infinite alternate'}}></span>
+            </h1>
+            <style>{`@keyframes underlineAnim{0%{width:40%}100%{width:100%}}`}</style>
+            {/* Deskripsi poin keunggulan */}
+            <ul style={{listStyle:'none',padding:0,margin:'18px 0 0 0',textAlign:'left',maxWidth:480,marginLeft:'auto',marginRight:'auto'}}>
+              <li style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
+                <span style={{fontSize:'1.3rem'}}>🌱</span>
+                <span style={{fontSize:'1.08rem',color:palette.textColor,fontWeight:500}}>Lingkungan Islami & suasana kekeluargaan</span>
+              </li>
+              <li style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
+                <span style={{fontSize:'1.3rem'}}>👨‍🏫</span>
+                <span style={{fontSize:'1.08rem',color:palette.textColor,fontWeight:500}}>Pembimbingan agama & akhlak dasar</span>
+              </li>
+              <li style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
+                <span style={{fontSize:'1.3rem'}}>📚</span>
+                <span style={{fontSize:'1.08rem',color:palette.textColor,fontWeight:500}}>Belajar Al-Qur&#39;an, Ibadah, dan Ilmu Dasar</span>
+              </li>
+              <li style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
+                <span style={{fontSize:'1.3rem'}}>💸</span>
+                <span style={{fontSize:'1.08rem',color:palette.textColor,fontWeight:500}}>Biaya pendidikan sangat ringan & terjangkau</span>
+              </li>
+            </ul>
+            {/* Ajakan & tombol */}
+            <div style={{marginTop: isMobileScreen ? 22 : 32}}>
+              <p style={{fontSize:'1.08rem',color:palette.textColor,textShadow:palette.textShadow,fontWeight:500,marginBottom:14}}>Untuk informasi pendaftaran, silakan klik tombol di bawah ini atau hubungi kami.</p>
+              <a href="#profil" style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 10,
+                marginTop: 0,
+                padding: isMobileScreen ? '0.7rem 1.5rem' : '1rem 2.5rem',
+                background: 'linear-gradient(90deg,#FFD36E,#FBAE3C)',
+                color: '#1a237e',
+                borderRadius: 12,
+                fontWeight: 800,
+                fontSize: isMobileScreen ? '1.08rem' : '1.18rem',
+                textDecoration: 'none',
+                boxShadow: '0 4px 18px 0 rgba(251,174,60,0.13)',
+                border: '2px solid #FFD36E',
+                transition: 'background 0.2s, color 0.2s, box-shadow 0.2s',
+              }}
+                onMouseOver={e => {
+                  (e.currentTarget as HTMLAnchorElement).style.background = 'linear-gradient(90deg,#FBAE3C,#FFD36E)';
+                  (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 6px 24px 0 rgba(251,174,60,0.18)';
+                }}
+                onMouseOut={e => {
+                  (e.currentTarget as HTMLAnchorElement).style.background = 'linear-gradient(90deg,#FFD36E,#FBAE3C)';
+                  (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 4px 18px 0 rgba(251,174,60,0.13)';
+                }}
+              >
+                Lihat Info PPDB
+                <svg width="22" height="22" fill="none" stroke="#1a237e" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -397,7 +553,7 @@ export default function Home() {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: window.innerWidth < 600 ? '1fr' : 'repeat(2, 1fr)',
+              gridTemplateColumns: isMobileScreen ? '1fr' : 'repeat(2, 1fr)',
               gap: '1rem',
               justifyContent: 'center',
             }}
