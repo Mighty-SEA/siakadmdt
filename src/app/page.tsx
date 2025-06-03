@@ -1,5 +1,6 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
+import Image from 'next/image';
 
 // Helper untuk deteksi mobile
 const isSSR = typeof window === 'undefined';
@@ -11,12 +12,16 @@ export default function Home() {
   // State untuk deteksi mobile screen (client only)
   const [isMobileScreen, setIsMobileScreen] = useState(false);
 
-  const sectionRefs: React.RefObject<HTMLElement | null>[] = [
-    useRef<HTMLElement>(null),
-    useRef<HTMLElement>(null),
-    useRef<HTMLElement>(null),
-    useRef<HTMLElement>(null)
-  ];
+  const sectionRef0 = useRef<HTMLElement>(null);
+  const sectionRef1 = useRef<HTMLElement>(null);
+  const sectionRef2 = useRef<HTMLElement>(null);
+  const sectionRef3 = useRef<HTMLElement>(null);
+  const sectionRefs: React.RefObject<HTMLElement | null>[] = useMemo(() => [
+    sectionRef0,
+    sectionRef1,
+    sectionRef2,
+    sectionRef3
+  ], []);
 
   // Efek deteksi mobile screen (client only)
   useEffect(() => {
@@ -90,7 +95,7 @@ export default function Home() {
       observers.push(observer);
     });
     return () => observers.forEach(o => o.disconnect());
-  }, [theme]);
+  }, [theme, sectionRefs]);
 
   // Komponen SVG dengan animasi transisi warna
   function Waves1Animated({ idx }: { idx: number }) {
@@ -281,7 +286,7 @@ export default function Home() {
         {!isMobileScreen && (
           <div style={{ display: 'flex', alignItems: 'center' }}>
             {/* Logo */}
-            <img src="/android-chrome-512x512.png" alt="Logo" style={{ width: 60, height: 60, objectFit: 'contain', display: 'block', marginRight: 18 }} onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerHTML = '<span style=\'font-weight:800;font-size:2.2rem;color:#FBAE3C;\'>S</span>'; }} />
+            <Image src="/android-chrome-512x512.png" alt="Logo" width={60} height={60} style={{ objectFit: 'contain', display: 'block', marginRight: 18 }} unoptimized />
             {/* Nama sekolah */}
             <span style={{ fontWeight: 800, fontSize: '1.35rem', color: palette.textColor, letterSpacing: 1, textShadow: '0 1px 4px #fff, 0 0.5px 0 #FBAE3C' }}>
               MDT BILAL BIN RABBAH
@@ -387,7 +392,7 @@ export default function Home() {
           {/* Ilustrasi anak belajar */}
           {!isMobileScreen && (
             <div style={{flex:'0 0 220px',display:'flex',alignItems:'center',justifyContent:'center'}}>
-              <img src="/android-chrome-512x512.png" alt="Logo" style={{ width: 160, height: 160, objectFit: 'contain', display: 'block' }} />
+              <Image src="/android-chrome-512x512.png" alt="Logo" width={160} height={160} style={{ objectFit: 'contain', display: 'block' }} />
             </div>
           )}
           <div style={{flex:1}}>
@@ -471,6 +476,10 @@ export default function Home() {
       {/* Section 2: Profil Sekolah */}
       <section
         ref={sectionRefs[1]}
+        id="profil-madrasah-baleendah-malakasari"
+        className="profil-madrasah section-profil-sekolah madrasah-di-baleendah madrasah-di-malakasari"
+        itemScope
+        itemType="https://schema.org/School"
         style={{
           minHeight: '100vh',
           display: 'flex',
@@ -485,28 +494,88 @@ export default function Home() {
           transform: 'translateZ(0)',
           contain: 'strict',
         }}
-        id="profil"
       >
         <Waves2Animated idx={activeSection === 1 ? 1 : activeSection} />
         <div
           style={{
             position: 'relative',
             zIndex: 1,
-            maxWidth: 700,
+            maxWidth: 800,
             margin: '0 auto',
             background: palette.blockBg,
             borderRadius: 24,
             boxShadow: palette.shadow,
-            padding: '2.5rem 1rem',
+            padding: '2.8rem 1.5rem 2.5rem 1.5rem',
             backdropFilter: 'blur(4px)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
           }}
         >
-          <h2 style={{ fontSize: '2.1rem', fontWeight: 700, marginBottom: '1rem', color: palette.accentText, textShadow: palette.textShadow, letterSpacing: 0.5 }}>
-            Profil Sekolah
+          <h2 itemProp="name" style={{ fontSize: '2.2rem', fontWeight: 800, marginBottom: '1.2rem', color: palette.accentText, textShadow: palette.textShadow, letterSpacing: 0.5, display:'flex',alignItems:'center',gap:10 }}>
+            <svg width="32" height="32" fill="none" stroke={palette.accentText} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 13v7m0 0H7m5 0h5"/></svg>
+            Profil MDT Bilal Bin Rabbah
           </h2>
-          <p style={{ fontSize: '1.15rem', color: palette.textColor, textShadow: palette.textShadow, fontWeight: 500 }}>
-            Sekolah kami berkomitmen mencetak generasi cerdas, berakhlak mulia, dan berwawasan global. Didukung tenaga pendidik profesional, fasilitas lengkap, serta lingkungan belajar yang nyaman dan islami.
+          <div style={{height:2,background:`linear-gradient(90deg,${palette.accentText},${palette.accentText}33,transparent)`,margin:'0 auto 22px auto',width:'60%',borderRadius:2}}></div>
+          <p itemProp="description" style={{ fontSize: '1.18rem', color: palette.textColor, textShadow: palette.textShadow, fontWeight: 500, marginBottom: 18, lineHeight: 1.7 }}>
+            <strong>Madrasah Diniyah Takmiliyah (MDT) Bilal Bin Rabbah</strong> adalah <strong>madrasah di Desa Malakasari</strong>, Kecamatan Baleendah, yang berperan penting dalam membentuk karakter, memperdalam pemahaman agama, dan menanamkan nilai-nilai akhlak mulia bagi generasi muda. MDT hadir sebagai pelengkap pendidikan formal, memberikan ruang yang lebih luas untuk pembelajaran Al-Qur&#39;an, aqidah, ibadah, akhlak, serta bahasa Arab secara terstruktur dan berjenjang.
           </p>
+          {/* Visi dan Misi */}
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            gap: isMobileScreen ? '0.7rem' : '1.5rem',
+            marginBottom: 8,
+            width: '100%',
+          }}>
+            {/* Card Visi */}
+            <div style={{
+              minWidth: isMobileScreen ? 180 : 220,
+              maxWidth: isMobileScreen ? 340 : 260,
+              background: theme === 'dark' ? '#23263a' : '#fffbe8',
+              borderRadius: 14,
+              boxShadow: '0 2px 12px #0001',
+              padding: isMobileScreen ? '1rem 0.7rem' : '1.2rem 1.3rem',
+              textAlign: 'left',
+              flex: 1,
+            }}>
+              <strong style={{ color: palette.accentText, fontWeight: 700, fontSize: isMobileScreen ? '1.08rem' : '1.15rem', letterSpacing: 0.5 }}>Visi</strong>
+            </div>
+            {/* Card Misi */}
+            <div style={{
+              minWidth: isMobileScreen ? 180 : 220,
+              maxWidth: isMobileScreen ? 340 : 260,
+              background: theme === 'dark' ? '#23263a' : '#fffbe8',
+              borderRadius: 14,
+              boxShadow: '0 2px 12px #0001',
+              padding: isMobileScreen ? '1rem 0.7rem' : '1.2rem 1.3rem',
+              textAlign: 'left',
+              flex: 1,
+            }}>
+              <strong style={{ color: palette.accentText, fontWeight: 700, fontSize: isMobileScreen ? '1.08rem' : '1.15rem', letterSpacing: 0.5 }}>Misi</strong>
+            </div>
+            {/* Card Kurikulum */}
+            <div style={{
+              minWidth: isMobileScreen ? 180 : 220,
+              maxWidth: isMobileScreen ? 340 : 260,
+              background: theme === 'dark' ? '#23263a' : '#fffbe8',
+              borderRadius: 14,
+              boxShadow: '0 2px 12px #0001',
+              padding: isMobileScreen ? '1rem 0.7rem' : '1.2rem 1.3rem',
+              textAlign: 'left',
+              flex: 1,
+            }}>
+              <strong style={{ color: palette.accentText, fontWeight: 700, fontSize: isMobileScreen ? '1.08rem' : '1.15rem', letterSpacing: 0.5 }}>Kurikulum</strong>
+              <ul style={{margin:'10px 0 0 0',padding:0,fontSize:isMobileScreen?'0.98rem':'1.05rem',color:palette.textColor}}>
+                <li>• Al-Qur&#39;an & Tajwid</li>
+                <li>• Aqidah & Akhlak</li>
+                <li>• Fiqih & Ibadah</li>
+                <li>• Sejarah Islam</li>
+                <li>• Bahasa Arab</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -658,16 +727,22 @@ export default function Home() {
             padding: isMobileScreen ? 0 : '0 0 0 0.5rem',
             minHeight: isMobileScreen ? 220 : 340,
           }}>
+            <div className="mapouter" style={{ position: 'relative', textAlign: 'right', width: isMobileScreen ? '100%' : 500, height: isMobileScreen ? 220 : 450 }}>
+              <div className="gmap_canvas" style={{ overflow: 'hidden', background: 'none', width: '100%', height: '100%' }}>
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d63338.96423483344!2d107.5890736!3d-7.0168981!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e68e9e2e2e2e2e3%3A0x1234567890abcdef!2sMDT%20Bilal%20Bin%20Rabbah!5e0!3m2!1sid!2sid!4v1710000000000!5m2!1sid!2sid"
-              width="100%"
-              height={isMobileScreen ? "220" : "340"}
-              style={{ border: 0, borderRadius: 14 }}
+                  width={isMobileScreen ? '100%' : '500px'}
+                  height={isMobileScreen ? '220px' : '450px'}
+                  style={{ border: 0 }}
               allowFullScreen
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
+                  src="https://www.google.com/maps/embed/v1/place?q=mdt%20bilal%20bin%20rabbah&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8"
               title="Lokasi MDT Bilal Bin Rabbah"
             ></iframe>
+              </div>
+              <a href="https://norsumediagroup.com/embed-google-map-website-free" target="_blank" rel="noopener noreferrer" className="gme-generated-link" style={{ display: 'none' }}>Embed Map on Website for Free</a>
+              <style>{`.mapouter{position:relative;text-align:right;}.gmap_canvas{overflow:hidden;background:none!important;}.gmap_canvas iframe{width:100%;height:100%;}.mapouter a{display:block;font-size:0.85em;text-align:center;padding:5px 0;color:#6c757d;text-decoration:none;}.gme-generated-link{display:none!important;}`}</style>
+            </div>
           </div>
         </div>
       </section>

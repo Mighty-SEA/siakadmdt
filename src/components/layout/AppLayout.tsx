@@ -97,12 +97,12 @@ export default function AppLayout({ children }: AppLayoutProps) {
   useEffect(() => {
     if (pathname === "/") return;
     // ...logic lama inisialisasi tema, user session, dsb
-  }, [/* dependency lama + pathname */]);
+  }, [pathname]);
 
   useEffect(() => {
     if (pathname === "/") return;
     // ...logic lama cek user dari cookie dan redirect ke login
-  }, [/* dependency lama + pathname */]);
+  }, [pathname]);
 
   // ...semua useEffect/useCallback lain yang melakukan cek login/redirect, tambahkan pengecualian serupa
 

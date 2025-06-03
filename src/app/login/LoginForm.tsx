@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Cookies from "js-cookie";
+import Image from 'next/image';
 
 export default function LoginForm() {
   const [form, setForm] = useState({ username: "", password: "" });
@@ -204,7 +205,7 @@ export default function LoginForm() {
         </select>
       </div>
       {/* Logo besar di atas form */}
-      <img src="/android-chrome-512x512.png" alt="Logo" style={{ width: 90, height: 90, marginBottom: 18, borderRadius: 20, boxShadow: '0 4px 32px 0 rgba(251,174,60,0.18)' }} />
+      <Image src="/android-chrome-512x512.png" alt="Logo" width={90} height={90} style={{ marginBottom: 18, borderRadius: 20, boxShadow: '0 4px 32px 0 rgba(251,174,60,0.18)' }} />
       <form onSubmit={handleSubmit} className="bg-base-100 p-8 rounded-3xl shadow-2xl w-full max-w-md border border-yellow-200" style={{backdropFilter:'blur(6px)', boxShadow:'0 8px 40px 0 rgba(251,174,60,0.13), 0 2px 12px 0 rgba(0,0,0,0.10)'}}>
         <h1 className="text-3xl font-extrabold mb-6 text-center text-yellow-600" style={{letterSpacing:1}}>Login Admin</h1>
         {error && <div className="alert alert-error mb-4 text-sm font-semibold">{error}</div>}
