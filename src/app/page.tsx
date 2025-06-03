@@ -134,6 +134,30 @@ export default function Home() {
   ];
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const [mobileCardIndex, setMobileCardIndex] = useState(0);
+  const cardList = [
+    {
+      title: 'Visi',
+      content: null,
+    },
+    {
+      title: 'Misi',
+      content: null,
+    },
+    {
+      title: 'Kurikulum',
+      content: (
+        <ul style={{margin:'10px 0 0 0',padding:0,fontSize:'0.98rem',color:palette.textColor}}>
+          <li>• Al-Qur&#39;an & Tajwid</li>
+          <li>• Aqidah & Akhlak</li>
+          <li>• Fiqih & Ibadah</li>
+          <li>• Sejarah Islam</li>
+          <li>• Bahasa Arab</li>
+        </ul>
+      ),
+    },
+  ];
+
   return (
     <div
       style={{
@@ -517,64 +541,145 @@ export default function Home() {
             Profil MDT Bilal Bin Rabbah
           </h2>
           <div style={{height:2,background:`linear-gradient(90deg,${palette.accentText},${palette.accentText}33,transparent)`,margin:'0 auto 22px auto',width:'60%',borderRadius:2}}></div>
-          <p itemProp="description" style={{ fontSize: '1.18rem', color: palette.textColor, textShadow: palette.textShadow, fontWeight: 500, marginBottom: 18, lineHeight: 1.7 }}>
+          <p itemProp="description" style={{ fontSize: '1.18rem', color: palette.textColor, textShadow: palette.textShadow, fontWeight: 500, marginBottom: 18, lineHeight: 1.7, textAlign: 'justify' }}>
             <strong>Madrasah Diniyah Takmiliyah (MDT) Bilal Bin Rabbah</strong> adalah <strong>madrasah di Desa Malakasari</strong>, Kecamatan Baleendah, yang berperan penting dalam membentuk karakter, memperdalam pemahaman agama, dan menanamkan nilai-nilai akhlak mulia bagi generasi muda. MDT hadir sebagai pelengkap pendidikan formal, memberikan ruang yang lebih luas untuk pembelajaran Al-Qur&#39;an, aqidah, ibadah, akhlak, serta bahasa Arab secara terstruktur dan berjenjang.
           </p>
           {/* Visi dan Misi */}
           <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
+            display: isMobileScreen ? 'block' : 'flex',
+            flexWrap: isMobileScreen ? undefined : 'wrap',
             justifyContent: 'center',
-            gap: isMobileScreen ? '0.7rem' : '1.5rem',
+            gap: isMobileScreen ? undefined : '1.5rem',
             marginBottom: 8,
             width: '100%',
+            position: 'relative',
           }}>
-            {/* Card Visi */}
-            <div style={{
-              minWidth: isMobileScreen ? 180 : 220,
-              maxWidth: isMobileScreen ? 340 : 260,
-              background: theme === 'dark' ? '#23263a' : '#fffbe8',
-              borderRadius: 14,
-              boxShadow: '0 2px 12px #0001',
-              padding: isMobileScreen ? '1rem 0.7rem' : '1.2rem 1.3rem',
-              textAlign: 'left',
-              flex: 1,
-            }}>
-              <strong style={{ color: palette.accentText, fontWeight: 700, fontSize: isMobileScreen ? '1.08rem' : '1.15rem', letterSpacing: 0.5 }}>Visi</strong>
-            </div>
-            {/* Card Misi */}
-            <div style={{
-              minWidth: isMobileScreen ? 180 : 220,
-              maxWidth: isMobileScreen ? 340 : 260,
-              background: theme === 'dark' ? '#23263a' : '#fffbe8',
-              borderRadius: 14,
-              boxShadow: '0 2px 12px #0001',
-              padding: isMobileScreen ? '1rem 0.7rem' : '1.2rem 1.3rem',
-              textAlign: 'left',
-              flex: 1,
-            }}>
-              <strong style={{ color: palette.accentText, fontWeight: 700, fontSize: isMobileScreen ? '1.08rem' : '1.15rem', letterSpacing: 0.5 }}>Misi</strong>
-            </div>
-            {/* Card Kurikulum */}
-            <div style={{
-              minWidth: isMobileScreen ? 180 : 220,
-              maxWidth: isMobileScreen ? 340 : 260,
-              background: theme === 'dark' ? '#23263a' : '#fffbe8',
-              borderRadius: 14,
-              boxShadow: '0 2px 12px #0001',
-              padding: isMobileScreen ? '1rem 0.7rem' : '1.2rem 1.3rem',
-              textAlign: 'left',
-              flex: 1,
-            }}>
-              <strong style={{ color: palette.accentText, fontWeight: 700, fontSize: isMobileScreen ? '1.08rem' : '1.15rem', letterSpacing: 0.5 }}>Kurikulum</strong>
-              <ul style={{margin:'10px 0 0 0',padding:0,fontSize:isMobileScreen?'0.98rem':'1.05rem',color:palette.textColor}}>
-                <li>• Al-Qur&#39;an & Tajwid</li>
-                <li>• Aqidah & Akhlak</li>
-                <li>• Fiqih & Ibadah</li>
-                <li>• Sejarah Islam</li>
-                <li>• Bahasa Arab</li>
-              </ul>
-            </div>
+            {/* MOBILE SLIDER */}
+            {isMobileScreen ? (
+              <div style={{ position: 'relative', width: '100%', maxWidth: 340, margin: '0 auto' }}>
+                <div style={{
+                  minWidth: 180,
+                  maxWidth: 340,
+                  background: theme === 'dark' ? '#23263a' : '#fffbe8',
+                  borderRadius: 14,
+                  boxShadow: '0 2px 12px #0001',
+                  padding: '1rem 0.7rem',
+                  textAlign: 'left',
+                  margin: '0 auto',
+                  transition: 'all 0.3s',
+                }}>
+                  <strong style={{ color: palette.accentText, fontWeight: 700, fontSize: '1.08rem', letterSpacing: 0.5 }}>{cardList[mobileCardIndex].title}</strong>
+                  {cardList[mobileCardIndex].content}
+                </div>
+                {/* Navigasi panah */}
+                <button
+                  onClick={() => setMobileCardIndex((prev) => prev === 0 ? cardList.length - 1 : prev - 1)}
+                  style={{
+                    position: 'absolute',
+                    left: -18,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: palette.accentText,
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: 32,
+                    height: 32,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 2px 8px #0002',
+                    cursor: 'pointer',
+                    zIndex: 2,
+                  }}
+                  aria-label="Sebelumnya"
+                >
+                  <svg width="18" height="18" fill="none" stroke="#1a237e" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+                </button>
+                <button
+                  onClick={() => setMobileCardIndex((prev) => prev === cardList.length - 1 ? 0 : prev + 1)}
+                  style={{
+                    position: 'absolute',
+                    right: -18,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: palette.accentText,
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: 32,
+                    height: 32,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 2px 8px #0002',
+                    cursor: 'pointer',
+                    zIndex: 2,
+                  }}
+                  aria-label="Berikutnya"
+                >
+                  <svg width="18" height="18" fill="none" stroke="#1a237e" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+                {/* Indikator bulat */}
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 12 }}>
+                  {cardList.map((_, idx) => (
+                    <span key={idx} style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      background: idx === mobileCardIndex ? palette.accentText : '#ccc',
+                      display: 'inline-block',
+                      transition: 'background 0.2s',
+                    }} />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              // DESKTOP: 3 card sejajar
+              <>
+                <div style={{
+                  minWidth: 220,
+                  maxWidth: 260,
+                  background: theme === 'dark' ? '#23263a' : '#fffbe8',
+                  borderRadius: 14,
+                  boxShadow: '0 2px 12px #0001',
+                  padding: '1.2rem 1.3rem',
+                  textAlign: 'left',
+                  flex: 1,
+                }}>
+                  <strong style={{ color: palette.accentText, fontWeight: 700, fontSize: '1.15rem', letterSpacing: 0.5 }}>Visi</strong>
+                </div>
+                <div style={{
+                  minWidth: 220,
+                  maxWidth: 260,
+                  background: theme === 'dark' ? '#23263a' : '#fffbe8',
+                  borderRadius: 14,
+                  boxShadow: '0 2px 12px #0001',
+                  padding: '1.2rem 1.3rem',
+                  textAlign: 'left',
+                  flex: 1,
+                }}>
+                  <strong style={{ color: palette.accentText, fontWeight: 700, fontSize: '1.15rem', letterSpacing: 0.5 }}>Misi</strong>
+                </div>
+                <div style={{
+                  minWidth: 220,
+                  maxWidth: 260,
+                  background: theme === 'dark' ? '#23263a' : '#fffbe8',
+                  borderRadius: 14,
+                  boxShadow: '0 2px 12px #0001',
+                  padding: '1.2rem 1.3rem',
+                  textAlign: 'left',
+                  flex: 1,
+                }}>
+                  <strong style={{ color: palette.accentText, fontWeight: 700, fontSize: '1.15rem', letterSpacing: 0.5 }}>Kurikulum</strong>
+                  <ul style={{margin:'10px 0 0 0',padding:0,fontSize:'1.05rem',color:palette.textColor}}>
+                    <li>• Al-Qur&#39;an & Tajwid</li>
+                    <li>• Aqidah & Akhlak</li>
+                    <li>• Fiqih & Ibadah</li>
+                    <li>• Sejarah Islam</li>
+                    <li>• Bahasa Arab</li>
+                  </ul>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -641,6 +746,10 @@ export default function Home() {
       {/* Section 4: Kontak */}
       <section
         ref={sectionRefs[3]}
+        id="kontak"
+        className="section-kontak-lokasi kontak-madrasah madrasah-di-malakasari madrasah-di-baleendah"
+        itemScope
+        itemType="https://schema.org/Organization"
         style={{
           minHeight: '100vh',
           display: 'flex',
@@ -655,7 +764,6 @@ export default function Home() {
           transform: 'translateZ(0)',
           contain: 'strict',
         }}
-        id="kontak"
       >
         <Waves2Animated idx={activeSection === 3 ? 3 : activeSection} />
         <div
@@ -664,11 +772,10 @@ export default function Home() {
             zIndex: 1,
             maxWidth: 900,
             margin: '0 auto',
-            background: palette.blockBg,
+            background: '#fff',
             borderRadius: 24,
-            boxShadow: palette.shadow,
-            padding: isMobileScreen ? '2.5rem 0.5rem' : '2.5rem 2.5rem',
-            backdropFilter: 'blur(4px)',
+            boxShadow: '0 4px 32px rgba(30,136,229,0.10)',
+            padding: isMobileScreen ? '1.2rem 0.7rem' : '2.5rem',
             display: 'flex',
             flexDirection: isMobileScreen ? 'column' : 'row',
             gap: isMobileScreen ? 24 : 36,
@@ -676,43 +783,45 @@ export default function Home() {
             justifyContent: 'center',
           }}
         >
-          {/* Info Kontak */}
+          {/* Info Kontak & Lokasi */}
           <div style={{
             flex: 1,
-            background: 'transparent',
-            borderRadius: 0,
-            boxShadow: 'none',
-            padding: isMobileScreen ? 0 : '0 0.5rem 0 0',
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center',
             justifyContent: 'center',
-            marginBottom: isMobileScreen ? 18 : 0,
+            alignItems: isMobileScreen ? 'center' : 'flex-start',
+            padding: isMobileScreen ? 0 : '0 1.2rem 0 0',
+            marginBottom: isMobileScreen ? 0 : 0,
           }}>
-            <h2 style={{ fontSize: '2.1rem', fontWeight: 800, marginBottom: '1.2rem', color: palette.accentText, textShadow: palette.textShadow, letterSpacing: 0.5, display:'flex',alignItems:'center',justifyContent:'center',gap:10 }}>
-              <svg width="28" height="28" fill="none" stroke={palette.accentText} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M21 10.5C21 16.5 12 22 12 22C12 22 3 16.5 3 10.5C3 7.18629 5.68629 4.5 9 4.5C10.6569 4.5 12 5.84315 12 7.5C12 5.84315 13.3431 4.5 15 4.5C18.3137 4.5 21 7.18629 21 10.5Z"/><circle cx="12" cy="10.5" r="2.5"/></svg>
-            Kontak & Lokasi
-          </h2>
-            <div style={{height:2,background:`linear-gradient(90deg,${palette.accentText},${palette.accentText}33,transparent)`,margin:'0 auto 18px auto',width:'60%',borderRadius:2}}></div>
-            <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
-              <span style={{fontWeight:'bold',fontSize:'1.18rem',color:palette.textColor,letterSpacing:0.5,background:`linear-gradient(90deg,${palette.accentText}22,transparent)`,padding:'2px 16px',borderRadius:8,boxShadow:'0 1px 4px #0001'}}>
-                MDT Bilal Bin Rabbah
-              </span>
-              <span style={{color:palette.textColor, textShadow:palette.textShadow, fontSize:'1.05rem',marginTop:2,display:'flex',alignItems:'center',gap:6}}>
-                <svg width="18" height="18" fill="none" stroke={palette.accentText} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M21 10.5C21 16.5 12 22 12 22C12 22 3 16.5 3 10.5C3 7.18629 5.68629 4.5 9 4.5C10.6569 4.5 12 5.84315 12 7.5C12 5.84315 13.3431 4.5 15 4.5C18.3137 4.5 21 7.18629 21 10.5Z"/><circle cx="12" cy="10.5" r="2.5"/></svg>
-                Jl. Pasir Pogor Kp. Pasirpogor No.Rt 05/03, Malakasari, Kec. Baleendah, Kabupaten Bandung, Jawa Barat 40375
-              </span>
-              <span style={{display:'flex',alignItems:'center',gap:6,color:palette.textColor,fontSize:'1.05rem',marginTop:2}}>
-                <svg width="18" height="18" fill="none" stroke="#25D366" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M21.67 20.13l-1.51-4.36a2.13 2.13 0 0 0-2-1.45h-1.11a2.13 2.13 0 0 0-2 1.45l-1.51 4.36a2.13 2.13 0 0 0 2 2.87h1.11a2.13 2.13 0 0 0 2-2.87z"/><circle cx="12" cy="12" r="10"/></svg>
-                <span style={{fontWeight:600}}>0812-3456-7890</span>
-              </span>
-              <a href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems:'center', gap:8, marginTop: 10, color: '#fff', fontWeight: 700, textDecoration: 'none', fontSize: '1.08rem', border:'2px solid #25D366', borderRadius:8, padding:'6px 18px', background:'#25D366', boxShadow:'0 2px 8px #25D36622', transition:'background 0.2s, color 0.2s' }}
-                onMouseOver={e => {e.currentTarget.style.background='#128C7E';e.currentTarget.style.color='#fff';}}
-                onMouseOut={e => {e.currentTarget.style.background='#25D366';e.currentTarget.style.color='#fff';}}
-              >
-                <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M21.67 20.13l-1.51-4.36a2.13 2.13 0 0 0-2-1.45h-1.11a2.13 2.13 0 0 0-2 1.45l-1.51 4.36a2.13 2.13 0 0 0 2 2.87h1.11a2.13 2.13 0 0 0 2-2.87z"/><circle cx="12" cy="12" r="10"/></svg>
-                Hubungi via WhatsApp
-              </a>
+            {/* Judul & Nama */}
+            <h2 itemProp="name" style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: 12, color: palette.accentText, textShadow: palette.textShadow, letterSpacing: 0.5, display:'flex',flexDirection:'column',alignItems:'flex-start',gap:2 }}>
+              <span>Kontak & Lokasi</span>
+              <span>MDT Bilal Bin Rabbah</span>
+            </h2>
+            <div style={{height:2,background:`linear-gradient(90deg,${palette.accentText},${palette.accentText}33,transparent)`,margin:'0 0 16px 0',width:'60%',borderRadius:2}}></div>
+            {/* Alamat */}
+            <address itemProp="address" itemScope itemType="https://schema.org/PostalAddress" style={{fontStyle:'normal',color:palette.textColor,marginBottom:10, width: '100%', textAlign: isMobileScreen ? 'center' : 'left'}}>
+              <div style={{fontSize:'1.08rem',marginBottom:6,color:'#222',fontWeight:500}}>
+                Jl. Pasir Pogor Kp. Pasirpogor No.Rt 05/03, Desa Malakasari, Kecamatan Baleendah, Kabupaten Bandung, Jawa Barat 40375
+              </div>
+            </address>
+            {/* Telepon */}
+            <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10,justifyContent: isMobileScreen ? 'center' : 'flex-start'}}>
+              <svg width="18" height="18" fill="none" stroke="#25D366" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M21.67 20.13l-1.51-4.36a2.13 2.13 0 0 0-2-1.45h-1.11a2.13 2.13 0 0 0-2 1.45l-1.51 4.36a2.13 2.13 0 0 0 2 2.87h1.11a2.13 2.13 0 0 0 2-2.87z"/><circle cx="12" cy="12" r="10"/></svg>
+              <span itemProp="telephone" style={{fontWeight:600, color:'#222'}}>0812-3456-7890</span>
+            </div>
+            {/* Tombol WhatsApp */}
+            <a href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer" className="wa-kontak-madrasah" style={{ display: 'inline-flex', alignItems:'center', gap:8, marginTop: 0, color: '#fff', fontWeight: 700, textDecoration: 'none', fontSize: '1.05rem', border:'2px solid #25D366', borderRadius:8, padding:'6px 18px', background:'#25D366', boxShadow:'0 2px 8px #25D36622', transition:'background 0.2s, color 0.2s', marginBottom: 10 }}
+              onMouseOver={e => {e.currentTarget.style.background='#128C7E';e.currentTarget.style.color='#fff';}}
+              onMouseOut={e => {e.currentTarget.style.background='#25D366';e.currentTarget.style.color='#fff';}}
+              itemProp="url"
+            >
+              <svg width="18" height="18" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M21.67 20.13l-1.51-4.36a2.13 2.13 0 0 0-2-1.45h-1.11a2.13 2.13 0 0 0-2 1.45l-1.51 4.36a2.13 2.13 0 0 0 2 2.87h1.11a2.13 2.13 0 0 0 2-2.87z"/><circle cx="12" cy="12" r="10"/></svg>
+              WhatsApp MDT Bilal Bin Rabbah
+            </a>
+            {/* Deskripsi Lokasi */}
+            <div style={{marginTop:10, color:palette.textColor, fontSize:'0.98rem', textAlign:'justify', maxWidth: 400, marginBottom: isMobileScreen ? 18 : 0}}>
+              <strong>Lokasi MDT Bilal Bin Rabbah</strong> sangat strategis, mudah dijangkau dari berbagai wilayah di <strong>Desa Malakasari</strong> maupun <strong>Kecamatan Baleendah</strong>. Untuk informasi lebih lanjut mengenai <strong>madrasah di Malakasari</strong> atau <strong>madrasah di Baleendah</strong>, silakan hubungi kontak di atas atau kunjungi langsung lokasi kami.
             </div>
           </div>
           {/* Peta Google Maps */}
@@ -725,20 +834,22 @@ export default function Home() {
             borderRadius: 0,
             boxShadow: 'none',
             padding: isMobileScreen ? 0 : '0 0 0 0.5rem',
-            minHeight: isMobileScreen ? 220 : 340,
+            minHeight: isMobileScreen ? 260 : 400,
+            marginTop: isMobileScreen ? 0 : 0,
+            order: isMobileScreen ? 2 : 0, // pastikan di mobile peta di bawah
           }}>
-            <div className="mapouter" style={{ position: 'relative', textAlign: 'right', width: isMobileScreen ? '100%' : 500, height: isMobileScreen ? 220 : 450 }}>
+            <div className="mapouter" style={{ position: 'relative', textAlign: 'right', width: isMobileScreen ? '100%' : 400, height: isMobileScreen ? 260 : 400, borderRadius: 14, overflow: 'hidden', boxShadow: '0 2px 12px #0001', display:'flex',alignItems:'stretch' }}>
               <div className="gmap_canvas" style={{ overflow: 'hidden', background: 'none', width: '100%', height: '100%' }}>
-            <iframe
-                  width={isMobileScreen ? '100%' : '500px'}
-                  height={isMobileScreen ? '220px' : '450px'}
-                  style={{ border: 0 }}
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
+                <iframe
+                  width={isMobileScreen ? '100%' : '400px'}
+                  height={isMobileScreen ? '260px' : '400px'}
+                  style={{ border: 0, borderRadius: 14, height: '100%' }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
                   src="https://www.google.com/maps/embed/v1/place?q=mdt%20bilal%20bin%20rabbah&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8"
-              title="Lokasi MDT Bilal Bin Rabbah"
-            ></iframe>
+                  title="Lokasi MDT Bilal Bin Rabbah"
+                ></iframe>
               </div>
               <a href="https://norsumediagroup.com/embed-google-map-website-free" target="_blank" rel="noopener noreferrer" className="gme-generated-link" style={{ display: 'none' }}>Embed Map on Website for Free</a>
               <style>{`.mapouter{position:relative;text-align:right;}.gmap_canvas{overflow:hidden;background:none!important;}.gmap_canvas iframe{width:100%;height:100%;}.mapouter a{display:block;font-size:0.85em;text-align:center;padding:5px 0;color:#6c757d;text-decoration:none;}.gme-generated-link{display:none!important;}`}</style>
