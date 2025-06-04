@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { Bell, Search, ChevronLeft, ChevronRight, Check } from "lucide-react";
+import Image from "next/image";
 
 // Tipe data untuk notifikasi
 type Notification = {
@@ -71,7 +72,10 @@ export default function Topbar({
           <line x1="4" y1="18" x2="20" y2="18"></line>
         </svg>
       </button>
-      <span className="font-bold text-xl text-primary">SIAKAD</span>
+      <span className="font-bold text-xl text-primary flex items-center gap-2">
+        <Image src="/android-chrome-512x512.png" alt="Logo MDT Bilal" width={30} height={30} priority unoptimized />
+        MDT BILAL
+      </span>
       <div className="flex items-center gap-2">
         <ThemeSelector theme={theme} setTheme={setTheme} themes={themes} isMobile={true} />
         <NotificationDropdown 

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { LayoutDashboard, GraduationCap, BookOpen, School, History, FileText, CalendarCheck, ArrowDownCircle, ArrowUpCircle, Receipt, User2, Shield, Wallet, UserCircle, LogOut, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import Image from "next/image";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -30,20 +31,21 @@ export default function Sidebar({
   return (
     <aside className={sidebarClass + " scrollbar-hide"} style={!isMobile ? {transitionProperty: 'width'} : {}}>
       <div className={`font-bold text-2xl mb-8 text-primary flex items-center gap-2 transition-all duration-200 ${isMobile ? '' : (sidebarOpen ? '' : 'justify-center')}`}>
-        <LayoutDashboard className="w-7 h-7 text-primary" />
-        {(isMobile || sidebarOpen) && <span>SIAKAD</span>}
+        <Image src="/android-chrome-512x512.png" alt="Logo MDT Bilal" width={38} height={38} priority unoptimized />
+        {(isMobile || sidebarOpen) && <span>MDT BILAL</span>}
         {isMobile && (
           <button className="btn btn-ghost btn-circle ml-auto md:hidden" onClick={closeMobileDrawer} aria-label="Tutup Menu">
             <X className="w-6 h-6 text-base-content" />
           </button>
         )}
-        {!isMobile && (
+        {/* Tombol collapse hanya muncul jika sidebarOpen true dan bukan mobile */}
+        {!isMobile && sidebarOpen && (
           <button 
             className="btn btn-ghost btn-circle ml-auto hidden md:flex" 
             onClick={() => setSidebarOpen(!sidebarOpen)}
             aria-label={sidebarOpen ? "Tutup Menu" : "Buka Menu"}
           >
-            {sidebarOpen ? <X className="w-5 h-5" /> : <LayoutDashboard className="w-5 h-5" />}
+            <X className="w-5 h-5" />
           </button>
         )}
       </div>
