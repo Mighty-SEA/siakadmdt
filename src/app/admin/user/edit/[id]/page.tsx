@@ -6,6 +6,7 @@ import { Save } from "lucide-react";
 import Image from "next/image";
 import { normalizeAvatarUrl } from "@/lib/utils";
 import { useUI } from "@/lib/ui-context";
+import Cookies from "js-cookie";
 
 export default function EditUserPage() {
   const [roles, setRoles] = useState<{ id: number; name: string }[]>([]);
@@ -111,7 +112,6 @@ export default function EditUserPage() {
         }
         // Update cookie user jika user yang diedit adalah user yang sedang login
         if (typeof window !== 'undefined') {
-          const Cookies = require('js-cookie');
           const currentUser = JSON.parse(Cookies.get('user') || '{}');
           if (currentUser && String(currentUser.id) === String(id)) {
             Cookies.set("user", JSON.stringify({
