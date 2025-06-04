@@ -72,7 +72,7 @@ function addSecurityHeaders(response: NextResponse) {
   // Content Security Policy untuk mencegah XSS dan injeksi
   response.headers.set(
     'Content-Security-Policy',
-    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:;"
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:;"
   );
   
   // HTTP Strict Transport Security (HSTS)
