@@ -105,12 +105,28 @@ export default function EditUserPage() {
       console.log("User API response:", data);
       if (res.ok) {
         showToast("User berhasil diupdate!", "success");
-        
         // Reload notifikasi setelah operasi update
         if (typeof window !== 'undefined' && window.reloadNotifications) {
           window.reloadNotifications();
         }
-        
+        // Update cookie user jika user yang diedit adalah user yang sedang login
+        if (typeof window !== 'undefined') {
+          const Cookies = require('js-cookie');
+          const currentUser = JSON.parse(Cookies.get('user') || '{}');
+          if (currentUser && String(currentUser.id) === String(id)) {
+            Cookies.set("user", JSON.stringify({
+              ...currentUser,
+              avatar: avatarUrl // atau data.user.avatar jika dari response
+            }), {
+              expires: 7,
+              secure: process.env.NODE_ENV === "production",
+              sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+              path: '/'
+            });
+            window.location.reload();
+            return;
+          }
+        }
         router.push("/admin/user");
       } else {
         showToast(data.error || "Gagal mengupdate user", "error");
