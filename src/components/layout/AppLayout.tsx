@@ -263,15 +263,14 @@ export default function AppLayout({ children }: AppLayoutProps) {
   // Helper untuk menampilkan avatar
   const renderAvatar = (className: string = "") => {
     const avatarValue = userData?.avatar ?? "";
-    console.log('userData.avatar di header:', avatarValue);
-    const hasAvatar = avatarValue.trim() !== "";
-    const avatarSrc = hasAvatar
-      ? (avatarValue.startsWith('http')
-          ? avatarValue
-          : avatarValue.includes('/avatar/')
-            ? avatarValue
-            : `/avatar/${avatarValue}`)
-      : '/avatar/default.png'; // pastikan ada file default.png di public/avatar/
+    // Normalisasi path avatar agar konsisten dengan tabel user
+    let avatarSrc = avatarValue.trim();
+    if (avatarSrc && !avatarSrc.startsWith("http") && !avatarSrc.startsWith("/avatar/")) {
+      avatarSrc = `/avatar/${avatarSrc}`;
+    }
+    if (!avatarSrc) {
+      avatarSrc = '/avatar/default.png';
+    }
     return (
       <div className={`rounded-full ${className} overflow-hidden`}>
         <Image 
@@ -280,7 +279,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           width={40}
           height={40}
           className="w-full h-full object-cover" 
-          unoptimized // untuk troubleshooting, bisa dihapus jika sudah fix
+          unoptimized
         />
       </div>
     );

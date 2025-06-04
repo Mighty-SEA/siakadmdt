@@ -117,6 +117,7 @@ export default function UserPage() {
                         height={32} 
                         className="w-8 h-8 rounded-full object-cover border"
                         key={`avatar-list-${u.id}-${u.avatar}`}
+                        unoptimized
                       />
                     ) : (
                       <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold">

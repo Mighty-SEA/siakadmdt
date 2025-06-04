@@ -120,6 +120,7 @@ export default function TambahUserPage() {
                 height={112} 
                 className="w-28 h-28 rounded-full object-cover border-4 border-primary shadow-lg mb-2"
                 key={`preview-${Date.now()}`}
+                unoptimized
               />
             ) : form.avatar ? (
               <Image 
@@ -129,6 +130,7 @@ export default function TambahUserPage() {
                 height={112} 
                 className="w-28 h-28 rounded-full object-cover border-4 border-primary shadow-lg mb-2"
                 key={`avatar-${form.avatar}`}
+                unoptimized
               />
             ) : (
               <div className="w-28 h-28 rounded-full bg-primary text-white flex items-center justify-center font-bold text-4xl mb-2 shadow-lg border-4 border-primary">
