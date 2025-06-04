@@ -262,34 +262,26 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
   // Helper untuk menampilkan avatar
   const renderAvatar = (className: string = "") => {
-    if (userData?.avatar) {
-      // Periksa apakah avatar adalah URL lengkap atau path relatif
-      const avatarSrc = userData.avatar.startsWith('http') 
-        ? userData.avatar 
-        : userData.avatar.includes('/avatar/') 
-          ? userData.avatar 
-          : `/avatar/${userData.avatar}`;
-      
-      return (
-        <div className={`rounded-full ${className} overflow-hidden`}>
-          <Image 
-            src={avatarSrc} 
-            alt={userData.name} 
-            width={40}
-            height={40}
-            className="w-full h-full object-cover" 
-          />
-        </div>
-      );
-    }
-    
-    // Tampilkan inisial jika tidak ada avatar
+    const avatarValue = userData?.avatar ?? "";
+    console.log('userData.avatar di header:', avatarValue);
+    const hasAvatar = avatarValue.trim() !== "";
+    const avatarSrc = hasAvatar
+      ? (avatarValue.startsWith('http')
+          ? avatarValue
+          : avatarValue.includes('/avatar/')
+            ? avatarValue
+            : `/avatar/${avatarValue}`)
+      : '/avatar/default.png'; // pastikan ada file default.png di public/avatar/
     return (
-      <div className={`rounded-full ${className} bg-base-200 flex items-center justify-center`}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7 text-base-content">
-          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-          <circle cx="12" cy="7" r="4"></circle>
-        </svg>
+      <div className={`rounded-full ${className} overflow-hidden`}>
+        <Image 
+          src={avatarSrc} 
+          alt={userData?.name || 'Avatar'} 
+          width={40}
+          height={40}
+          className="w-full h-full object-cover" 
+          unoptimized // untuk troubleshooting, bisa dihapus jika sudah fix
+        />
       </div>
     );
   };
