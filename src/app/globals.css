@@ -44,3 +44,13 @@ body {
 .hide-scrollbar::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
+
+@media (max-width: 600px) {
+  section {
+    height: 100svh;
+    min-height: 100svh;
+    max-height: 100svh;
+    box-sizing: border-box;
+    padding: 1.2rem 0.5rem !important;
+  }
+}

@@ -376,17 +376,20 @@ export default function Home() {
       <section
         ref={sectionRefs[0]}
         style={{
-          minHeight: '100vh',
+          height: isMobileScreen ? '100svh' : 'auto',
+          minHeight: isMobileScreen ? '100svh' : '100vh',
+          maxHeight: isMobileScreen ? '100svh' : undefined,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           position: 'relative',
           textAlign: 'center',
-          padding: isMobileScreen ? '2.5rem 0.5rem 1.5rem 0.5rem' : '3.5rem 1rem 2.5rem 1rem',
+          padding: isMobileScreen ? '1.2rem 0.5rem' : '3.5rem 1rem 2.5rem 1rem',
           marginTop: isMobileScreen ? 80 : 0,
           overflow: 'hidden',
           scrollSnapAlign: 'start',
+          boxSizing: 'border-box',
           transform: 'translateZ(0)',
           contain: 'strict',
         }}
@@ -426,7 +429,7 @@ export default function Home() {
             </div>
             {/* Judul gradasi dan underline animasi */}
             <h1 style={{
-              fontSize: isMobileScreen ? '2rem' : '2.7rem',
+              fontSize: isMobileScreen ? '7vw' : '2.7rem',
               fontWeight: 900,
               marginBottom: 8,
               background: 'linear-gradient(90deg,#FFD36E 30%,#FBAE3C 70%)',
@@ -505,16 +508,19 @@ export default function Home() {
         itemScope
         itemType="https://schema.org/School"
         style={{
-          minHeight: '100vh',
+          height: isMobileScreen ? '100svh' : 'auto',
+          minHeight: isMobileScreen ? '100svh' : '100vh',
+          maxHeight: isMobileScreen ? '100svh' : undefined,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           position: 'relative',
           textAlign: 'center',
-          padding: '2rem 1rem',
+          padding: isMobileScreen ? '1.2rem 0.5rem' : '2rem 1rem',
           overflow: 'hidden',
           scrollSnapAlign: 'start',
+          boxSizing: 'border-box',
           transform: 'translateZ(0)',
           contain: 'strict',
         }}
@@ -529,19 +535,19 @@ export default function Home() {
             background: palette.blockBg,
             borderRadius: 24,
             boxShadow: palette.shadow,
-            padding: '2.8rem 1.5rem 2.5rem 1.5rem',
+            padding: isMobileScreen ? '0.5rem' : '2.8rem 1.5rem 2.5rem 1.5rem',
             backdropFilter: 'blur(4px)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
           }}
         >
-          <h2 itemProp="name" style={{ fontSize: '2.2rem', fontWeight: 800, marginBottom: '1.2rem', color: palette.accentText, textShadow: palette.textShadow, letterSpacing: 0.5, display:'flex',alignItems:'center',gap:10 }}>
+          <h2 itemProp="name" style={{ fontSize: isMobileScreen ? '6vw' : '2.2rem', fontWeight: 800, marginBottom: isMobileScreen ? '0.5rem' : '1.2rem', color: palette.accentText, textShadow: palette.textShadow, letterSpacing: 0.5, display:'flex',alignItems:'center',gap:10 }}>
             <svg width="32" height="32" fill="none" stroke={palette.accentText} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 13v7m0 0H7m5 0h5"/></svg>
             Profil MDT Bilal Bin Rabbah
           </h2>
-          <div style={{height:2,background:`linear-gradient(90deg,${palette.accentText},${palette.accentText}33,transparent)`,margin:'0 auto 22px auto',width:'60%',borderRadius:2}}></div>
-          <p itemProp="description" style={{ fontSize: '1.18rem', color: palette.textColor, textShadow: palette.textShadow, fontWeight: 500, marginBottom: 18, lineHeight: 1.7, textAlign: 'justify' }}>
+          <div style={{height:2,background:`linear-gradient(90deg,${palette.accentText},${palette.accentText}33,transparent)`,margin:isMobileScreen ? '0 auto 8px auto' : '0 auto 22px auto',width:'60%',borderRadius:2}}></div>
+          <p itemProp="description" style={{ fontSize: isMobileScreen ? '1rem' : '1.18rem', color: palette.textColor, textShadow: palette.textShadow, fontWeight: 500, marginBottom: isMobileScreen ? 8 : 18, lineHeight: 1.5, textAlign: 'justify' }}>
             <strong>Madrasah Diniyah Takmiliyah (MDT) Bilal Bin Rabbah</strong> adalah <strong>madrasah di Desa Malakasari</strong>, Kecamatan Baleendah, yang berperan penting dalam membentuk karakter, memperdalam pemahaman agama, dan menanamkan nilai-nilai akhlak mulia bagi generasi muda. MDT hadir sebagai pelengkap pendidikan formal, memberikan ruang yang lebih luas untuk pembelajaran Al-Qur&#39;an, aqidah, ibadah, akhlak, serta bahasa Arab secara terstruktur dan berjenjang.
           </p>
           {/* Visi dan Misi */}
@@ -550,7 +556,7 @@ export default function Home() {
             flexWrap: isMobileScreen ? undefined : 'wrap',
             justifyContent: 'center',
             gap: isMobileScreen ? undefined : '1.5rem',
-            marginBottom: 8,
+            marginBottom: isMobileScreen ? 4 : 8,
             width: '100%',
             position: 'relative',
           }}>
@@ -563,12 +569,12 @@ export default function Home() {
                   background: theme === 'dark' ? '#23263a' : '#fffbe8',
                   borderRadius: 14,
                   boxShadow: '0 2px 12px #0001',
-                  padding: '1rem 0.7rem',
+                  padding: '0.7rem 0.5rem',
                   textAlign: 'left',
                   margin: '0 auto',
                   transition: 'all 0.3s',
                 }}>
-                  <strong style={{ color: palette.accentText, fontWeight: 700, fontSize: '1.08rem', letterSpacing: 0.5 }}>{cardList[mobileCardIndex].title}</strong>
+                  <strong style={{ color: palette.accentText, fontWeight: 700, fontSize: '1.05rem', letterSpacing: 0.5 }}>{cardList[mobileCardIndex].title}</strong>
                   {cardList[mobileCardIndex].content}
                 </div>
                 {/* Navigasi panah */}
@@ -688,16 +694,19 @@ export default function Home() {
       <section
         ref={sectionRefs[2]}
         style={{
-          minHeight: '100vh',
+          height: isMobileScreen ? '100svh' : 'auto',
+          minHeight: isMobileScreen ? '100svh' : '100vh',
+          maxHeight: isMobileScreen ? '100svh' : undefined,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           position: 'relative',
           textAlign: 'center',
-          padding: '2rem 0.5rem',
+          padding: isMobileScreen ? '1.2rem 0.5rem' : '2rem 0.5rem',
           overflow: 'hidden',
           scrollSnapAlign: 'start',
+          boxSizing: 'border-box',
           transform: 'translateZ(0)',
           contain: 'strict',
         }}
@@ -717,7 +726,7 @@ export default function Home() {
             backdropFilter: 'blur(4px)',
           }}
         >
-          <h2 style={{ fontSize: '2.1rem', fontWeight: 700, marginBottom: '2rem', color: palette.accentText, textShadow: palette.textShadow, letterSpacing: 0.5 }}>
+          <h2 style={{ fontSize: isMobileScreen ? '6vw' : '2.1rem', fontWeight: 700, marginBottom: '2rem', color: palette.accentText, textShadow: palette.textShadow, letterSpacing: 0.5 }}>
             Galeri Kegiatan
           </h2>
           <div
@@ -751,16 +760,19 @@ export default function Home() {
         itemScope
         itemType="https://schema.org/Organization"
         style={{
-          minHeight: '100vh',
+          height: isMobileScreen ? '100svh' : 'auto',
+          minHeight: isMobileScreen ? '100svh' : '100vh',
+          maxHeight: isMobileScreen ? '100svh' : undefined,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           position: 'relative',
           textAlign: 'center',
-          padding: '2rem 0.5rem',
+          padding: isMobileScreen ? '1.2rem 0.5rem' : '2rem 0.5rem',
           overflow: 'hidden',
           scrollSnapAlign: 'start',
+          boxSizing: 'border-box',
           transform: 'translateZ(0)',
           contain: 'strict',
         }}
@@ -775,10 +787,10 @@ export default function Home() {
             background: '#fff',
             borderRadius: 24,
             boxShadow: '0 4px 32px rgba(30,136,229,0.10)',
-            padding: isMobileScreen ? '1.2rem 0.7rem' : '2.5rem',
+            padding: isMobileScreen ? '0.5rem' : '2.5rem',
             display: 'flex',
             flexDirection: isMobileScreen ? 'column' : 'row',
-            gap: isMobileScreen ? 24 : 36,
+            gap: isMobileScreen ? 8 : 36,
             alignItems: 'stretch',
             justifyContent: 'center',
           }}
@@ -790,28 +802,28 @@ export default function Home() {
             flexDirection: 'column',
             justifyContent: 'center',
             alignItems: isMobileScreen ? 'center' : 'flex-start',
-            padding: isMobileScreen ? 0 : '0 1.2rem 0 0',
+            padding: isMobileScreen ? 0 : '0 0.7rem 0 0',
             marginBottom: isMobileScreen ? 0 : 0,
           }}>
             {/* Judul & Nama */}
-            <h2 itemProp="name" style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: 12, color: palette.accentText, textShadow: palette.textShadow, letterSpacing: 0.5, display:'flex',flexDirection:'column',alignItems:'flex-start',gap:2 }}>
+            <h2 itemProp="name" style={{ fontSize: isMobileScreen ? '5vw' : '1.5rem', fontWeight: 800, marginBottom: isMobileScreen ? 6 : 12, color: palette.accentText, textShadow: palette.textShadow, letterSpacing: 0.5, display:'flex',flexDirection:'column',alignItems:'flex-start',gap:2 }}>
               <span>Kontak & Lokasi</span>
               <span>MDT Bilal Bin Rabbah</span>
             </h2>
-            <div style={{height:2,background:`linear-gradient(90deg,${palette.accentText},${palette.accentText}33,transparent)`,margin:'0 0 16px 0',width:'60%',borderRadius:2}}></div>
+            <div style={{height:2,background:`linear-gradient(90deg,${palette.accentText},${palette.accentText}33,transparent)`,margin:isMobileScreen ? '0 0 6px 0' : '0 0 16px 0',width:'60%',borderRadius:2}}></div>
             {/* Alamat */}
-            <address itemProp="address" itemScope itemType="https://schema.org/PostalAddress" style={{fontStyle:'normal',color:palette.textColor,marginBottom:10, width: '100%', textAlign: isMobileScreen ? 'center' : 'left'}}>
-              <div style={{fontSize:'1.08rem',marginBottom:6,color:'#222',fontWeight:500}}>
+            <address itemProp="address" itemScope itemType="https://schema.org/PostalAddress" style={{fontStyle:'normal',color:palette.textColor,marginBottom: isMobileScreen ? 4 : 10, width: '100%', textAlign: isMobileScreen ? 'center' : 'left'}}>
+              <div style={{fontSize: isMobileScreen ? '0.95rem' : '1.08rem',marginBottom:isMobileScreen ? 2 : 6,color:'#222',fontWeight:500}}>
                 Jl. Pasir Pogor Kp. Pasirpogor No.Rt 05/03, Desa Malakasari, Kecamatan Baleendah, Kabupaten Bandung, Jawa Barat 40375
               </div>
             </address>
             {/* Telepon */}
-            <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10,justifyContent: isMobileScreen ? 'center' : 'flex-start'}}>
+            <div style={{display:'flex',alignItems:'center',gap:isMobileScreen ? 4 : 8,marginBottom:isMobileScreen ? 4 : 10,justifyContent: isMobileScreen ? 'center' : 'flex-start'}}>
               <svg width="18" height="18" fill="none" stroke="#25D366" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M21.67 20.13l-1.51-4.36a2.13 2.13 0 0 0-2-1.45h-1.11a2.13 2.13 0 0 0-2 1.45l-1.51 4.36a2.13 2.13 0 0 0 2 2.87h1.11a2.13 2.13 0 0 0 2-2.87z"/><circle cx="12" cy="12" r="10"/></svg>
               <span itemProp="telephone" style={{fontWeight:600, color:'#222'}}>0812-3456-7890</span>
             </div>
             {/* Tombol WhatsApp */}
-            <a href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer" className="wa-kontak-madrasah" style={{ display: 'inline-flex', alignItems:'center', gap:8, marginTop: 0, color: '#fff', fontWeight: 700, textDecoration: 'none', fontSize: '1.05rem', border:'2px solid #25D366', borderRadius:8, padding:'6px 18px', background:'#25D366', boxShadow:'0 2px 8px #25D36622', transition:'background 0.2s, color 0.2s', marginBottom: 10 }}
+            <a href="https://wa.me/6281234567890" target="_blank" rel="noopener noreferrer" className="wa-kontak-madrasah" style={{ display: 'inline-flex', alignItems:'center', gap:isMobileScreen ? 4 : 8, marginTop: 0, color: '#fff', fontWeight: 700, textDecoration: 'none', fontSize: isMobileScreen ? '0.95rem' : '1.05rem', border:'2px solid #25D366', borderRadius:8, padding:isMobileScreen ? '4px 10px' : '6px 18px', background:'#25D366', boxShadow:'0 2px 8px #25D36622', transition:'background 0.2s, color 0.2s', marginBottom: isMobileScreen ? 4 : 10 }}
               onMouseOver={e => {e.currentTarget.style.background='#128C7E';e.currentTarget.style.color='#fff';}}
               onMouseOut={e => {e.currentTarget.style.background='#25D366';e.currentTarget.style.color='#fff';}}
               itemProp="url"
@@ -820,7 +832,7 @@ export default function Home() {
               WhatsApp MDT Bilal Bin Rabbah
             </a>
             {/* Deskripsi Lokasi */}
-            <div style={{marginTop:10, color:palette.textColor, fontSize:'0.98rem', textAlign:'justify', maxWidth: 400, marginBottom: isMobileScreen ? 18 : 0}}>
+            <div style={{marginTop:isMobileScreen ? 4 : 10, color:palette.textColor, fontSize:isMobileScreen ? '0.92rem' : '0.98rem', textAlign:'justify', maxWidth: 400, marginBottom: isMobileScreen ? 6 : 0}}>
               <strong>Lokasi MDT Bilal Bin Rabbah</strong> sangat strategis, mudah dijangkau dari berbagai wilayah di <strong>Desa Malakasari</strong> maupun <strong>Kecamatan Baleendah</strong>. Untuk informasi lebih lanjut mengenai <strong>madrasah di Malakasari</strong> atau <strong>madrasah di Baleendah</strong>, silakan hubungi kontak di atas atau kunjungi langsung lokasi kami.
             </div>
           </div>
@@ -834,15 +846,15 @@ export default function Home() {
             borderRadius: 0,
             boxShadow: 'none',
             padding: isMobileScreen ? 0 : '0 0 0 0.5rem',
-            minHeight: isMobileScreen ? 260 : 400,
+            minHeight: isMobileScreen ? 120 : 400,
             marginTop: isMobileScreen ? 0 : 0,
             order: isMobileScreen ? 2 : 0, // pastikan di mobile peta di bawah
           }}>
-            <div className="mapouter" style={{ position: 'relative', textAlign: 'right', width: isMobileScreen ? '100%' : 400, height: isMobileScreen ? 260 : 400, borderRadius: 14, overflow: 'hidden', boxShadow: '0 2px 12px #0001', display:'flex',alignItems:'stretch' }}>
+            <div className="mapouter" style={{ position: 'relative', textAlign: 'right', width: isMobileScreen ? '100%' : 400, height: isMobileScreen ? 120 : 400, borderRadius: 14, overflow: 'hidden', boxShadow: '0 2px 12px #0001', display:'flex',alignItems:'stretch' }}>
               <div className="gmap_canvas" style={{ overflow: 'hidden', background: 'none', width: '100%', height: '100%' }}>
                 <iframe
                   width={isMobileScreen ? '100%' : '400px'}
-                  height={isMobileScreen ? '260px' : '400px'}
+                  height={isMobileScreen ? '120px' : '400px'}
                   style={{ border: 0, borderRadius: 14, height: '100%' }}
                   allowFullScreen
                   loading="lazy"
